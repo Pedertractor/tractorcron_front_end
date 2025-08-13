@@ -4,7 +4,7 @@ const Loading = () => {
   return (
     <div className=' w-full h-full flex items-center justify-center rounded-lg'>
       <div className=' animate-spin text-secondary rounded-full'>
-        <LoaderCircle />
+        <LoaderCircle size={15} />
       </div>
     </div>
   );
