@@ -23,12 +23,15 @@ import {
   syncPresetActivities,
 } from '../../db/db-functions-preset-activities';
 import { seedActivities } from '../../seed/seed-activities';
-import { findEmployee } from '../../api/employee-api';
-import { toast } from 'sonner';
-import { findSectorByCc } from '@/api/sector-api';
 import { verifyUuidRegister } from '@/api/chronoanalysis-api';
 import Button from '@/components/ui/button/button';
 import Label from '@/components/ui/label/label';
+import { useParts } from '@/hooks/use-parts';
+import CheckRequestStatus from '@/components/check-request-status';
+import { useSector } from '@/hooks/use-sectors';
+import { useEmployee } from '@/hooks/use-employees';
+import ModalImage from '@/components/modal-image';
+import { Images } from 'lucide-react';
 
 const RegisterInitialInformationsPage = () => {
   const [pinedActivities, setPinedACtivities] = useState<
@@ -36,6 +39,7 @@ const RegisterInitialInformationsPage = () => {
   >([]);
   const [attListPinedActivities, setAttListPinedActivities] =
     useState<boolean>(false);
+  const [isOpenImage, setIsOpenImage] = useState(false);
 
   const navigate = useNavigate();
 
@@ -44,7 +48,7 @@ const RegisterInitialInformationsPage = () => {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<TypeInitialInformationsData>({
     resolver: zodResolver(initialInformationsSchema),
     mode: 'onChange',
@@ -58,70 +62,55 @@ const RegisterInitialInformationsPage = () => {
   const unit = watch('employeeUnit');
   const cardNumber = watch('employeeCardNumber');
   const costCenter = watch('sectorCostCenter');
+  const partCode = watch('internalCode');
+
+  const { partData, isLoading, isStatus } = useParts(partCode);
+
+  const {
+    sectorData,
+    isLoading: isLoadingSector,
+    isStatus: isStatusSector,
+  } = useSector(costCenter);
+
+  const {
+    employeeData,
+    isLoading: isLoadingEmployee,
+    isStatus: isStatusEmployee,
+    isDisabled,
+  } = useEmployee(unit, cardNumber);
 
   useEffect(() => {
-    const supportFindSectorFunction = async () => {
-      if (costCenter) {
-        const { status, message, data } = await findSectorByCc(costCenter);
+    if (isStatus && partData && !isLoading)
+      return setValue('partNumber', partData.partNumber, {
+        shouldValidate: true,
+      });
 
-        if (!status) {
-          setValue('sectorName', '');
-          setValue('sectorCostCenter', '');
-          setValue('sectorId', undefined);
-          return toast.error(message);
-        }
+    setValue('partNumber', '', { shouldValidate: true });
+  }, [isLoading, isStatus, partData, setValue]);
 
-        if (status) {
-          console.log(data.id);
-          setValue('sectorId', +data.id);
-          setValue('sectorName', data.name);
-          // setValue('costCenter', data.costCenter);
-        }
-      }
-    };
-
-    if (costCenter && costCenter.length === 4 && /^\d{4}$/.test(costCenter)) {
-      supportFindSectorFunction();
+  useEffect(() => {
+    if (!isStatusSector) {
+      setValue('sectorName', '', { shouldValidate: true });
+      setValue('sectorId', undefined, { shouldValidate: true });
     }
-  }, [costCenter, setValue]);
+    if (!isLoadingSector && isStatusSector && sectorData) {
+      setValue('sectorId', +sectorData.id, { shouldValidate: true });
+      setValue('sectorName', sectorData.name, { shouldValidate: true });
+    }
+  }, [isLoadingSector, isStatusSector, sectorData, setValue]);
 
   useEffect(() => {
-    const supportFindEmployeeFunction = async () => {
-      if (unit && cardNumber) {
-        const { status, message, data } = await findEmployee({
-          cardNumber,
-          unit,
-        });
+    if (!isStatusEmployee || isDisabled) {
+      setValue('employeeName', '', { shouldValidate: true });
+      setValue('employeeId', undefined, { shouldValidate: true });
+    }
 
-        if (!status) {
-          setValue('employeeName', '');
-          setValue('employeeCardNumber', '');
-          setValue('employeeId', undefined);
-          return toast.info(message);
-        }
-
-        if (status) {
-          if (!data.status) {
-            setValue('employeeName', '');
-            setValue('employeeCardNumber', '');
-            setValue('employeeId', undefined);
-
-            return toast.info('Colaborador encontrado, porém desativado.');
-          }
-          setValue('employeeName', data.name);
-          setValue('employeeId', data.id);
-        }
-      }
-    };
-
-    if (
-      unit &&
-      cardNumber &&
-      cardNumber.length === 4 &&
-      /^\d{4}$/.test(cardNumber)
-    )
-      supportFindEmployeeFunction();
-  }, [unit, cardNumber, setValue]);
+    if (!isLoadingEmployee && isStatusEmployee && employeeData) {
+      console.log('entrou', employeeData);
+      setValue('employeeName', employeeData.name, { shouldValidate: true });
+      setValue('employeeId', employeeData.id, { shouldValidate: true });
+    }
+  }, [employeeData, isDisabled, isLoadingEmployee, isStatusEmployee, setValue]);
 
   useEffect(() => {
     const syncAndListActivities = async () => {
@@ -204,174 +193,210 @@ const RegisterInitialInformationsPage = () => {
   };
   return (
     <section className=''>
-      <Text variant={'title'}>Nova cronoanálise</Text>
-      <form onSubmit={handleSubmit(handleAddInitialInformations)}>
-        <Card text='Informações do colaborador' className='flex mt-5'>
-          <div className=' flex gap-4 w-full items-center justify-center'>
-            <Label title='Cartão' className=' relative h-25'>
-              <div className=' flex items-center gap-0.5 w-full'>
-                <Button
-                  type='button'
-                  variant={`${
-                    unit === 'PEDERTRACTOR' ? 'select-blue' : 'default'
-                  }`}
-                  onClick={() => setValue('employeeUnit', 'PEDERTRACTOR')}
-                >
-                  P
-                </Button>
-                <Button
-                  type='button'
-                  variant={`${unit === 'TRACTOR' ? 'select-blue' : 'default'}`}
-                  onClick={() => setValue('employeeUnit', 'TRACTOR')}
-                >
-                  T
-                </Button>
-                <Input
-                  disabled={!unit ? true : false}
-                  className='w-full'
-                  maxLength={4}
-                  inputMode='numeric'
-                  placeholder='ex: 0072 | ex: 5532'
-                  {...register('employeeCardNumber')}
-                />
+      {isOpenImage ? (
+        <ModalImage
+          openModal={isOpenImage}
+          setOpenModal={setIsOpenImage}
+          partData={partData}
+        />
+      ) : (
+        <>
+          <Text variant={'title'}>Nova cronoanálise</Text>
+          <form onSubmit={handleSubmit(handleAddInitialInformations)}>
+            <Card text='Informações do colaborador' className='flex mt-5'>
+              <div className=' flex gap-4 w-full items-center justify-center'>
+                <Label title='Cartão' className=' relative h-25'>
+                  <CheckRequestStatus
+                    data={employeeData}
+                    loading={isLoadingEmployee}
+                    status={isStatusEmployee}
+                    disabled={isDisabled}
+                  />
+                  <div className=' flex items-center gap-0.5 w-full'>
+                    <Button
+                      type='button'
+                      variant={`${
+                        unit === 'PEDERTRACTOR' ? 'select-blue' : 'default'
+                      }`}
+                      onClick={() => setValue('employeeUnit', 'PEDERTRACTOR')}
+                    >
+                      P
+                    </Button>
+                    <Button
+                      type='button'
+                      variant={`${
+                        unit === 'TRACTOR' ? 'select-blue' : 'default'
+                      }`}
+                      onClick={() => setValue('employeeUnit', 'TRACTOR')}
+                    >
+                      T
+                    </Button>
+                    <Input
+                      disabled={!unit ? true : false}
+                      className='w-full'
+                      maxLength={4}
+                      inputMode='numeric'
+                      placeholder='ex: 0072 | ex: 5532'
+                      {...register('employeeCardNumber')}
+                    />
+                  </div>
+                  {errors.employeeCardNumber && (
+                    <span className='text-red-500 text-sm absolute left-22 bottom-0 '>
+                      {errors.employeeCardNumber.message}
+                    </span>
+                  )}
+                </Label>
+                <Label title='Nome do colaborador' className=' w-4/5 h-25'>
+                  <Input {...register('employeeName')} disabled />
+                </Label>
               </div>
-              {errors.employeeCardNumber && (
-                <span className='text-red-500 text-sm absolute left-22 bottom-0 '>
-                  {errors.employeeCardNumber.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Nome do colaborador' className=' w-4/5 h-25'>
-              <Input {...register('employeeName')} disabled />
-            </Label>
-          </div>
-          <div className=' flex gap-4 justify-center w-full items-center'>
-            <Label title='Centro de custo' className=' w-1/5 relative h-25'>
-              <Input
-                {...register('sectorCostCenter')}
-                maxLength={4}
-                inputMode='numeric'
-                placeholder='ex: 7051'
+              <div className=' flex gap-4 justify-center w-full items-center'>
+                <Label title='Centro de custo' className='relative h-25'>
+                  <CheckRequestStatus
+                    data={sectorData}
+                    status={isStatusSector}
+                    loading={isLoadingSector}
+                  />
+                  <Input
+                    {...register('sectorCostCenter')}
+                    maxLength={4}
+                    inputMode='numeric'
+                    placeholder='ex: 7051'
+                  />
+                  {errors.sectorCostCenter && (
+                    <span className='text-red-500 text-sm absolute left-0 bottom-0 '>
+                      {errors.sectorCostCenter.message}
+                    </span>
+                  )}
+                </Label>
+                <Label
+                  title='Setor de execução'
+                  className=' w-4/5 relative h-25'
+                >
+                  <Input {...register('sectorName')} disabled />
+                </Label>
+              </div>
+            </Card>
+            <Card
+              text='Informações do componente'
+              className='flex my-5 relative'
+            >
+              <Button
+                onClick={() => setIsOpenImage(!isOpenImage)}
+                type='button'
+                disabled={!isStatus || isLoading || !partData ? true : false}
+                variant={`${
+                  isStatus && !isLoading && partData ? 'blue' : 'default'
+                }`}
+                svg={Images}
+                className='absolute top-3 right-3 '
               />
-              {errors.sectorCostCenter && (
-                <span className='text-red-500 text-sm absolute left-0 bottom-0 '>
-                  {errors.sectorCostCenter.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Setor de execução' className=' w-4/5 relative h-25'>
-              <Input {...register('sectorName')} disabled />
-            </Label>
-          </div>
-        </Card>
-        <Card text='Informações do componente' className='flex my-5 relative'>
-          {/* <Button
-            disabled={imageDisabled}
-            variant={`${!imageDisabled ? 'blue' : 'default'}`}
-            svg={ImagemIcon}
-            className='absolute top-4 right-4'
-          /> */}
-          <div className=' flex gap-4 w-full '>
-            <Label title='Part number'>
-              <Input {...register('partNumber')} />
-              {errors.partNumber && (
-                <span className='text-red-500 text-sm'>
-                  {errors.partNumber.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Código interno'>
-              <Input {...register('internalCode')} />
-              {errors.internalCode && (
-                <span className='text-red-500 text-sm'>
-                  {errors.internalCode.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Revisão'>
-              <Input {...register('revision')} />
-              {errors.revision && (
-                <span className='text-red-500 text-sm'>
-                  {errors.revision.message}
-                </span>
-              )}
-            </Label>
-          </div>
-        </Card>
-        <Card text='Informações extras' className='flex'>
-          <div className=' flex gap-4 w-full flex-col '>
-            <div className=' flex items-center gap-4'>
-              <Label title='Ordem de fabricação (OF)'>
-                <Input {...register('of')} />
-                {errors.of && (
-                  <span className='text-red-500 text-sm'>
-                    {errors.of.message}
-                  </span>
-                )}
-              </Label>
-              <Label title='Operação (OP)'>
-                <Input {...register('op')} />
-                {errors.op && (
-                  <span className='text-red-500 text-sm'>
-                    {errors.op.message}
-                  </span>
-                )}
-              </Label>
-            </div>
+              <div className=' flex gap-4 w-full '>
+                <Label title='Código interno' className=' relative '>
+                  <CheckRequestStatus
+                    data={partData}
+                    status={isStatus}
+                    loading={isLoading}
+                  />
+                  <Input
+                    {...register('internalCode')}
+                    maxLength={10}
+                    inputMode='numeric'
+                  />
+                  {errors.internalCode && (
+                    <span className='text-red-500 text-sm'>
+                      {errors.internalCode.message}
+                    </span>
+                  )}
+                </Label>
+                <Label title='Revisão'>
+                  <Input {...register('revision')} />
+                  {errors.revision && (
+                    <span className='text-red-500 text-sm'>
+                      {errors.revision.message}
+                    </span>
+                  )}
+                </Label>
+                <Label title='Part number'>
+                  <Input {...register('partNumber')} disabled />
+                </Label>
+              </div>
+            </Card>
+            <Card text='Informações extras' className='flex'>
+              <div className=' flex gap-4 w-full flex-col '>
+                <div className=' flex items-center gap-4'>
+                  <Label title='Ordem de fabricação (OF)'>
+                    <Input {...register('of')} />
+                    {errors.of && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.of.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='Operação (OP)'>
+                    <Input {...register('op')} />
+                    {errors.op && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.op.message}
+                      </span>
+                    )}
+                  </Label>
+                </div>
 
-            <div className=' flex items-center gap-4'>
-              <Label title='Procedimento operacional padrão (SOP)'>
-                <Input {...register('sop')} />
-                {errors.sop && (
-                  <span className='text-red-500 text-sm'>
-                    {errors.sop.message}
-                  </span>
-                )}
-              </Label>
-              <Label title='Cliente'>
-                <Select
-                  listOptions={clients}
-                  disabled={false} //i can put loading fetch of clients
-                  {...register('clientId')}
-                />
-                {errors.clientId && (
-                  <span className='text-red-500 text-sm'>
-                    {errors.clientId.message}
-                  </span>
-                )}
-              </Label>
-            </div>
-          </div>
-        </Card>
-        <Card text='Preset das atividades' className='flex flex-col mt-5'>
-          {/* <Label title='Tipo de cronoanálise'>
+                <div className=' flex items-center gap-4'>
+                  <Label title='Procedimento operacional padrão (SOP)'>
+                    <Input {...register('sop')} />
+                    {errors.sop && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.sop.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='Cliente'>
+                    <Select
+                      listOptions={clients}
+                      disabled={false} //i can put loading fetch of clients
+                      {...register('clientId')}
+                    />
+                    {errors.clientId && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.clientId.message}
+                      </span>
+                    )}
+                  </Label>
+                </div>
+              </div>
+            </Card>
+            <Card text='Preset das atividades' className='flex flex-col mt-5'>
+              {/* <Label title='Tipo de cronoanálise'>
             <Select
               listTypeChronoanalist={['Soldagem', 'Montagem']}
               disabled={false} //i can put loading fetch of clients
               {...register('clientId')}
             />
           </Label> */}
-          <ListActivities
-            activities={pinedActivities}
-            pinedActivitie={pinedActivitie}
-            setAttListPinedActivities={setAttListPinedActivities}
-          />
-        </Card>
-        <div className=' flex gap-4 w-full justify-end items-center mt-5'>
-          <Button variant={'red'} size={'md'} type='button'>
-            cancelar
-          </Button>
-          <Button
-            // disabled={!isValid}
-            // variant={`${!isValid ? 'default' : 'blue'}`}
-            variant={'blue'}
-            size={'md'}
-            type='submit'
-          >
-            iniciar
-          </Button>
-        </div>
-      </form>
+              <ListActivities
+                activities={pinedActivities}
+                pinedActivitie={pinedActivitie}
+                setAttListPinedActivities={setAttListPinedActivities}
+              />
+            </Card>
+            <div className=' flex gap-4 w-full justify-end items-center mt-5'>
+              <Button variant={'red'} size={'md'} type='button'>
+                cancelar
+              </Button>
+              <Button
+                disabled={!isValid}
+                variant={`${!isValid ? 'default' : 'blue'}`}
+                size={'md'}
+                type='submit'
+              >
+                iniciar
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
     </section>
   );
 };
