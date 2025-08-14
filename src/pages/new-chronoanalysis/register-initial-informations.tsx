@@ -368,7 +368,7 @@ const RegisterInitialInformationsPage = () => {
                   <Label title='Cliente'>
                     <Select
                       listOptions={clients}
-                      disabled={false} //i can put loading fetch of clients
+                      disabled={false}
                       {...register('clientId')}
                     />
                     {errors.clientId && (
