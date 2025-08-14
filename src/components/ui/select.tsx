@@ -55,7 +55,7 @@ const Select = ({
       {listOptionsChronoanalist &&
         listOptionsChronoanalist.map((option, index) => (
           <option key={index} value={option.id}>
-            {option.employee.name}
+            {option.employeeName}
           </option>
         ))}
 
