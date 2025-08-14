@@ -32,6 +32,7 @@ import { useSector } from '@/hooks/use-sectors';
 import { useEmployee } from '@/hooks/use-employees';
 import ModalImage from '@/components/modal-image';
 import { Images } from 'lucide-react';
+import { useOf } from '@/hooks/use-of';
 
 const RegisterInitialInformationsPage = () => {
   const [pinedActivities, setPinedACtivities] = useState<
@@ -63,6 +64,7 @@ const RegisterInitialInformationsPage = () => {
   const cardNumber = watch('employeeCardNumber');
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
+  const manufacturingOrder = watch('of');
 
   const { partData, isLoading, isStatus } = useParts(partCode);
 
@@ -78,6 +80,12 @@ const RegisterInitialInformationsPage = () => {
     isStatus: isStatusEmployee,
     isDisabled,
   } = useEmployee(unit, cardNumber);
+
+  const {
+    isLoading: isLoadingOf,
+    isStatus: isStatusOf,
+    ofData,
+  } = useOf(manufacturingOrder);
 
   useEffect(() => {
     if (isStatus && partData && !isLoading)
@@ -325,7 +333,12 @@ const RegisterInitialInformationsPage = () => {
             <Card text='Informações extras' className='flex'>
               <div className=' flex gap-4 w-full flex-col '>
                 <div className=' flex items-center gap-4'>
-                  <Label title='Ordem de fabricação (OF)'>
+                  <Label title='Ordem de fabricação (OF)' className=' relative'>
+                    <CheckRequestStatus
+                      data={ofData}
+                      status={isStatusOf}
+                      loading={isLoadingOf}
+                    />
                     <Input {...register('of')} />
                     {errors.of && (
                       <span className='text-red-500 text-sm'>
