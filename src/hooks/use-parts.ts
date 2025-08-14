@@ -2,7 +2,7 @@ import { findUniquePart } from '@/api/parts-api';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-type PartUniqueType = {
+export type PartUniqueType = {
   client: string;
   createdAt: string;
   description: string;
@@ -28,7 +28,6 @@ export function useParts(partCode?: string) {
       setPartData(null);
       return;
     }
-    console.log('re-render');
     setIsStatus(true);
     setIsLoading(true);
     const supportFindUniquePart = async () => {
@@ -36,6 +35,7 @@ export function useParts(partCode?: string) {
       if (status !== 200) {
         setIsLoading(false);
         setIsStatus(false);
+        setPartData(null);
         return toast.error(message);
       }
 

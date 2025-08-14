@@ -32,6 +32,7 @@ export function useSector(costCenter?: string) {
       if (!status) {
         setIsLoading(false);
         setIsStatus(false);
+        setSectorData(null);
         return toast.error(message);
       }
 

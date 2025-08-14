@@ -78,6 +78,7 @@ export function useEmployee(unit?: string, cardNumber?: string) {
         if (!status) {
           setIsLoading(false);
           setIsStatus(false);
+          setEmployeeData(null);
           return toast.error(message);
         }
 
