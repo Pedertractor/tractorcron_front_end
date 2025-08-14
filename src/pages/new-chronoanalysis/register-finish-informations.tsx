@@ -28,12 +28,15 @@ import WorkPaceAssessment, {
 import type { PropsChronoanalysis } from '../../types/chronoanalysis-types';
 import type { PropsActivities } from '../../types/activities-types';
 import { registerNewChronoanalysis } from '../../api/chronoanalysis-api';
-import { findEmployee } from '@/api/employee-api';
 import { toast } from 'sonner';
-import { findSectorByCc } from '@/api/sector-api';
 import { useNavigate } from 'react-router';
 import Label from '@/components/ui/label/label';
 import Button from '@/components/ui/button/button';
+import { useParts } from '@/hooks/use-parts';
+import CheckRequestStatus from '@/components/check-request-status';
+import { useSector } from '@/hooks/use-sectors';
+import { useEmployee } from '@/hooks/use-employees';
+import { useOf } from '@/hooks/use-of';
 
 const RegisterFinishInformationsPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -115,69 +118,66 @@ const RegisterFinishInformationsPage = () => {
   const unit = watch('employeeUnit');
   const cardNumber = watch('employeeCardNumber');
   const costCenter = watch('sectorCostCenter');
+  const partCode = watch('internalCode');
+  const manufacturingOrder = watch('of');
+
+  const {
+    partData,
+    isLoading: isLoadingPart,
+    isStatus: isStatusPart,
+  } = useParts(partCode);
+
+  const {
+    sectorData,
+    isLoading: isLoadingSector,
+    isStatus: isStatusSector,
+  } = useSector(costCenter);
+
+  const {
+    employeeData,
+    isLoading: isLoadingEmployee,
+    isStatus: isStatusEmployee,
+    isDisabled,
+  } = useEmployee(unit, cardNumber);
+
+  const {
+    isLoading: isLoadingOf,
+    isStatus: isStatusOf,
+    ofData,
+  } = useOf(manufacturingOrder);
 
   useEffect(() => {
-    const supportFindSectorFunction = async () => {
-      if (costCenter) {
-        const { status, message, data } = await findSectorByCc(costCenter);
+    if (isStatusPart && partData && !isLoadingPart)
+      return setValue('partNumber', partData.partNumber, {
+        shouldValidate: true,
+      });
 
-        if (!status) {
-          setValue('sectorName', '');
-          setValue('sectorCostCenter', '');
-          setValue('sectorId', undefined);
-          return toast.error(message);
-        }
+    setValue('partNumber', '', { shouldValidate: true });
+  }, [isLoadingPart, isStatusPart, partData, setValue]);
 
-        if (status) {
-          setValue('sectorId', +data.id);
-          setValue('sectorName', data.name);
-          // setValue('costCenter', data.costCenter);
-        }
-      }
-    };
-
-    if (costCenter && costCenter.length === 4 && /^\d{4}$/.test(costCenter)) {
-      supportFindSectorFunction();
+  useEffect(() => {
+    if (!isStatusSector) {
+      setValue('sectorName', '', { shouldValidate: true });
+      setValue('sectorId', undefined, { shouldValidate: true });
     }
-  }, [costCenter, setValue]);
+    if (!isLoadingSector && isStatusSector && sectorData) {
+      setValue('sectorId', +sectorData.id, { shouldValidate: true });
+      setValue('sectorName', sectorData.name, { shouldValidate: true });
+    }
+  }, [isLoadingSector, isStatusSector, sectorData, setValue]);
 
   useEffect(() => {
-    const supportFindEmployeeFunction = async () => {
-      if (unit && cardNumber) {
-        const { status, message, data } = await findEmployee({
-          cardNumber,
-          unit,
-        });
+    if (!isStatusEmployee || isDisabled) {
+      setValue('employeeName', '', { shouldValidate: true });
+      setValue('employeeId', undefined, { shouldValidate: true });
+    }
 
-        if (!status) {
-          setValue('employeeName', '');
-          setValue('employeeCardNumber', '');
-          setValue('employeeId', undefined);
-          return toast.info(message);
-        }
-
-        if (status) {
-          if (!data.status) {
-            setValue('employeeName', '');
-            setValue('employeeCardNumber', '');
-            setValue('employeeId', undefined);
-
-            return toast.info('Colaborador encontrado, porém desativado.');
-          }
-          setValue('employeeName', data.name);
-          setValue('employeeId', data.id);
-        }
-      }
-    };
-
-    if (
-      unit &&
-      cardNumber &&
-      cardNumber.length === 4 &&
-      /^\d{4}$/.test(cardNumber)
-    )
-      supportFindEmployeeFunction();
-  }, [unit, cardNumber, setValue]);
+    if (!isLoadingEmployee && isStatusEmployee && employeeData) {
+      console.log('entrou', employeeData);
+      setValue('employeeName', employeeData.name, { shouldValidate: true });
+      setValue('employeeId', employeeData.id, { shouldValidate: true });
+    }
+  }, [employeeData, isDisabled, isLoadingEmployee, isStatusEmployee, setValue]);
 
   async function handleSubmitInformations(data: TypeInitialInformationsData) {
     setIsLoading(true);
@@ -275,6 +275,12 @@ const RegisterFinishInformationsPage = () => {
         <Card text='Informações do colaborador' className='flex mt-5'>
           <div className=' flex gap-4 w-full items-center justify-center'>
             <Label title='Cartão' className=' relative h-25'>
+              <CheckRequestStatus
+                data={employeeData}
+                loading={isLoadingEmployee}
+                status={isStatusEmployee}
+                disabled={isDisabled}
+              />
               <div className=' flex items-center gap-0.5 w-full'>
                 <Button
                   type='button'
@@ -312,7 +318,12 @@ const RegisterFinishInformationsPage = () => {
             </Label>
           </div>
           <div className=' flex gap-4 justify-center w-full items-center'>
-            <Label title='Centro de custo' className=' w-1/5 relative h-25'>
+            <Label title='Centro de custo' className='  relative h-25'>
+              <CheckRequestStatus
+                data={sectorData}
+                status={isStatusSector}
+                loading={isLoadingSector}
+              />
               <Input
                 {...register('sectorCostCenter')}
                 maxLength={4}
@@ -332,16 +343,17 @@ const RegisterFinishInformationsPage = () => {
         </Card>
         <Card text='Informações do componente' className='flex my-5 relative'>
           <div className=' flex gap-4 w-full '>
-            <Label title='Part number'>
-              <Input {...register('partNumber')} />
-              {errors.partNumber && (
-                <span className='text-red-500 text-sm'>
-                  {errors.partNumber.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Código interno'>
-              <Input {...register('internalCode')} />
+            <Label title='Código interno' className='relative'>
+              <CheckRequestStatus
+                data={partData}
+                status={isStatusPart}
+                loading={isLoadingPart}
+              />
+              <Input
+                {...register('internalCode')}
+                maxLength={10}
+                inputMode='numeric'
+              />
               {errors.internalCode && (
                 <span className='text-red-500 text-sm'>
                   {errors.internalCode.message}
@@ -356,12 +368,20 @@ const RegisterFinishInformationsPage = () => {
                 </span>
               )}
             </Label>
+            <Label title='Part number'>
+              <Input {...register('partNumber')} disabled />
+            </Label>
           </div>
         </Card>
         <Card text='Informações extras' className='flex'>
           <div className=' flex gap-4 w-full flex-col '>
             <div className=' flex items-center gap-4'>
-              <Label title='Ordem de fabricação (OF)'>
+              <Label title='Ordem de fabricação (OF)' className='relative'>
+                <CheckRequestStatus
+                  data={ofData}
+                  status={isStatusOf}
+                  loading={isLoadingOf}
+                />
                 <Input {...register('of')} />
                 {errors.of && (
                   <span className='text-red-500 text-sm'>
