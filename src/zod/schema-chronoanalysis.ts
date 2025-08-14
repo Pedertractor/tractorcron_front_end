@@ -22,7 +22,10 @@ export const initialInformationsSchema = z.object({
   op: z.string().min(1, 'OP obrigatório'),
   sop: z.string().min(1, 'SOP obrigatório'),
   revision: z.string().min(1, 'Revisão obrigatória'),
-  internalCode: z.string().min(1, 'Código interno obrigatório'),
+  internalCode: z
+    .string()
+    .min(1, 'Código interno obrigatório')
+    .max(10, 'O código interno está com muitas informações'),
   partNumber: z.string().min(4, 'Part Number obrigatório'),
 });
 
