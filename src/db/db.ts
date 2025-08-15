@@ -1,24 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
 
-// export interface RegisterChronoanalysis {
-//   id: string; //this id i set by uuid()
-//   clientId: number; //By select client in input
-//   sectorId: number | undefined;
-//   employeeId: number | undefined; //The idea is by card and unit i catch id
-//   partNumber: string;
-//   internalCode: string;
-//   revision: string;
-//   of: string;
-//   op: string;
-//   sop: string;
-//   name: string;
-//   unit: string;
-//   sector: string;
-//   cardNumber: string;
-//   costCenter: string;
-//   // userId - send token by header for identification
-// }
-
 export interface RegisterChronoanalysis {
   id: string;
   clientId: number;
@@ -29,7 +10,7 @@ export interface RegisterChronoanalysis {
   sectorId: number;
   sectorName: string;
   sectorCostCenter: string;
-  sop: string;
+  sop: boolean;
   internalCode: string;
   of: string;
   op: string;

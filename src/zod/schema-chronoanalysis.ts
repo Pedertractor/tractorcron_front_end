@@ -20,7 +20,7 @@ export const initialInformationsSchema = z.object({
   clientId: z.string().min(1, 'Cliente é obrigatório'),
   of: z.string().min(1, 'OF obrigatório'),
   op: z.string().min(1, 'OP obrigatório'),
-  sop: z.string().min(1, 'SOP obrigatório'),
+  sop: z.boolean(),
   revision: z.string().min(1, 'Revisão obrigatória'),
   internalCode: z
     .string()

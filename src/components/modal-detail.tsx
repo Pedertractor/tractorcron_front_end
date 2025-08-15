@@ -116,7 +116,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 <div className=' flex flex-col text-sm gap-1  text-initial'>
                   <p className='font-semibold'>SOP</p>
                   <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                    {chronoanalysis.sop}
+                    {chronoanalysis.sop ? 'existe' : 'não existe'}
                   </span>
                 </div>
                 <div className=' flex flex-col text-sm gap-1  text-initial'>
