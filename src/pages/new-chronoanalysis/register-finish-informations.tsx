@@ -182,7 +182,6 @@ const RegisterFinishInformationsPage = () => {
 
   async function handleSubmitInformations(data: TypeInitialInformationsData) {
     setIsLoading(true);
-    console.log(data);
     if (startTime && endTime && workPaceAssessment) {
       const chronoanalysis: PropsChronoanalysis = {
         ...data,
@@ -213,8 +212,6 @@ const RegisterFinishInformationsPage = () => {
         activities,
         workPaceAssessment,
       };
-
-      console.log(finalData);
 
       const isOnline = navigator.onLine;
 
