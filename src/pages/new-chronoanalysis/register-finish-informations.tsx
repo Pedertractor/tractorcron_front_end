@@ -81,20 +81,20 @@ const RegisterFinishInformationsPage = () => {
         if (info.register)
           reset({
             id: info.register.id,
-            clientId: String(info.register.clientId ?? ''),
-            employeeUnit: info.register.employeeUnit ?? '',
+            clientId: String(info.register.clientId),
+            employeeUnit: info.register.employeeUnit,
             employeeId: info.register.employeeId,
             employeeName: info.register.employeeName,
-            employeeCardNumber: info.register.employeeCardNumber ?? '',
+            employeeCardNumber: info.register.employeeCardNumber,
             sectorId: +info.register.sectorId,
-            sectorName: info.register.sectorName ?? '',
+            sectorName: info.register.sectorName,
             sectorCostCenter: info.register.sectorCostCenter,
-            sop: info.register.sop ?? '',
-            internalCode: info.register.internalCode ?? '',
-            of: info.register.of ?? '',
-            op: info.register.op ?? '',
+            sop: info.register.sop,
+            internalCode: info.register.internalCode,
+            of: info.register.of,
+            op: info.register.op,
             partNumber: info.register.partNumber,
-            revision: info.register.revision ?? '',
+            revision: info.register.revision,
           });
       }
     };
@@ -120,6 +120,7 @@ const RegisterFinishInformationsPage = () => {
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
+  const sop = watch('sop');
 
   const {
     partData,
@@ -187,6 +188,7 @@ const RegisterFinishInformationsPage = () => {
         ...data,
         clientId: +data.clientId,
         sectorId: data.sectorId ? +data.sectorId : undefined,
+        sop: data.sop ? true : false,
         startTime,
         endTime,
       };
@@ -400,8 +402,27 @@ const RegisterFinishInformationsPage = () => {
             </div>
 
             <div className=' flex items-center gap-4'>
-              <Label title='Procedimento operacional padrão (SOP)'>
-                <Input {...register('sop')} />
+              <Label title='Existe procedimento operacional padrão (SOP)?'>
+                <div className=' flex items-center gap-1 w-full'>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${sop ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('sop', true)}
+                  >
+                    sim
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${!sop ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('sop', false)}
+                  >
+                    não
+                  </Button>
+                </div>
                 {errors.sop && (
                   <span className='text-red-500 text-sm'>
                     {errors.sop.message}
