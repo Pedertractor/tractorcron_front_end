@@ -11,7 +11,7 @@ export interface listChronoanalysisProps {
   revision: string;
   of: string;
   op: string;
-  sop: string;
+  sop: boolean;
   employeeName: string;
   employeeUnit: string;
   employeeCardNumber: string;

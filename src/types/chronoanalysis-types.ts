@@ -8,7 +8,7 @@ export interface PropsChronoanalysis {
   sectorId?: number;
   sectorName?: string;
   sectorCostCenter?: string;
-  sop: string;
+  sop: boolean;
   internalCode: string;
   of: string;
   op: string;

@@ -57,6 +57,7 @@ const RegisterInitialInformationsPage = () => {
       employeeName: '',
       sectorName: '',
       clientId: '',
+      sop: false,
     },
   });
 
@@ -65,6 +66,7 @@ const RegisterInitialInformationsPage = () => {
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
+  const sop = watch('sop');
 
   const { partData, isLoading, isStatus } = useParts(partCode);
 
@@ -162,6 +164,7 @@ const RegisterInitialInformationsPage = () => {
   const handleAddInitialInformations = async (
     data: TypeInitialInformationsData
   ) => {
+    console.log(data);
     let uuIdRegisterChronoanalysis = uuidv4();
 
     let isUuidValid = await verifyUuidRegister(uuIdRegisterChronoanalysis);
@@ -357,8 +360,27 @@ const RegisterInitialInformationsPage = () => {
                 </div>
 
                 <div className=' flex items-center gap-4'>
-                  <Label title='Procedimento operacional padrão (SOP)'>
-                    <Input {...register('sop')} />
+                  <Label title='Existe procedimento operacional padrão (SOP)?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${sop ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('sop', true)}
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!sop ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('sop', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
                     {errors.sop && (
                       <span className='text-red-500 text-sm'>
                         {errors.sop.message}
