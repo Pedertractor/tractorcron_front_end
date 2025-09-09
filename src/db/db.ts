@@ -16,6 +16,7 @@ export interface RegisterChronoanalysis {
   op: string;
   partNumber: string;
   revision: string;
+  typeOfChronoanalysis: string;
 }
 
 export interface RegisterActivities {
@@ -31,9 +32,10 @@ export interface RegisterActivities {
 
 export interface RegisterPresetActivities {
   id: number;
+  activityType: string;
+  classification: string;
   name: string;
-  description?: string;
-  liked: boolean;
+  typeMovimation: string;
 }
 
 export const dbRegisterChronoanalysis = new Dexie('Chronoanalysis') as Dexie & {
