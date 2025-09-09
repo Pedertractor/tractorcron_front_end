@@ -98,7 +98,23 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
           </DialogDescription>
         </DialogHeader>
         <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2 relative'>
+            <Button
+              onClick={() => setIsOpenImage(!isOpenImage)}
+              type='button'
+              size={'icon'}
+              disabled={
+                !isStatusPart || isLoadingPart || !partData ? true : false
+              }
+              className={`absolute top-2 right-2  
+                ${
+                  !isStatusPart || isLoadingPart || (!partData ? true : false)
+                    ? 'border border-dashed border-border bg-white opacity-30'
+                    : 'bg-background-blue transition hover:bg-background-base-blue cursor-pointer'
+                }`}
+            >
+              <Image />
+            </Button>
             <h3 className=' text-initial font-semibold'>
               Informações das peças
             </h3>
@@ -154,23 +170,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             </div>
           </div>
 
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2 relative'>
-            <Button
-              onClick={() => setIsOpenImage(!isOpenImage)}
-              type='button'
-              size={'icon'}
-              disabled={
-                !isStatusPart || isLoadingPart || !partData ? true : false
-              }
-              className={`absolute top-2 right-2  
-                ${
-                  !isStatusPart || isLoadingPart || (!partData ? true : false)
-                    ? 'border border-dashed border-border bg-white opacity-30'
-                    : 'bg-background-blue transition hover:bg-background-base-blue cursor-pointer'
-                }`}
-            >
-              <Image />
-            </Button>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2'>
             <h3 className=' text-initial font-semibold'>
               Informações de execução
             </h3>
