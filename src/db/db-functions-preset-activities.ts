@@ -1,44 +1,24 @@
 import { dbRegisterChronoanalysis, type RegisterPresetActivities } from './db';
 
-export async function listPinedActivities() {
+export async function listPresetActivities() {
   const presetActivities =
     await dbRegisterChronoanalysis.presetActivities.toArray();
 
   if (presetActivities) return presetActivities;
 }
 
-export async function pinedActivitie(
-  presetActivitieId: number,
-  setAttListPinedActivities: (props: boolean) => void
+export async function changePresetActivities(
+  activitiesApi: RegisterPresetActivities[]
 ) {
-  const item = await dbRegisterChronoanalysis.presetActivities.get(
-    presetActivitieId
-  );
-  const statusPined = await dbRegisterChronoanalysis.presetActivities.update(
-    presetActivitieId,
-    {
-      liked: !item?.liked,
-    }
-  );
-
-  if (statusPined) {
-    //i use this functions for att my list
-    setAttListPinedActivities(true);
-  }
-}
-
-export async function syncPresetActivities(
-  activitiesApi: Omit<RegisterPresetActivities, 'liked'>[]
-) {
-  const dataToInsert: RegisterPresetActivities[] = activitiesApi.map(
-    (activity) => ({
-      ...activity,
-      liked: false,
-    })
-  );
-
   try {
-    await dbRegisterChronoanalysis.presetActivities.bulkPut(dataToInsert);
+    const tableExists = dbRegisterChronoanalysis.tables.some(
+      (table) => table.name === 'presetActivities'
+    );
+
+    if (tableExists) await dbRegisterChronoanalysis.presetActivities.clear();
+
+    await dbRegisterChronoanalysis.presetActivities.bulkPut(activitiesApi);
+
     return true;
   } catch (error) {
     console.log(error);
