@@ -17,11 +17,7 @@ import Select from '../../components/ui/select';
 import { clients } from '../../seed/seed-client';
 import { useNavigate } from 'react-router';
 import ListActivities from '../../components/list-activities';
-import {
-  listPinedActivities,
-  pinedActivitie,
-  syncPresetActivities,
-} from '../../db/db-functions-preset-activities';
+import { changePresetActivities } from '../../db/db-functions-preset-activities';
 import { seedActivities } from '../../seed/seed-activities';
 import { verifyUuidRegister } from '@/api/chronoanalysis-api';
 import Button from '@/components/ui/button/button';
@@ -35,11 +31,9 @@ import { Images } from 'lucide-react';
 import { useOf } from '@/hooks/use-of';
 
 const RegisterInitialInformationsPage = () => {
-  const [pinedActivities, setPinedACtivities] = useState<
+  const [pinedActivities, setPinedActivities] = useState<
     RegisterPresetActivities[]
   >([]);
-  const [attListPinedActivities, setAttListPinedActivities] =
-    useState<boolean>(false);
   const [isOpenImage, setIsOpenImage] = useState(false);
 
   const navigate = useNavigate();
@@ -58,6 +52,7 @@ const RegisterInitialInformationsPage = () => {
       sectorName: '',
       clientId: '',
       sop: false,
+      typeOfChronoanalysis: 'welding',
     },
   });
 
@@ -67,6 +62,7 @@ const RegisterInitialInformationsPage = () => {
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
   const sop = watch('sop');
+  const typeOfChron = watch('typeOfChronoanalysis');
 
   const { partData, isLoading, isStatus } = useParts(partCode);
 
@@ -124,47 +120,30 @@ const RegisterInitialInformationsPage = () => {
 
   useEffect(() => {
     const syncAndListActivities = async () => {
-      const existingPresetActivites = await listPinedActivities();
-
-      if (existingPresetActivites) {
-        const filter = seedActivities.filter(
-          (activity) =>
-            !existingPresetActivites.some(
-              (preset) => preset.name === activity.name
-            )
+      setPinedActivities([]);
+      if (typeOfChron === 'welding') {
+        const filterWelding = seedActivities.filter(
+          (activity) => activity.activityType !== 'MONTAGEM'
         );
-
-        if (filter.length > 0) {
-          await syncPresetActivities(filter);
-        }
-      } else {
-        await syncPresetActivities(seedActivities);
+        setPinedActivities(filterWelding);
+        await changePresetActivities(filterWelding);
       }
-      const updatedList = await listPinedActivities();
 
-      if (updatedList) setPinedACtivities(updatedList);
+      if (typeOfChron === 'montage') {
+        const filterMontage = seedActivities.filter(
+          (activity) => activity.activityType !== 'SOLDAGEM'
+        );
+        setPinedActivities(filterMontage);
+        await changePresetActivities(filterMontage);
+      }
     };
 
     syncAndListActivities();
-  }, []);
-
-  useEffect(() => {
-    const listPined = async () => {
-      const list = await listPinedActivities();
-
-      if (list) setPinedACtivities(list);
-    };
-
-    if (attListPinedActivities) {
-      listPined();
-      return setAttListPinedActivities(false);
-    }
-  }, [attListPinedActivities]);
+  }, [typeOfChron]);
 
   const handleAddInitialInformations = async (
     data: TypeInitialInformationsData
   ) => {
-    console.log(data);
     let uuIdRegisterChronoanalysis = uuidv4();
 
     let isUuidValid = await verifyUuidRegister(uuIdRegisterChronoanalysis);
@@ -194,6 +173,7 @@ const RegisterInitialInformationsPage = () => {
       revision: data.revision,
       internalCode: data.internalCode,
       partNumber: data.partNumber,
+      typeOfChronoanalysis: data.typeOfChronoanalysis,
     };
 
     await dbRegisterChronoanalysis.register.add(testInitialInformations);
@@ -403,18 +383,33 @@ const RegisterInitialInformationsPage = () => {
               </div>
             </Card>
             <Card text='Preset das atividades' className='flex flex-col mt-5'>
-              {/* <Label title='Tipo de cronoanálise'>
-            <Select
-              listTypeChronoanalist={['Soldagem', 'Montagem']}
-              disabled={false} //i can put loading fetch of clients
-              {...register('clientId')}
-            />
-          </Label> */}
-              <ListActivities
-                activities={pinedActivities}
-                pinedActivitie={pinedActivitie}
-                setAttListPinedActivities={setAttListPinedActivities}
-              />
+              <Label title='Tipo de cronoanálise' className=' flex w-full'>
+                <div className=' flex gap-1'>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'welding' ? 'select-blue' : 'default'
+                    }`}
+                    onClick={() => setValue('typeOfChronoanalysis', 'welding')}
+                  >
+                    soldagem
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'montage' ? 'select-blue' : 'default'
+                    }`}
+                    onClick={() => setValue('typeOfChronoanalysis', 'montage')}
+                  >
+                    montagem
+                  </Button>
+                </div>
+              </Label>
+              <ListActivities activities={pinedActivities} />
             </Card>
             <div className=' flex gap-4 w-full justify-end items-center mt-5'>
               <Button variant={'red'} size={'md'} type='button'>

@@ -9,7 +9,7 @@ import {
 import type { RegisterActivities, RegisterPresetActivities } from '../../db/db';
 import TableActivities from '../../components/table-activities';
 import ListActivities from '../../components/list-activities';
-import { listPinedActivities } from '../../db/db-functions-preset-activities';
+import { listPresetActivities } from '../../db/db-functions-preset-activities';
 
 import IconCheckComponent from '../../assets/icons/check-icon.svg?react';
 import IconPauseComponent from '../../assets/icons/stoped-icon.svg?react';
@@ -35,7 +35,7 @@ const RegisterActivitiesCronPage = () => {
 
   useEffect(() => {
     const getPinedActivities = async () => {
-      const activities = await listPinedActivities();
+      const activities = await listPresetActivities();
       if (activities) setPinedActivities(activities);
     };
 

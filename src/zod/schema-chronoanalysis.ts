@@ -27,6 +27,7 @@ export const initialInformationsSchema = z.object({
     .min(1, 'Código interno obrigatório')
     .max(10, 'O código interno está com muitas informações'),
   partNumber: z.string().min(4, 'Part Number obrigatório'),
+  typeOfChronoanalysis: z.string().min(1, 'Tipo de cronoanálise obrigatório'),
 });
 
 export type TypeInitialInformationsData = z.infer<

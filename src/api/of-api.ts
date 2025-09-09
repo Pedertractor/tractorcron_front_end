@@ -17,8 +17,6 @@ export async function findUniqueOf(manufacturingOrder: string) {
 
     const data = await response.json();
 
-    console.log(data);
-
     if (response.status === 200) {
       return {
         data,

@@ -95,6 +95,7 @@ const RegisterFinishInformationsPage = () => {
             op: info.register.op,
             partNumber: info.register.partNumber,
             revision: info.register.revision,
+            typeOfChronoanalysis: info.register.typeOfChronoanalysis,
           });
       }
     };
@@ -174,7 +175,6 @@ const RegisterFinishInformationsPage = () => {
     }
 
     if (!isLoadingEmployee && isStatusEmployee && employeeData) {
-      console.log('entrou', employeeData);
       setValue('employeeName', employeeData.name, { shouldValidate: true });
       setValue('employeeId', employeeData.id, { shouldValidate: true });
     }
