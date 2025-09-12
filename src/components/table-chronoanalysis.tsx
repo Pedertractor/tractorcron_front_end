@@ -18,6 +18,8 @@ import {
   PaginationPrevious,
 } from './ui/pagination';
 import { listChronoanalysisProps } from '@/api/chronoanalysis-api';
+import { Checkbox } from './ui/checkbox';
+import { Send } from 'lucide-react';
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
@@ -84,30 +86,33 @@ const TableChronoanalysis = ({
             <TableCaption>lista das cronoanálises</TableCaption>
             <TableHeader>
               <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
-                <TableHead>ID</TableHead>
+                {/* <TableHead>ID</TableHead> */}
                 <TableHead>Part number</TableHead>
                 <TableHead>Código interno</TableHead>
-                <TableHead>OF</TableHead>
+                {/* <TableHead>OF</TableHead> */}
                 <TableHead>Cronoanalista</TableHead>
                 <TableHead>Funcinário</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Data</TableHead>
+                <TableHead>
+                  <Send size={15} className=' text-zinc-800' />
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((item) => (
                 <TableRow
                   key={item.id}
-                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 hover:cursor-pointer'
+                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 hover:cursor-pointer '
                   onClick={() => {
                     setIsChronoanalysis(item);
                     setIsOpenModal(true);
                   }}
                 >
-                  <TableCell>{item.id.slice(0, 16)} ...</TableCell>
+                  {/* <TableCell>{item.id.slice(0, 16)} ...</TableCell> */}
                   <TableCell>{item.partNumber}</TableCell>
                   <TableCell>{item.internalCode}</TableCell>
-                  <TableCell>{item.of}</TableCell>
+                  {/* <TableCell>{item.of}</TableCell> */}
                   <TableCell>
                     {item.user.employeeName.toLowerCase().slice(0, 15)}...
                   </TableCell>
@@ -115,6 +120,9 @@ const TableChronoanalysis = ({
                   <TableCell>{item.client.name.toLowerCase()}</TableCell>
                   <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox checked={item.isSend} />
                   </TableCell>
                 </TableRow>
               ))}
