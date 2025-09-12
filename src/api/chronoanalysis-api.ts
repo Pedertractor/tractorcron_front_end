@@ -17,6 +17,8 @@ export interface listChronoanalysisProps {
   employeeCardNumber: string;
   sectorName: string;
   sectorCostCenter: string;
+  isKaizen: boolean;
+  isSend: boolean;
   startDate: string; // ISO date string
   endDate: string; // ISO date string
   client: {
