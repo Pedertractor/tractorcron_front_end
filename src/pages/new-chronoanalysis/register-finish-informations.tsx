@@ -96,6 +96,7 @@ const RegisterFinishInformationsPage = () => {
             partNumber: info.register.partNumber,
             revision: info.register.revision,
             typeOfChronoanalysis: info.register.typeOfChronoanalysis,
+            isKaizen: info.register.isKaizen,
           });
       }
     };
@@ -122,6 +123,7 @@ const RegisterFinishInformationsPage = () => {
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
   const sop = watch('sop');
+  const isKaizen = watch('isKaizen');
 
   const {
     partData,
@@ -435,6 +437,36 @@ const RegisterFinishInformationsPage = () => {
                 {errors.clientId && (
                   <span className='text-red-500 text-sm'>
                     {errors.clientId.message}
+                  </span>
+                )}
+              </Label>
+            </div>
+            <div className=' flex items-center gap-4'>
+              {/* preciso adicionar a lógica de do isKaizen para armazenar/enviar no obj */}
+              <Label title='É uma cronoanálise para KAIZEN?'>
+                <div className=' flex items-center gap-1 w-full'>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${isKaizen ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('isKaizen', true)} //não é SOP preciso criar uma prop isKaizen
+                  >
+                    sim
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${!isKaizen ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('isKaizen', false)}
+                  >
+                    não
+                  </Button>
+                </div>
+                {errors.isKaizen && (
+                  <span className='text-red-500 text-sm'>
+                    {errors.isKaizen.message}
                   </span>
                 )}
               </Label>

@@ -53,6 +53,7 @@ const RegisterInitialInformationsPage = () => {
       clientId: '',
       sop: false,
       typeOfChronoanalysis: 'welding',
+      isKaizen: false,
     },
   });
 
@@ -63,6 +64,7 @@ const RegisterInitialInformationsPage = () => {
   const manufacturingOrder = watch('of');
   const sop = watch('sop');
   const typeOfChron = watch('typeOfChronoanalysis');
+  const isKaizen = watch('isKaizen');
 
   const { partData, isLoading, isStatus } = useParts(partCode);
 
@@ -174,6 +176,7 @@ const RegisterInitialInformationsPage = () => {
       internalCode: data.internalCode,
       partNumber: data.partNumber,
       typeOfChronoanalysis: data.typeOfChronoanalysis,
+      isKaizen: data.isKaizen,
     };
 
     await dbRegisterChronoanalysis.register.add(testInitialInformations);
@@ -376,6 +379,36 @@ const RegisterInitialInformationsPage = () => {
                     {errors.clientId && (
                       <span className='text-red-500 text-sm'>
                         {errors.clientId.message}
+                      </span>
+                    )}
+                  </Label>
+                </div>
+                <div className=' flex items-center gap-4'>
+                  {/* preciso adicionar a lógica de do isKaizen para armazenar/enviar no obj */}
+                  <Label title='É uma cronoanálise para KAIZEN?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${isKaizen ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isKaizen', true)} //não é SOP preciso criar uma prop isKaizen
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!isKaizen ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isKaizen', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.isKaizen && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.isKaizen.message}
                       </span>
                     )}
                   </Label>
