@@ -86,10 +86,8 @@ const TableChronoanalysis = ({
             <TableCaption>lista das cronoanálises</TableCaption>
             <TableHeader>
               <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
-                {/* <TableHead>ID</TableHead> */}
                 <TableHead>Part number</TableHead>
                 <TableHead>Código interno</TableHead>
-                {/* <TableHead>OF</TableHead> */}
                 <TableHead>Cronoanalista</TableHead>
                 <TableHead>Funcinário</TableHead>
                 <TableHead>Cliente</TableHead>
@@ -109,10 +107,8 @@ const TableChronoanalysis = ({
                     setIsOpenModal(true);
                   }}
                 >
-                  {/* <TableCell>{item.id.slice(0, 16)} ...</TableCell> */}
                   <TableCell>{item.partNumber}</TableCell>
                   <TableCell>{item.internalCode}</TableCell>
-                  {/* <TableCell>{item.of}</TableCell> */}
                   <TableCell>
                     {item.user.employeeName.toLowerCase().slice(0, 15)}...
                   </TableCell>

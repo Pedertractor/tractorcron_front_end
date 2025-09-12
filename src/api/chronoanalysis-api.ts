@@ -164,3 +164,24 @@ export async function verifyUuidRegister(uuid: string) {
 
   return false;
 }
+
+export async function changeSendStatus(idChronoanalysis: string) {
+  const token = localStorage.getItem('token');
+  console.log(`${url}/chronoanalysis/send/${idChronoanalysis}`);
+
+  const response = await fetch(
+    `${url}/chronoanalysis/send/${idChronoanalysis}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log(response);
+
+  const data = await response.json();
+
+  return { status: response.status, message: data.message };
+}
