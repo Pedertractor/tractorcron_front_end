@@ -27,6 +27,7 @@ import { BrushCleaning } from 'lucide-react';
 
 import ModalDetail from '@/components/modal-detail';
 import TableChronoanalysis from '@/components/table-chronoanalysis';
+import { Switch } from '@/components/ui/switch';
 
 const Analysis = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -63,6 +64,8 @@ const Analysis = () => {
         dataRange: undefined,
         unit: '',
         userChronoanalistId: '',
+        isKaizen: false,
+        isSend: false,
       },
     });
 
@@ -74,6 +77,8 @@ const Analysis = () => {
   const costCenter = watch('costCenter');
   const clientId = watch('clientId');
   const dataRange = watch('dataRange');
+  const formIsKaizen = watch('isKaizen');
+  const formIsSend = watch('isSend');
 
   useEffect(() => {
     const supportListChronoanalist = async () => {
@@ -107,6 +112,10 @@ const Analysis = () => {
 
   useEffect(() => {
     let filtered = [...isListChronoanalysis];
+
+    filtered = filtered.filter((item) => item.isKaizen === formIsKaizen);
+    filtered = filtered.filter((item) => item.isSend === formIsSend);
+
     if (unit) {
       filtered = filtered.filter((item) => item.employeeUnit === unit);
     }
@@ -177,6 +186,8 @@ const Analysis = () => {
     partNumber,
     unit,
     userChronoanalistId,
+    formIsKaizen,
+    formIsSend,
   ]);
 
   function handleCleanForm() {
@@ -293,6 +304,22 @@ const Analysis = () => {
                   {...register('clientId')}
                 />
               </Label>
+              <div className=' flex items-center justify-center gap-5'>
+                <Label title='Kaizen' className=' flex gap-3 w-fit'>
+                  <Switch
+                    className='border-2'
+                    checked={formIsKaizen}
+                    onCheckedChange={() => setValue('isKaizen', !formIsKaizen)}
+                  />
+                </Label>
+                <Label title='Eeprom' className=' flex gap-3 w-fit'>
+                  <Switch
+                    className='border-2'
+                    checked={formIsSend}
+                    onCheckedChange={() => setValue('isSend', !formIsSend)}
+                  />
+                </Label>
+              </div>
             </div>
           </form>
           <ShadButton

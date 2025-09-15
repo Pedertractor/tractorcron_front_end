@@ -28,7 +28,7 @@ export const initialInformationsSchema = z.object({
     .max(10, 'O código interno está com muitas informações'),
   partNumber: z.string().min(4, 'Part Number obrigatório'),
   typeOfChronoanalysis: z.string().min(1, 'Tipo de cronoanálise obrigatório'),
-  isKaizen:z.boolean()
+  isKaizen: z.boolean(),
 });
 
 export type TypeInitialInformationsData = z.infer<
@@ -49,6 +49,8 @@ export const filterChronoanalysis = z.object({
     .optional(),
   userChronoanalistId: z.string().optional(),
   clientId: z.string().optional(),
+  isKaizen: z.boolean(),
+  isSend: z.boolean(),
 });
 
 export type TypeFilterChronoanalysis = z.infer<typeof filterChronoanalysis>;
