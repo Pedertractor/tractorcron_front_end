@@ -17,6 +17,8 @@ export interface listChronoanalysisProps {
   employeeCardNumber: string;
   sectorName: string;
   sectorCostCenter: string;
+  isKaizen: boolean;
+  isSend: boolean;
   startDate: string; // ISO date string
   endDate: string; // ISO date string
   client: {
@@ -161,4 +163,25 @@ export async function verifyUuidRegister(uuid: string) {
   if (response.status === 200) return true;
 
   return false;
+}
+
+export async function changeSendStatus(idChronoanalysis: string) {
+  const token = localStorage.getItem('token');
+  console.log(`${url}/chronoanalysis/send/${idChronoanalysis}`);
+
+  const response = await fetch(
+    `${url}/chronoanalysis/send/${idChronoanalysis}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log(response);
+
+  const data = await response.json();
+
+  return { status: response.status, message: data.message };
 }

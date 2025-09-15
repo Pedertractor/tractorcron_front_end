@@ -1,4 +1,7 @@
-import type { listChronoanalysisProps } from '@/api/chronoanalysis-api';
+import {
+  changeSendStatus,
+  type listChronoanalysisProps,
+} from '@/api/chronoanalysis-api';
 import {
   Dialog,
   DialogContent,
@@ -19,8 +22,10 @@ import Loading from './loading';
 import { CharPieDefault } from './chart-pie';
 import { useParts } from '@/hooks/use-parts';
 import { Button } from './ui/button';
-import { Image } from 'lucide-react';
+import { Image, Send } from 'lucide-react';
 import ModalImage from './modal-image';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
 
 export interface ModalDetailProps {
   open: boolean;
@@ -34,7 +39,6 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
     activitiesDataChartsProps | undefined
   >(undefined);
   const [isOpenImage, setIsOpenImage] = useState(false);
-
   const {
     isLoading: isLoadingPart,
     isStatus: isStatusPart,
@@ -59,8 +63,25 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
 
     supportGetDatasForGraph();
   }, [chronoanalysis.id]);
+
+  async function onChangeChangeSendStatus(id: string) {
+    const { status, message } = await changeSendStatus(id);
+
+    if (status === 200) {
+      toast.success(message);
+      window.location.reload();
+      return;
+    }
+
+    toast.error(message);
+  }
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        setOpen(!open);
+      }}
+    >
       <DialogContent className=' bg-white border-none flex flex-col'>
         {isOpenImage && (
           <ModalImage
@@ -94,6 +115,22 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 text='Tempo total'
                 textInfo={chronoanalysis.workPaceAssessment.timeCalculate}
               />
+            </span>
+            <span className=' flex items-center justify-center gap-2.5  py-1 px-1.5 rounded-md'>
+              <span className='text-zinc-900 font-semibold'>KAIZEN</span>
+              <Checkbox checked={chronoanalysis.isKaizen} />
+            </span>
+            <span className=' flex items-center justify-center gap-1'>
+              <Label className=' flex items-center justify-center gap-2.5 py-2 px-1.5 rounded-md hover:bg-zinc-50 transition cursor-pointer'>
+                <Send size={20} className='text-zinc-900' />
+                <Checkbox
+                  className=' cursor-pointer'
+                  checked={chronoanalysis.isSend}
+                  onCheckedChange={() =>
+                    onChangeChangeSendStatus(chronoanalysis.id)
+                  }
+                />
+              </Label>
             </span>
           </DialogDescription>
         </DialogHeader>
