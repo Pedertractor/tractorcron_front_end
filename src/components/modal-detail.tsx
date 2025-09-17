@@ -412,19 +412,21 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
               </div>
             </div>
           </div>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-3 w-full'>
-            <h3 className=' text-initial font-semibold'>
-              Melhorias e observações
-            </h3>
-            <Label title=''>
-              <textarea
-                defaultValue={chronoanalysis.enhancement ?? ''}
-                rows={8}
-                disabled
-                className=' p-3 border border-border rounded-xl text-secondary resize-none w-full max-h-35 overflow-y-auto '
-              />
-            </Label>
-          </div>
+          {chronoanalysis.enhancement && (
+            <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-3 w-full'>
+              <h3 className=' text-initial font-semibold'>
+                Melhorias e observações
+              </h3>
+              <Label title=''>
+                <textarea
+                  defaultValue={chronoanalysis.enhancement ?? ''}
+                  rows={8}
+                  disabled
+                  className=' p-3 border border-border rounded-xl text-secondary resize-none w-full max-h-35 overflow-y-auto '
+                />
+              </Label>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
