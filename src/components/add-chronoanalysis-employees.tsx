@@ -132,7 +132,7 @@ const AddChronoanalysisEmployee = ({
               maxLength={4}
               inputMode='numeric'
               placeholder='ex: 0072 | ex: 5532'
-              value={employee.employeeCardNumber}
+              value={employee.employeeCardNumber ?? ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setEmployee((prev) => ({
                   ...prev,
