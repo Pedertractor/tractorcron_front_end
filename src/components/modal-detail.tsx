@@ -22,7 +22,7 @@ import Loading from './loading';
 import { CharPieDefault } from './chart-pie';
 import { useParts } from '@/hooks/use-parts';
 import { Button } from './ui/button';
-import { Image, Send } from 'lucide-react';
+import { IdCardLanyard, Image, Send, User, Users } from 'lucide-react';
 import ModalImage from './modal-image';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
@@ -135,7 +135,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
           </DialogDescription>
         </DialogHeader>
         <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2 relative'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  relative p-4'>
             <Button
               onClick={() => setIsOpenImage(!isOpenImage)}
               type='button'
@@ -207,59 +207,86 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             </div>
           </div>
 
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative'>
+            <div className=' absolute top-2 right-2 flex items-center justify-center gap-3 p-1 px-2 border border-border rounded-lg'>
+              {chronoanalysis.chronoanalysisEmployee.length > 1 ? (
+                <Users
+                  size={22}
+                  className=' text-background-base-blue-select'
+                />
+              ) : (
+                <User size={22} className=' text-background-base-blue-select' />
+              )}
+              <span className=' font-medium'>
+                {chronoanalysis.chronoanalysisEmployee.length}
+              </span>
+            </div>
             <h3 className=' text-initial font-semibold'>
               Informações de execução
             </h3>
-            <div className=' flex items-center justify-between'>
-              <div className=' flex flex-col text-sm gap-1 text-initial'>
-                <p className='font-semibold'>Cronoanalista</p>
-                <span className=' rounded-lg border border-border py-1 px-2 '>
-                  {chronoanalysis.user.employeeName}
-                </span>
-              </div>
-              <div className=' flex flex-col gap-1 '>
-                <p className='font-semibold text-sm'>Setor</p>
-                <div className=' flex items-center gap-1'>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.sectorCostCenter}
-                    </span>
-                  </div>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.sectorName}
-                    </span>
+            <div className=' flex flex-col justify-center gap-3'>
+              <div className=' flex items-center justify-center gap-3 w-full'>
+                <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                  <p className='font-semibold'>Cronoanalista</p>
+                  <span className=' rounded-lg border border-border py-1 px-2 '>
+                    {chronoanalysis.user.employeeName}
+                  </span>
+                </div>
+                <div className=' flex flex-col gap-1 w-full'>
+                  <p className='font-semibold text-sm'>Setor</p>
+                  <div className=' flex items-center gap-1'>
+                    <div className=' flex items-center text-sm gap-1  text-initial'>
+                      <span className=' rounded-lg border border-border py-1 px-2 '>
+                        {chronoanalysis.sectorCostCenter}
+                      </span>
+                    </div>
+                    <div className=' flex items-center text-sm gap-1  text-initial w-full'>
+                      <span className=' rounded-lg border border-border py-1 px-2 w-full'>
+                        {chronoanalysis.sectorName}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className=' flex flex-col gap-1 '>
+              <div className=' flex flex-col gap-1 w-full '>
                 <p className='font-semibold text-sm'>
-                  Colaborador cronometrado
+                  {chronoanalysis.chronoanalysisEmployee.length > 1
+                    ? 'Colaboradores cronometrados'
+                    : 'Colaborador cronometrado'}
                 </p>
-                <div className=' flex items-center gap-1'>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.employeeUnit.slice(0, 1)}
-                    </span>
-                  </div>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.employeeCardNumber}
-                    </span>
-                  </div>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.employeeName}
-                    </span>
-                  </div>
+                <div className='grid grid-cols-3 w-full gap-3'>
+                  {chronoanalysis.chronoanalysisEmployee.map((employee) => (
+                    <div
+                      key={employee.employeeId}
+                      className=' border border-border rounded-xl p-3 px-5 flex items-center justify-between gap-5 w-full'
+                    >
+                      <IdCardLanyard
+                        size={30}
+                        className=' text-background-base-blue-select'
+                      />
+                      <div className=' justify-center gap-1 flex-col flex w-full'>
+                        <p className=' text-sm'>
+                          {employee.employeeName &&
+                          employee.employeeName.length > 20
+                            ? `${employee.employeeName}`
+                            : employee.employeeName}
+                        </p>
+                        <div className='flex items-center justify-between text-sm  w-4/5'>
+                          <p className=' font-semibold'>
+                            {employee.employeeCardNumber}
+                          </p>
+                          <p>{employee.employeeUnit}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className=' flex flex-col  gap-2  p-2'>
+          <div className=' flex flex-col  gap-2  p-4'>
             <h3 className=' text-initial font-semibold'>Atividades</h3>
             <TableActivities
               authFunc={false}
@@ -267,7 +294,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             />
           </div>
 
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4'>
             <h3 className=' text-initial font-semibold'>
               Avaliação de ritimo de trabalho
             </h3>
@@ -336,7 +363,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
               </div>
             </div>
           </div>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4'>
             <h3 className=' text-initial font-semibold'>
               Levantamento gráfico
             </h3>
