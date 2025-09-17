@@ -19,6 +19,8 @@ export interface listChronoanalysisProps {
   isSend: boolean;
   startDate: string;
   endDate: string;
+  howManyParts: number;
+  enhancement?: string;
   chronoanalysisEmployee: EmployeeProps[];
   client: {
     id: number;
