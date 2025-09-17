@@ -19,7 +19,7 @@ import {
 } from './ui/pagination';
 import { listChronoanalysisProps } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Send } from 'lucide-react';
+import { Send, Users } from 'lucide-react';
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
@@ -89,7 +89,9 @@ const TableChronoanalysis = ({
                 <TableHead>Part number</TableHead>
                 <TableHead>Código interno</TableHead>
                 <TableHead>Cronoanalista</TableHead>
-                <TableHead>Funcinário</TableHead>
+                <TableHead>
+                  <Users size={18} />
+                </TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>
@@ -112,7 +114,9 @@ const TableChronoanalysis = ({
                   <TableCell>
                     {item.user.employeeName.toLowerCase().slice(0, 15)}...
                   </TableCell>
-                  <TableCell>{item.employeeName}</TableCell>
+                  <TableCell className=''>
+                    {item.chronoanalysisEmployee.length}
+                  </TableCell>
                   <TableCell>{item.client.name.toLowerCase()}</TableCell>
                   <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
@@ -126,7 +130,7 @@ const TableChronoanalysis = ({
           </Table>
           {currentPage && handlePageChange && totalPages && (
             <div className=' mt-5 px-2 flex items-center justify-center'>
-              <span className=' p-1 px-3 flex items-center text-xs justify-center w-10 border border-border rounded-lg text-secondary  font-medium'>
+              <span className=' p-1.5 px-3 flex items-center text-xs justify-center w-15 border border-border rounded-lg text-secondary  font-medium'>
                 {PagesLength}
               </span>
               <Pagination className=''>
@@ -186,7 +190,7 @@ const TableChronoanalysis = ({
                 </PaginationContent>
               </Pagination>
 
-              <p className=' p-1 px-3 flex items-center justify-center w-14 border border-border rounded-lg text-secondary text-xs font-medium'>{`${currentPage}${' '}/${' '}${totalPages}`}</p>
+              <p className=' p-1.5 px-3 flex items-center justify-center w-25 border border-border rounded-lg text-secondary text-xs font-medium'>{`${currentPage}${' '}/${' '}${totalPages}`}</p>
             </div>
           )}
         </div>
