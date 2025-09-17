@@ -25,16 +25,19 @@ import Label from '@/components/ui/label/label';
 import { useParts } from '@/hooks/use-parts';
 import CheckRequestStatus from '@/components/check-request-status';
 import { useSector } from '@/hooks/use-sectors';
-import { useEmployee } from '@/hooks/use-employees';
 import ModalImage from '@/components/modal-image';
 import { Images } from 'lucide-react';
 import { useOf } from '@/hooks/use-of';
+import AddChronoanalysisEmployee, {
+  EmployeeProps,
+} from '@/components/add-chronoanalysis-employees';
 
 const RegisterInitialInformationsPage = () => {
   const [pinedActivities, setPinedActivities] = useState<
     RegisterPresetActivities[]
   >([]);
   const [isOpenImage, setIsOpenImage] = useState(false);
+  const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
 
   const navigate = useNavigate();
 
@@ -48,7 +51,6 @@ const RegisterInitialInformationsPage = () => {
     resolver: zodResolver(initialInformationsSchema),
     mode: 'onChange',
     defaultValues: {
-      employeeName: '',
       sectorName: '',
       clientId: '',
       sop: false,
@@ -57,8 +59,6 @@ const RegisterInitialInformationsPage = () => {
     },
   });
 
-  const unit = watch('employeeUnit');
-  const cardNumber = watch('employeeCardNumber');
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
@@ -73,13 +73,6 @@ const RegisterInitialInformationsPage = () => {
     isLoading: isLoadingSector,
     isStatus: isStatusSector,
   } = useSector(costCenter);
-
-  const {
-    employeeData,
-    isLoading: isLoadingEmployee,
-    isStatus: isStatusEmployee,
-    isDisabled,
-  } = useEmployee(unit, cardNumber);
 
   const {
     isLoading: isLoadingOf,
@@ -106,19 +99,6 @@ const RegisterInitialInformationsPage = () => {
       setValue('sectorName', sectorData.name, { shouldValidate: true });
     }
   }, [isLoadingSector, isStatusSector, sectorData, setValue]);
-
-  useEffect(() => {
-    if (!isStatusEmployee || isDisabled) {
-      setValue('employeeName', '', { shouldValidate: true });
-      setValue('employeeId', undefined, { shouldValidate: true });
-    }
-
-    if (!isLoadingEmployee && isStatusEmployee && employeeData) {
-      console.log('entrou', employeeData);
-      setValue('employeeName', employeeData.name, { shouldValidate: true });
-      setValue('employeeId', employeeData.id, { shouldValidate: true });
-    }
-  }, [employeeData, isDisabled, isLoadingEmployee, isStatusEmployee, setValue]);
 
   useEffect(() => {
     const syncAndListActivities = async () => {
@@ -159,15 +139,10 @@ const RegisterInitialInformationsPage = () => {
 
     const testInitialInformations = {
       id: uuIdRegisterChronoanalysis,
-      employeeId: data.employeeId ? data.employeeId : 0,
-      employeeName: data.employeeName ? data.employeeName : '',
-      employeeCardNumber: data.employeeCardNumber
-        ? data.employeeCardNumber
-        : '',
+      employees: employeeList,
       sectorId: data.sectorId ? data.sectorId : 0,
       sectorName: data.sectorName ? data.sectorName : '',
       sectorCostCenter: data.sectorCostCenter ? data.sectorCostCenter : '',
-      employeeUnit: data.employeeUnit ? data.employeeUnit : '',
       clientId: +data.clientId,
       of: data.of,
       op: data.op,
@@ -185,6 +160,7 @@ const RegisterInitialInformationsPage = () => {
       replace: true,
     });
   };
+
   return (
     <section className=''>
       {isOpenImage ? (
@@ -197,53 +173,11 @@ const RegisterInitialInformationsPage = () => {
         <>
           <Text variant={'title'}>Nova cronoanálise</Text>
           <form onSubmit={handleSubmit(handleAddInitialInformations)}>
-            <Card text='Informações do colaborador' className='flex mt-5'>
-              <div className=' flex gap-4 w-full items-center justify-center'>
-                <Label title='Cartão' className=' relative h-25'>
-                  <CheckRequestStatus
-                    data={employeeData}
-                    loading={isLoadingEmployee}
-                    status={isStatusEmployee}
-                    disabled={isDisabled}
-                  />
-                  <div className=' flex items-center gap-0.5 w-full'>
-                    <Button
-                      type='button'
-                      variant={`${
-                        unit === 'PEDERTRACTOR' ? 'select-blue' : 'default'
-                      }`}
-                      onClick={() => setValue('employeeUnit', 'PEDERTRACTOR')}
-                    >
-                      P
-                    </Button>
-                    <Button
-                      type='button'
-                      variant={`${
-                        unit === 'TRACTOR' ? 'select-blue' : 'default'
-                      }`}
-                      onClick={() => setValue('employeeUnit', 'TRACTOR')}
-                    >
-                      T
-                    </Button>
-                    <Input
-                      disabled={!unit ? true : false}
-                      className='w-full'
-                      maxLength={4}
-                      inputMode='numeric'
-                      placeholder='ex: 0072 | ex: 5532'
-                      {...register('employeeCardNumber')}
-                    />
-                  </div>
-                  {errors.employeeCardNumber && (
-                    <span className='text-red-500 text-sm absolute left-22 bottom-0 '>
-                      {errors.employeeCardNumber.message}
-                    </span>
-                  )}
-                </Label>
-                <Label title='Nome do colaborador' className=' w-4/5 h-25'>
-                  <Input {...register('employeeName')} disabled />
-                </Label>
-              </div>
+            <AddChronoanalysisEmployee
+              employeeList={employeeList}
+              setEmployeeList={setEmployeeList}
+            />
+            <Card text='Informações do setor' className='flex mt-5'>
               <div className=' flex gap-4 justify-center w-full items-center'>
                 <Label title='Centro de custo' className='relative h-25'>
                   <CheckRequestStatus

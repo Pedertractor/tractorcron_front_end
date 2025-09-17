@@ -35,8 +35,10 @@ import Button from '@/components/ui/button/button';
 import { useParts } from '@/hooks/use-parts';
 import CheckRequestStatus from '@/components/check-request-status';
 import { useSector } from '@/hooks/use-sectors';
-import { useEmployee } from '@/hooks/use-employees';
 import { useOf } from '@/hooks/use-of';
+import AddChronoanalysisEmployee, {
+  EmployeeProps,
+} from '@/components/add-chronoanalysis-employees';
 
 const RegisterFinishInformationsPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -47,6 +49,7 @@ const RegisterFinishInformationsPage = () => {
   const [finalRegisterActivities, setFinalRegisterActivities] = useState<
     RegisterActivities[]
   >([]);
+  const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
 
   const [idRegister] = useState<string | null>(() =>
     localStorage.getItem('idRegister')
@@ -78,14 +81,11 @@ const RegisterFinishInformationsPage = () => {
       const activities = await listActivities();
       if (activities) setFinalRegisterActivities(activities);
       if (info && info.status) {
-        if (info.register)
+        if (info.register) {
+          setEmployeeList(info.register.employees);
           reset({
             id: info.register.id,
             clientId: String(info.register.clientId),
-            employeeUnit: info.register.employeeUnit,
-            employeeId: info.register.employeeId,
-            employeeName: info.register.employeeName,
-            employeeCardNumber: info.register.employeeCardNumber,
             sectorId: +info.register.sectorId,
             sectorName: info.register.sectorName,
             sectorCostCenter: info.register.sectorCostCenter,
@@ -98,6 +98,7 @@ const RegisterFinishInformationsPage = () => {
             typeOfChronoanalysis: info.register.typeOfChronoanalysis,
             isKaizen: info.register.isKaizen,
           });
+        }
       }
     };
     getInformationsByCron();
@@ -117,8 +118,6 @@ const RegisterFinishInformationsPage = () => {
     updateActivities();
   }, [attTable]);
 
-  const unit = watch('employeeUnit');
-  const cardNumber = watch('employeeCardNumber');
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
@@ -136,13 +135,6 @@ const RegisterFinishInformationsPage = () => {
     isLoading: isLoadingSector,
     isStatus: isStatusSector,
   } = useSector(costCenter);
-
-  const {
-    employeeData,
-    isLoading: isLoadingEmployee,
-    isStatus: isStatusEmployee,
-    isDisabled,
-  } = useEmployee(unit, cardNumber);
 
   const {
     isLoading: isLoadingOf,
@@ -170,24 +162,13 @@ const RegisterFinishInformationsPage = () => {
     }
   }, [isLoadingSector, isStatusSector, sectorData, setValue]);
 
-  useEffect(() => {
-    if (!isStatusEmployee || isDisabled) {
-      setValue('employeeName', '', { shouldValidate: true });
-      setValue('employeeId', undefined, { shouldValidate: true });
-    }
-
-    if (!isLoadingEmployee && isStatusEmployee && employeeData) {
-      setValue('employeeName', employeeData.name, { shouldValidate: true });
-      setValue('employeeId', employeeData.id, { shouldValidate: true });
-    }
-  }, [employeeData, isDisabled, isLoadingEmployee, isStatusEmployee, setValue]);
-
   async function handleSubmitInformations(data: TypeInitialInformationsData) {
     setIsLoading(true);
     if (startTime && endTime && workPaceAssessment) {
       const chronoanalysis: PropsChronoanalysis = {
         ...data,
         clientId: +data.clientId,
+        employees: employeeList,
         sectorId: data.sectorId ? +data.sectorId : undefined,
         sop: data.sop ? true : false,
         startTime,
@@ -273,51 +254,11 @@ const RegisterFinishInformationsPage = () => {
         </div>
       </Card>
       <form onSubmit={handleSubmit(handleSubmitInformations)}>
-        <Card text='Informações do colaborador' className='flex mt-5'>
-          <div className=' flex gap-4 w-full items-center justify-center'>
-            <Label title='Cartão' className=' relative h-25'>
-              <CheckRequestStatus
-                data={employeeData}
-                loading={isLoadingEmployee}
-                status={isStatusEmployee}
-                disabled={isDisabled}
-              />
-              <div className=' flex items-center gap-0.5 w-full'>
-                <Button
-                  type='button'
-                  variant={`${
-                    unit === 'PEDERTRACTOR' ? 'select-blue' : 'default'
-                  }`}
-                  onClick={() => setValue('employeeUnit', 'PEDERTRACTOR')}
-                >
-                  P
-                </Button>
-                <Button
-                  type='button'
-                  variant={`${unit === 'TRACTOR' ? 'select-blue' : 'default'}`}
-                  onClick={() => setValue('employeeUnit', 'TRACTOR')}
-                >
-                  T
-                </Button>
-                <Input
-                  disabled={!unit ? true : false}
-                  className='w-full'
-                  maxLength={4}
-                  inputMode='numeric'
-                  placeholder='ex: 0072 | ex: 5532'
-                  {...register('employeeCardNumber')}
-                />
-              </div>
-              {errors.employeeCardNumber && (
-                <span className='text-red-500 text-sm absolute left-22 bottom-0 '>
-                  {errors.employeeCardNumber.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Nome do colaborador' className=' w-4/5 h-25'>
-              <Input {...register('employeeName')} disabled />
-            </Label>
-          </div>
+        <AddChronoanalysisEmployee
+          employeeList={employeeList}
+          setEmployeeList={setEmployeeList}
+        />
+        <Card text='Informações do setor' className='flex mt-5'>
           <div className=' flex gap-4 justify-center w-full items-center'>
             <Label title='Centro de custo' className='  relative h-25'>
               <CheckRequestStatus
