@@ -1,3 +1,4 @@
+import { EmployeeProps } from '@/components/add-chronoanalysis-employees';
 import type { PropsActivities } from '../types/activities-types';
 import type { PropsChronoanalysis } from '../types/chronoanalysis-types';
 import type { PropsWorkPaceAssessment } from '../types/work-pace-assessment-types';
@@ -12,15 +13,13 @@ export interface listChronoanalysisProps {
   of: string;
   op: string;
   sop: boolean;
-  employeeName: string;
-  employeeUnit: string;
-  employeeCardNumber: string;
   sectorName: string;
   sectorCostCenter: string;
   isKaizen: boolean;
   isSend: boolean;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
+  startDate: string;
+  endDate: string;
+  chronoanalysisEmployee: EmployeeProps[];
   client: {
     id: number;
     name: string;
@@ -30,8 +29,8 @@ export interface listChronoanalysisProps {
     employeeId: number;
   };
   activities: {
-    startTime: string; // ISO date string
-    endTime: string; // ISO date string
+    startTime: string;
+    endTime: string;
     id: number;
     name: string;
     registerId: string;
@@ -106,7 +105,6 @@ export async function listChronoanalysis() {
   });
 
   const data = await response.json();
-  console.log(data);
 
   if (response.status !== 200)
     return {
@@ -167,8 +165,6 @@ export async function verifyUuidRegister(uuid: string) {
 
 export async function changeSendStatus(idChronoanalysis: string) {
   const token = localStorage.getItem('token');
-  console.log(`${url}/chronoanalysis/send/${idChronoanalysis}`);
-
   const response = await fetch(
     `${url}/chronoanalysis/send/${idChronoanalysis}`,
     {
@@ -178,8 +174,6 @@ export async function changeSendStatus(idChronoanalysis: string) {
       },
     }
   );
-
-  console.log(response);
 
   const data = await response.json();
 
