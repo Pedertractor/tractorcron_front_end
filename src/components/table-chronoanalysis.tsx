@@ -128,9 +128,9 @@ const TableChronoanalysis = ({
               ))}
             </TableBody>
           </Table>
-          {currentPage && handlePageChange && totalPages && (
+          {currentPage && handlePageChange && totalPages ? (
             <div className=' mt-5 px-2 flex items-center justify-center'>
-              <span className=' p-1.5 px-3 flex items-center text-xs justify-center w-15 border border-border rounded-lg text-secondary  font-medium'>
+              <span className=' p-1.5 px-3 flex items-center text-xs justify-center w-15 border border-border rounded-lg text-secondary font-medium'>
                 {PagesLength}
               </span>
               <Pagination className=''>
@@ -192,7 +192,7 @@ const TableChronoanalysis = ({
 
               <p className=' p-1.5 px-3 flex items-center justify-center w-25 border border-border rounded-lg text-secondary text-xs font-medium'>{`${currentPage}${' '}/${' '}${totalPages}`}</p>
             </div>
-          )}
+          ) : null}
         </div>
       </Card>
     );
