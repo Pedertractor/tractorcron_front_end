@@ -39,6 +39,7 @@ import { useOf } from '@/hooks/use-of';
 import AddChronoanalysisEmployee, {
   EmployeeProps,
 } from '@/components/add-chronoanalysis-employees';
+import CounterParts from '@/components/counter-parts';
 
 const RegisterFinishInformationsPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -50,6 +51,8 @@ const RegisterFinishInformationsPage = () => {
     RegisterActivities[]
   >([]);
   const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
+  const [numberOfParts, setNumberOfParts] = useState<number>(1);
+  const [enhancement, setEnhancement] = useState<string>('');
 
   const [idRegister] = useState<string | null>(() =>
     localStorage.getItem('idRegister')
@@ -83,6 +86,7 @@ const RegisterFinishInformationsPage = () => {
       if (info && info.status) {
         if (info.register) {
           setEmployeeList(info.register.employees);
+          setNumberOfParts(info.register.howManyParts);
           reset({
             id: info.register.id,
             clientId: String(info.register.clientId),
@@ -169,6 +173,8 @@ const RegisterFinishInformationsPage = () => {
         ...data,
         clientId: +data.clientId,
         employees: employeeList,
+        howManyParts: numberOfParts,
+        enhancement,
         sectorId: data.sectorId ? +data.sectorId : undefined,
         sop: data.sop ? true : false,
         startTime,
@@ -284,35 +290,43 @@ const RegisterFinishInformationsPage = () => {
           </div>
         </Card>
         <Card text='Informações do componente' className='flex my-5 relative'>
-          <div className=' flex gap-4 w-full '>
-            <Label title='Código interno' className='relative'>
-              <CheckRequestStatus
-                data={partData}
-                status={isStatusPart}
-                loading={isLoadingPart}
+          <div className=' flex flex-col gap-4 w-full '>
+            <div className=' flex gap-4 w-full'>
+              <Label title='Código interno' className='relative'>
+                <CheckRequestStatus
+                  data={partData}
+                  status={isStatusPart}
+                  loading={isLoadingPart}
+                />
+                <Input
+                  {...register('internalCode')}
+                  maxLength={10}
+                  inputMode='numeric'
+                />
+                {errors.internalCode && (
+                  <span className='text-red-500 text-sm'>
+                    {errors.internalCode.message}
+                  </span>
+                )}
+              </Label>
+              <Label title='Part number'>
+                <Input {...register('partNumber')} disabled />
+              </Label>
+            </div>
+            <div className=' flex gap-4 w-full'>
+              <Label title='Revisão'>
+                <Input {...register('revision')} />
+                {errors.revision && (
+                  <span className='text-red-500 text-sm'>
+                    {errors.revision.message}
+                  </span>
+                )}
+              </Label>
+              <CounterParts
+                numberOfParts={numberOfParts}
+                setNumberOfParts={setNumberOfParts}
               />
-              <Input
-                {...register('internalCode')}
-                maxLength={10}
-                inputMode='numeric'
-              />
-              {errors.internalCode && (
-                <span className='text-red-500 text-sm'>
-                  {errors.internalCode.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Revisão'>
-              <Input {...register('revision')} />
-              {errors.revision && (
-                <span className='text-red-500 text-sm'>
-                  {errors.revision.message}
-                </span>
-              )}
-            </Label>
-            <Label title='Part number'>
-              <Input {...register('partNumber')} disabled />
-            </Label>
+            </div>
           </div>
         </Card>
         <Card text='Informações extras' className='flex'>
@@ -429,6 +443,20 @@ const RegisterFinishInformationsPage = () => {
             workPaceAssessmentDatas={workPaceAssessment}
             setWorkPaceAssessmentDatas={setWorkPaceAssessment}
           />
+        </Card>
+
+        <Card text='Melhorias e observações' className=' my-5'>
+          <Label title=''>
+            <textarea
+              value={enhancement}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setEnhancement(e.target.value)
+              }
+              rows={8}
+              placeholder='Digite aqui suas observações ou melhorias...'
+              className=' p-2 border border-border rounded-xl text-secondary resize-none'
+            />
+          </Label>
         </Card>
 
         <div className=' flex gap-4 w-full justify-end items-center mt-5'>

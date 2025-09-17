@@ -31,6 +31,7 @@ import { useOf } from '@/hooks/use-of';
 import AddChronoanalysisEmployee, {
   EmployeeProps,
 } from '@/components/add-chronoanalysis-employees';
+import CounterParts from '@/components/counter-parts';
 
 const RegisterInitialInformationsPage = () => {
   const [pinedActivities, setPinedActivities] = useState<
@@ -38,6 +39,7 @@ const RegisterInitialInformationsPage = () => {
   >([]);
   const [isOpenImage, setIsOpenImage] = useState(false);
   const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
+  const [numberOfParts, setNumberOfParts] = useState<number>(1);
 
   const navigate = useNavigate();
 
@@ -140,6 +142,7 @@ const RegisterInitialInformationsPage = () => {
     const testInitialInformations = {
       id: uuIdRegisterChronoanalysis,
       employees: employeeList,
+      howManyParts: numberOfParts,
       sectorId: data.sectorId ? data.sectorId : 0,
       sectorName: data.sectorName ? data.sectorName : '',
       sectorCostCenter: data.sectorCostCenter ? data.sectorCostCenter : '',
@@ -219,35 +222,43 @@ const RegisterInitialInformationsPage = () => {
                 svg={Images}
                 className='absolute top-3 right-3 '
               />
-              <div className=' flex gap-4 w-full '>
-                <Label title='Código interno' className=' relative '>
-                  <CheckRequestStatus
-                    data={partData}
-                    status={isStatus}
-                    loading={isLoading}
+              <div className=' flex flex-col gap-4 w-full '>
+                <div className=' flex gap-4 w-full'>
+                  <Label title='Código interno' className=' relative '>
+                    <CheckRequestStatus
+                      data={partData}
+                      status={isStatus}
+                      loading={isLoading}
+                    />
+                    <Input
+                      {...register('internalCode')}
+                      maxLength={10}
+                      inputMode='numeric'
+                    />
+                    {errors.internalCode && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.internalCode.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='Part number'>
+                    <Input {...register('partNumber')} disabled />
+                  </Label>
+                </div>
+                <div className=' flex gap-4 w-full'>
+                  <Label title='Revisão'>
+                    <Input {...register('revision')} />
+                    {errors.revision && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.revision.message}
+                      </span>
+                    )}
+                  </Label>
+                  <CounterParts
+                    numberOfParts={numberOfParts}
+                    setNumberOfParts={setNumberOfParts}
                   />
-                  <Input
-                    {...register('internalCode')}
-                    maxLength={10}
-                    inputMode='numeric'
-                  />
-                  {errors.internalCode && (
-                    <span className='text-red-500 text-sm'>
-                      {errors.internalCode.message}
-                    </span>
-                  )}
-                </Label>
-                <Label title='Revisão'>
-                  <Input {...register('revision')} />
-                  {errors.revision && (
-                    <span className='text-red-500 text-sm'>
-                      {errors.revision.message}
-                    </span>
-                  )}
-                </Label>
-                <Label title='Part number'>
-                  <Input {...register('partNumber')} disabled />
-                </Label>
+                </div>
               </div>
             </Card>
             <Card text='Informações extras' className='flex'>
