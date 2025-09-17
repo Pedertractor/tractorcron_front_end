@@ -57,7 +57,7 @@ const Analysis = () => {
       mode: 'onChange',
       defaultValues: {
         partNumber: '',
-        of: '',
+        internalCode: '',
         cardNumber: '',
         costCenter: '',
         clientId: '',
@@ -71,7 +71,7 @@ const Analysis = () => {
 
   const unit = watch('unit');
   const partNumber = watch('partNumber');
-  const of = watch('of');
+  const internalCode = watch('internalCode');
   const userChronoanalistId = watch('userChronoanalistId');
   const cardNumber = watch('cardNumber');
   const costCenter = watch('costCenter');
@@ -96,7 +96,6 @@ const Analysis = () => {
   }, []);
 
   useEffect(() => {
-    //this function support get all chronoanalysis" informations
     const supportListChronoanalysis = async () => {
       const { data, error, status } = await listChronoanalysis();
 
@@ -117,12 +116,18 @@ const Analysis = () => {
     filtered = filtered.filter((item) => item.isSend === formIsSend);
 
     if (unit) {
-      filtered = filtered.filter((item) => item.employeeUnit === unit);
+      filtered = filtered.filter((item) =>
+        item.chronoanalysisEmployee.some(
+          (employee) => employee.employeeUnit === unit
+        )
+      );
     }
 
     if (cardNumber) {
       filtered = filtered.filter((item) =>
-        item.employeeCardNumber.includes(cardNumber)
+        item.chronoanalysisEmployee.some((employee) =>
+          employee.employeeCardNumber?.includes(cardNumber)
+        )
       );
     }
 
@@ -132,8 +137,10 @@ const Analysis = () => {
       );
     }
 
-    if (of) {
-      filtered = filtered.filter((item) => item.of.includes(of));
+    if (internalCode) {
+      filtered = filtered.filter((item) =>
+        item.internalCode.includes(internalCode)
+      );
     }
 
     if (userChronoanalistId) {
@@ -182,7 +189,7 @@ const Analysis = () => {
     dataRange?.from,
     dataRange?.to,
     isListChronoanalysis,
-    of,
+    internalCode,
     partNumber,
     unit,
     userChronoanalistId,
@@ -210,8 +217,11 @@ const Analysis = () => {
                   className='w-full h-fit py-2'
                 />
               </Label>
-              <Label title='Ordem de fabricação'>
-                <Input {...register('of')} className='w-full h-fit py-2' />
+              <Label title='Código interno'>
+                <Input
+                  {...register('internalCode')}
+                  className='w-full h-fit py-2'
+                />
               </Label>
               <Label title='Cartão' className=''>
                 <div className=' flex items-center gap-0.5 w-full'>
@@ -330,7 +340,7 @@ const Analysis = () => {
             disabled={
               unit ||
               partNumber ||
-              of ||
+              internalCode ||
               userChronoanalistId ||
               cardNumber ||
               costCenter ||
@@ -342,7 +352,7 @@ const Analysis = () => {
             className={`cursor-pointer transition absolute top-1 right-4.5 z-50 ${
               unit ||
               partNumber ||
-              of ||
+              internalCode ||
               userChronoanalistId ||
               cardNumber ||
               costCenter ||
