@@ -16,6 +16,7 @@ export interface RegisterChronoanalysis {
   revision: string;
   typeOfChronoanalysis: string;
   isKaizen: boolean;
+  howManyParts: number;
 }
 
 export interface RegisterActivities {
