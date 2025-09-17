@@ -16,4 +16,6 @@ export interface PropsChronoanalysis {
   revision: string;
   startTime: string | Date;
   endTime: string | Date;
+  howManyParts: number;
+  enhancement?: string;
 }
