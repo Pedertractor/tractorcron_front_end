@@ -1,12 +1,10 @@
+import { EmployeeProps } from '@/components/add-chronoanalysis-employees';
 import Dexie, { type EntityTable } from 'dexie';
 
 export interface RegisterChronoanalysis {
   id: string;
   clientId: number;
-  employeeUnit: string;
-  employeeId: number;
-  employeeName: string;
-  employeeCardNumber: string;
+  employees: EmployeeProps[];
   sectorId: number;
   sectorName: string;
   sectorCostCenter: string;
