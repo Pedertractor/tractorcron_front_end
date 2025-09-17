@@ -22,7 +22,7 @@ import Loading from './loading';
 import { CharPieDefault } from './chart-pie';
 import { useParts } from '@/hooks/use-parts';
 import { Button } from './ui/button';
-import { IdCardLanyard, Image, Send, User, Users } from 'lucide-react';
+import { Cog, IdCardLanyard, Image, Send, User, Users } from 'lucide-react';
 import ModalImage from './modal-image';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
@@ -135,23 +135,30 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
           </DialogDescription>
         </DialogHeader>
         <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  relative p-4'>
-            <Button
-              onClick={() => setIsOpenImage(!isOpenImage)}
-              type='button'
-              size={'icon'}
-              disabled={
-                !isStatusPart || isLoadingPart || !partData ? true : false
-              }
-              className={`absolute top-2 right-2  
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  relative px-4 py-5'>
+            <div className=' absolute top-2 right-2 flex items-center justify-center gap-5'>
+              <div className=' flex items-center justify-center border border-border py-1 px-3 rounded-lg gap-2'>
+                <Cog size={22} className=' text-background-base-blue-select' />
+                <p>{chronoanalysis.howManyParts}</p>
+              </div>
+              <Button
+                onClick={() => setIsOpenImage(!isOpenImage)}
+                type='button'
+                size={'icon'}
+                disabled={
+                  !isStatusPart || isLoadingPart || !partData ? true : false
+                }
+                className={`
                 ${
                   !isStatusPart || isLoadingPart || (!partData ? true : false)
                     ? 'border border-dashed border-border bg-white opacity-30'
                     : 'bg-background-blue transition hover:bg-background-base-blue cursor-pointer'
                 }`}
-            >
-              <Image />
-            </Button>
+              >
+                <Image />
+              </Button>
+            </div>
+
             <h3 className=' text-initial font-semibold'>
               Informações das peças
             </h3>
@@ -208,7 +215,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
           </div>
 
           <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative'>
-            <div className=' absolute top-2 right-2 flex items-center justify-center gap-3 p-1 px-2 border border-border rounded-lg'>
+            <div className=' absolute top-2 right-2 flex items-center justify-center gap-3 py-1 px-3  border border-border rounded-lg'>
               {chronoanalysis.chronoanalysisEmployee.length > 1 ? (
                 <Users
                   size={22}
@@ -404,6 +411,19 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 </div>
               </div>
             </div>
+          </div>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-3 w-full'>
+            <h3 className=' text-initial font-semibold'>
+              Melhorias e observações
+            </h3>
+            <Label title=''>
+              <textarea
+                defaultValue={chronoanalysis.enhancement ?? ''}
+                rows={8}
+                disabled
+                className=' p-3 border border-border rounded-xl text-secondary resize-none w-full max-h-35 overflow-y-auto '
+              />
+            </Label>
           </div>
         </div>
       </DialogContent>
