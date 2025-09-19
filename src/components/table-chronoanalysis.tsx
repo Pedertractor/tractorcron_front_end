@@ -93,6 +93,7 @@ const TableChronoanalysis = ({
                   <Users size={18} />
                 </TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead>Decimal</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>
                   <Send size={15} className=' text-zinc-800' />
@@ -118,6 +119,10 @@ const TableChronoanalysis = ({
                     {item.chronoanalysisEmployee.length}
                   </TableCell>
                   <TableCell>{item.client.name.toLowerCase()}</TableCell>
+                  <TableCell>
+                    {item.workPaceAssessment.standardTimeDecimal}
+                  </TableCell>
+
                   <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
                   </TableCell>
