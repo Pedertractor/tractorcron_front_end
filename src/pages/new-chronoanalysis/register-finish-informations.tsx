@@ -438,8 +438,8 @@ const RegisterFinishInformationsPage = () => {
 
         <Card text='Avaliação de ritimo de trabalho'>
           <WorkPaceAssessment
-            endTime={endTime}
-            startTime={startTime}
+            numberOfParts={numberOfParts}
+            activites={finalRegisterActivities}
             workPaceAssessmentDatas={workPaceAssessment}
             setWorkPaceAssessmentDatas={setWorkPaceAssessment}
           />
@@ -449,6 +449,7 @@ const RegisterFinishInformationsPage = () => {
           <Label title=''>
             <textarea
               value={enhancement}
+              defaultValue={''}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setEnhancement(e.target.value)
               }
