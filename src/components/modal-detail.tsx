@@ -112,8 +112,8 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 ).toLocaleDateString()}
               />
               <LabelActivitieInfo
-                text='Tempo total'
-                textInfo={chronoanalysis.workPaceAssessment.timeCalculate}
+                text='Tempo decimal'
+                textInfo={chronoanalysis.workPaceAssessment.standardTimeDecimal.toString()}
               />
             </span>
             <span className=' flex items-center justify-center gap-2.5  py-1 px-1.5 rounded-md'>
@@ -306,46 +306,49 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
               Avaliação de ritimo de trabalho
             </h3>
             <div className=' flex items-center justify-between'>
-              <div className=' flex flex-col gap-1 '>
-                <p className='font-semibold text-sm'>Habilidade</p>
-                <div className=' flex items-center gap-1'>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.workPaceAssessment.hability}
-                    </span>
+              <div className=' flex items-center justify-center gap-7'>
+                <div className=' flex flex-col gap-1 '>
+                  <p className='font-semibold text-sm'>Habilidade</p>
+                  <div className=' flex items-center gap-1'>
+                    <div className=' flex items-center text-sm gap-1  text-initial'>
+                      <span className=' rounded-lg border border-border py-1 px-2 '>
+                        {chronoanalysis.workPaceAssessment.hability}
+                      </span>
+                    </div>
+                    <div className=' flex items-center text-sm gap-1  text-initial'>
+                      <span className=' rounded-lg border border-border py-1 px-2 '>
+                        {chronoanalysis.workPaceAssessment.habilityPorcent}%
+                      </span>
+                    </div>
                   </div>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.workPaceAssessment.habilityPorcent}%
-                    </span>
+                </div>
+                <div className=' flex flex-col gap-1 '>
+                  <p className='font-semibold text-sm'>Esforço</p>
+                  <div className=' flex items-center gap-1'>
+                    <div className=' flex items-center text-sm gap-1  text-initial'>
+                      <span className=' rounded-lg border border-border py-1 px-2 '>
+                        {chronoanalysis.workPaceAssessment.effort}
+                      </span>
+                    </div>
+                    <div className=' flex items-center text-sm gap-1  text-initial'>
+                      <span className=' rounded-lg border border-border py-1 px-2 '>
+                        {chronoanalysis.workPaceAssessment.effortPorcent}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className=' flex flex-col gap-1 '>
+                  <p className='font-semibold text-sm'>Eficiência</p>
+                  <div className=' flex items-center gap-1'>
+                    <div className=' flex items-center text-sm gap-1  text-initial'>
+                      <span className=' rounded-lg border border-border py-1 px-2 '>
+                        {chronoanalysis.workPaceAssessment.efficiencyPorcent}%
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className=' flex flex-col gap-1 '>
-                <p className='font-semibold text-sm'>Esforço</p>
-                <div className=' flex items-center gap-1'>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.workPaceAssessment.effort}
-                    </span>
-                  </div>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.workPaceAssessment.effortPorcent}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className=' flex flex-col gap-1 '>
-                <p className='font-semibold text-sm'>Eficiência</p>
-                <div className=' flex items-center gap-1'>
-                  <div className=' flex items-center text-sm gap-1  text-initial'>
-                    <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.workPaceAssessment.efficiencyPorcent}%
-                    </span>
-                  </div>
-                </div>
-              </div>
+
               <div className=' flex flex-col gap-1 '>
                 <p className='font-semibold text-sm'>Tempo geral</p>
                 <div className=' flex items-center gap-1'>
@@ -356,15 +359,44 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   </div>
                 </div>
               </div>
-              <div className=' flex flex-col gap-1 '>
-                <p className='font-semibold text-sm text-green-700'>
-                  Tempo padrão
-                </p>
-                <div className=' flex items-center gap-1'>
-                  <div className=' flex items-center text-sm gap-1  text-green-700'>
-                    <span className=' rounded-lg border border-green-50 py-1 px-2 bg-green-100'>
-                      {chronoanalysis.workPaceAssessment.standardTime}
-                    </span>
+              <div className=' flex items-center justify-center gap-5'>
+                <div className=' flex flex-col gap-1 '>
+                  <p className='font-semibold text-sm text-green-700'>
+                    Tempo padrão
+                  </p>
+                  <div className=' flex items-center gap-1'>
+                    <div className=' flex items-center text-sm gap-1  text-green-700 w-full'>
+                      <span className=' rounded-lg border border-green-50 py-1 px-2 bg-green-100 w-full text-center'>
+                        {chronoanalysis.workPaceAssessment.standardTime}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className=' flex flex-col gap-1 '>
+                  <p className='font-semibold text-sm text-green-700'>
+                    Decimal
+                  </p>
+                  <div className=' flex items-center gap-1'>
+                    <div className=' flex items-center text-sm gap-1  text-green-700 w-full'>
+                      <span className=' rounded-lg border border-green-50 py-1 px-2 bg-green-100 w-full text-center'>
+                        {chronoanalysis.workPaceAssessment.standardTimeDecimal}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className=' flex flex-col gap-1 '>
+                  <p className='font-semibold text-sm text-green-700'>
+                    Decimal / peças
+                  </p>
+                  <div className=' flex items-center gap-1'>
+                    <div className=' flex items-center text-sm gap-1  text-green-700 w-full'>
+                      <span className=' rounded-lg border border-green-50 py-1 px-2 bg-green-100 w-full text-center'>
+                        {
+                          chronoanalysis.workPaceAssessment
+                            .standardTimeDecimalByNumberOfParts
+                        }
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
