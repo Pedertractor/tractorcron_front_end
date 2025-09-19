@@ -97,6 +97,21 @@ export async function ListCountChronoanalysisByDay(): Promise<{
   };
 }
 
+export async function exportPDFReport(uuid: string) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${url}/chronoanalysis/report/${uuid}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const blob = await response.blob();
+
+  return { blob, status: response.status };
+}
+
 export async function listChronoanalysis() {
   const token = localStorage.getItem('token');
 

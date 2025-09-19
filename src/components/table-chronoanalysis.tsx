@@ -17,9 +17,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination';
-import { listChronoanalysisProps } from '@/api/chronoanalysis-api';
+import {
+  exportPDFReport,
+  listChronoanalysisProps,
+} from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Send, Users } from 'lucide-react';
+import { Download, Send, Users } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
@@ -42,6 +46,21 @@ const TableChronoanalysis = ({
   setIsOpenModal,
   isView,
 }: TableChronoanalysisProps) => {
+  async function handleDownloadReport(uuid: string) {
+    const { blob, status } = await exportPDFReport(uuid);
+
+    if (status === 200) {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cronoanalise_${uuid}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      return;
+    }
+
+    toast.error('Erro ao baixar relatório');
+  }
   if (isView)
     return (
       <div className=' overflow-y-auto rounded-md  '>
@@ -98,6 +117,7 @@ const TableChronoanalysis = ({
                 <TableHead>
                   <Send size={15} className=' text-zinc-800' />
                 </TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -128,6 +148,9 @@ const TableChronoanalysis = ({
                   </TableCell>
                   <TableCell>
                     <Checkbox checked={item.isSend} />
+                  </TableCell>
+                  <TableCell onClick={() => handleDownloadReport(item.id)}>
+                    <Download size={18} className=' text-zinc-800' />
                   </TableCell>
                 </TableRow>
               ))}
