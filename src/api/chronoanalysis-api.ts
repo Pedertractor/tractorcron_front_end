@@ -50,6 +50,8 @@ export interface listChronoanalysisProps {
     effortPorcent: number;
     hability: string;
     habilityPorcent: number;
+    standardTimeDecimal: number;
+    standardTimeDecimalByNumberOfParts: number;
   };
 }
 
