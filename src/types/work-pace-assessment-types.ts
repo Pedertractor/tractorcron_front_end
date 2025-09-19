@@ -6,4 +6,6 @@ export interface PropsWorkPaceAssessment {
   habilityPorcent: number;
   standardTime: string | Date;
   timeCalculate: string | Date;
+  standardTimeDecimal: number;
+  standardTimeDecimalByNumberOfParts: number;
 }
