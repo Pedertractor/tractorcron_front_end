@@ -449,7 +449,6 @@ const RegisterFinishInformationsPage = () => {
           <Label title=''>
             <textarea
               value={enhancement}
-              defaultValue={''}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setEnhancement(e.target.value)
               }

@@ -12,10 +12,9 @@ const chartConfig = {
     label: 'quantidade',
   },
 } satisfies ChartConfig;
-import { ListCountChronoanalysisByDayProps } from '@/api/chronoanalysis-api';
 
 export interface ChartLineProps {
-  data: ListCountChronoanalysisByDayProps[];
+  data: [];
 }
 
 const ChartLine = ({ data }: ChartLineProps) => {

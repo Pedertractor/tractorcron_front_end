@@ -55,46 +55,15 @@ export interface listChronoanalysisProps {
   };
 }
 
+export interface DashboardDataProps {
+  costCenterInformations: { costcenter: string; value: number }[];
+  clientsInformations: { name: string; value: number }[];
+}
+
 export interface PropsFinalData {
   chronoanalysis: PropsChronoanalysis;
   activities: PropsActivities[];
   workPaceAssessment: PropsWorkPaceAssessment;
-}
-
-export interface ListCountChronoanalysisByDayProps {
-  day: string;
-  count: number;
-}
-
-export async function ListCountChronoanalysisByDay(): Promise<{
-  status: boolean;
-  error: string | null;
-  data: ListCountChronoanalysisByDayProps[] | null;
-}> {
-  const token = localStorage.getItem('token');
-
-  const response = await fetch(`${url}/chronoanalysis/list/cronobydays`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (response.status !== 200)
-    return {
-      status: false,
-      error: data.error,
-      data: null,
-    };
-
-  return {
-    status: true,
-    error: null,
-    data,
-  };
 }
 
 export async function exportPDFReport(uuid: string) {
@@ -110,6 +79,39 @@ export async function exportPDFReport(uuid: string) {
   const blob = await response.blob();
 
   return { blob, status: response.status };
+}
+
+export async function listDatasInformationsForDashBoard(
+  firstDate: Date,
+  secondDate: Date
+) {
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(
+    `${url}/chronoanalysis/dashboard/${firstDate.toISOString()}/${secondDate.toISOString()}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (response.status !== 200)
+    return {
+      status: false,
+      error: data.message,
+      data: null,
+    };
+
+  return {
+    status: true,
+    error: null,
+    data,
+  };
 }
 
 export async function listChronoanalysis() {

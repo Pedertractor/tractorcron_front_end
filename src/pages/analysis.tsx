@@ -373,7 +373,6 @@ const Analysis = () => {
           totalPages={totalPages}
           setIsChronoanalysis={setIsChronoanalysis}
           setIsOpenModal={setIsOpenModal}
-          isView={false}
         />
       </div>
       {isChronoanalysis && (

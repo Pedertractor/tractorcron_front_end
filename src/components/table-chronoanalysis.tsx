@@ -33,7 +33,6 @@ export interface TableChronoanalysisProps {
   totalPages?: number;
   setIsChronoanalysis?: (item: listChronoanalysisProps | undefined) => void;
   setIsOpenModal?: (props: boolean) => void;
-  isView: boolean;
 }
 
 const TableChronoanalysis = ({
@@ -44,7 +43,6 @@ const TableChronoanalysis = ({
   totalPages,
   setIsChronoanalysis,
   setIsOpenModal,
-  isView,
 }: TableChronoanalysisProps) => {
   async function handleDownloadReport(uuid: string) {
     const { blob, status } = await exportPDFReport(uuid);
@@ -61,43 +59,8 @@ const TableChronoanalysis = ({
 
     toast.error('Erro ao baixar relatório');
   }
-  if (isView)
-    return (
-      <div className=' overflow-y-auto rounded-md  '>
-        <Table>
-          <TableHeader>
-            <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
-              <TableHead>ID</TableHead>
-              <TableHead>Código interno</TableHead>
-              <TableHead>Cronoanalista</TableHead>
-              <TableHead>Tempo geral</TableHead>
-              <TableHead>Data</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((item) => (
-              <TableRow
-                key={item.id}
-                className=' border-border text-sm text-initial'
-              >
-                <TableCell>{item.id.slice(0, 7)} ...</TableCell>
-                <TableCell>{item.internalCode}</TableCell>
-                <TableCell>
-                  {item.user.employeeName.toLowerCase().slice(0, 15)}...
-                </TableCell>
 
-                <TableCell>{item.workPaceAssessment.timeCalculate}</TableCell>
-                <TableCell>
-                  {new Date(item.startDate).toLocaleDateString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
-
-  if (setIsChronoanalysis && !isView && setIsOpenModal)
+  if (setIsChronoanalysis && setIsOpenModal)
     return (
       <Card>
         <div className=' overflow-y-auto rounded-md'>
