@@ -17,6 +17,10 @@ import { toast } from 'sonner';
 import { ChartBarDefault } from './chart-bar';
 import Loading from './loading';
 import { CharPieDefault } from './chart-pie';
+import { useParts } from '@/hooks/use-parts';
+import { Button } from './ui/button';
+import { Image } from 'lucide-react';
+import ModalImage from './modal-image';
 
 export interface ModalDetailProps {
   open: boolean;
@@ -29,6 +33,13 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
   const [dataGraph, setDataGraph] = useState<
     activitiesDataChartsProps | undefined
   >(undefined);
+  const [isOpenImage, setIsOpenImage] = useState(false);
+
+  const {
+    isLoading: isLoadingPart,
+    isStatus: isStatusPart,
+    partData,
+  } = useParts(chronoanalysis.internalCode);
 
   useEffect(() => {
     const supportGetDatasForGraph = async () => {
@@ -51,6 +62,13 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className=' bg-white border-none flex flex-col'>
+        {isOpenImage && (
+          <ModalImage
+            openModal={isOpenImage}
+            setOpenModal={setIsOpenImage}
+            partData={partData}
+          />
+        )}
         <DialogHeader className=' h-fit'>
           <DialogTitle>Revisão da cronoanálise</DialogTitle>
           <DialogDescription className=' flex justify-between items-center'>
@@ -136,7 +154,23 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             </div>
           </div>
 
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg p-2 relative'>
+            <Button
+              onClick={() => setIsOpenImage(!isOpenImage)}
+              type='button'
+              size={'icon'}
+              disabled={
+                !isStatusPart || isLoadingPart || !partData ? true : false
+              }
+              className={`absolute top-2 right-2  
+                ${
+                  !isStatusPart || isLoadingPart || (!partData ? true : false)
+                    ? 'border border-dashed border-border bg-white opacity-30'
+                    : 'bg-background-blue transition hover:bg-background-base-blue cursor-pointer'
+                }`}
+            >
+              <Image />
+            </Button>
             <h3 className=' text-initial font-semibold'>
               Informações de execução
             </h3>
