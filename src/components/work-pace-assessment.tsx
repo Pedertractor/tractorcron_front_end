@@ -3,10 +3,11 @@ import { seedEffort, type seedEffortProps } from '../seed/seed-effort';
 import { seedHability, type seedHabilityProps } from '../seed/seed-hability';
 import Text from './ui/text';
 import Button from './ui/button/button';
+import { RegisterActivities } from '@/db/db';
 
 export interface WorkPaceAssessmentProps {
-  startTime: string | null;
-  endTime: string | null;
+  numberOfParts: number;
+  activites: RegisterActivities[];
   setWorkPaceAssessmentDatas: (props: DataWorkPaceProps) => void;
   workPaceAssessmentDatas: null | DataWorkPaceProps;
 }
@@ -19,11 +20,13 @@ export interface DataWorkPaceProps {
   efficiency: number;
   timeCalculate: string;
   standardTime: string;
+  standardTimeDecimal: number;
+  standardTimeDecimalByNumberOfParts: number;
 }
 
 const WorkPaceAssessment = ({
-  startTime,
-  endTime,
+  numberOfParts,
+  activites,
   setWorkPaceAssessmentDatas,
   workPaceAssessmentDatas,
 }: WorkPaceAssessmentProps) => {
@@ -31,70 +34,85 @@ const WorkPaceAssessment = ({
   const [effort, setEffort] = useState<seedEffortProps | null>(null);
 
   useEffect(() => {
-    function calculateWorkPaceAssesment(
-      startTime: string | null,
-      endTime: string | null
-    ) {
-      if (hability && effort && startTime && endTime) {
-        let efficiency = 100;
+    if (hability && effort) {
+      const calculateTimeActivites = activites.map((activite) => {
+        if (activite.startTime && activite.endTime) {
+          const startTimeWorked = new Date(activite.startTime);
+          const endTimeWorked = new Date(activite.endTime);
 
-        if (hability.subName === 'F' || hability.subName === 'R') {
-          efficiency = efficiency - hability.porcentage;
-        } else {
-          efficiency = efficiency + hability.porcentage;
+          return Math.round(
+            endTimeWorked.getTime() - startTimeWorked.getTime()
+          );
         }
+      });
 
-        if (effort.subName === 'F' || effort.subName === 'R') {
-          efficiency = efficiency - effort.porcentage;
-        } else {
-          efficiency = efficiency + effort.porcentage;
-        }
+      const diffMs = calculateTimeActivites
+        .filter((item) => item !== undefined)
+        .reduce((acc, value) => acc + value, 0);
 
-        const startTimeWorked = new Date(startTime);
-        const endTimeWorked = new Date(endTime);
+      const totalSeconds = Math.round(diffMs / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
 
-        const diffMs = Math.round(
-          endTimeWorked.getTime() - startTimeWorked.getTime()
-        );
+      const timeCalculate = `${String(hours).padStart(2, '0')}:${String(
+        minutes
+      ).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      let efficiency = 100;
 
-        const totalSeconds = Math.round(diffMs / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-
-        const timeCalculate = `${String(hours).padStart(2, '0')}:${String(
-          minutes
-        ).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-        const workPaceAssessment = (efficiency / 100) * diffMs;
-
-        const totalSecondsWpa = Math.round(workPaceAssessment / 1000);
-        const hoursWpa = Math.floor(totalSecondsWpa / 3600);
-        const minutesWpa = Math.floor((totalSecondsWpa % 3600) / 60);
-        const secondsWpa = totalSecondsWpa % 60;
-
-        const standardTime = `${String(hoursWpa).padStart(2, '0')}:${String(
-          minutesWpa
-        ).padStart(2, '0')}:${String(secondsWpa).padStart(2, '0')}`;
-
-        const data = {
-          hability: hability.name,
-          habilityPorcent: hability.porcentage,
-          effort: effort.name,
-          effortPorcent: effort.porcentage,
-          efficiency,
-          timeCalculate,
-          standardTime,
-        };
-        setWorkPaceAssessmentDatas(data);
+      if (hability.subName === 'F' || hability.subName === 'R') {
+        efficiency = efficiency - hability.porcentage;
+      } else {
+        efficiency = efficiency + hability.porcentage;
       }
-    }
 
-    calculateWorkPaceAssesment(startTime, endTime);
-  }, [effort, endTime, hability, setWorkPaceAssessmentDatas, startTime]);
+      if (effort.subName === 'F' || effort.subName === 'R') {
+        efficiency = efficiency - effort.porcentage;
+      } else {
+        efficiency = efficiency + effort.porcentage;
+      }
+      const workPaceAssessment = (efficiency / 100) * diffMs;
+      const workPaceAssessmentDividedByNumberOfParts =
+        workPaceAssessment / numberOfParts;
+
+      const totalSecondsWpa = Math.round(workPaceAssessment / 1000);
+      const hoursWpa = Math.floor(totalSecondsWpa / 3600);
+      const minutesWpa = Math.floor((totalSecondsWpa % 3600) / 60);
+      const secondsWpa = totalSecondsWpa % 60;
+
+      const standardTime = `${String(hoursWpa).padStart(2, '0')}:${String(
+        minutesWpa
+      ).padStart(2, '0')}:${String(secondsWpa).padStart(2, '0')}`;
+
+      const oneDayMs = 24 * 60 * 60 * 1000;
+
+      const valueFractionOneDay = workPaceAssessment / oneDayMs;
+      const valueFractionOneDayByNumberOfParts =
+        workPaceAssessmentDividedByNumberOfParts / oneDayMs;
+
+      const data = {
+        hability: hability.name,
+        habilityPorcent: hability.porcentage,
+        effort: effort.name,
+        effortPorcent: effort.porcentage,
+        efficiency,
+        timeCalculate,
+        standardTime,
+        standardTimeDecimal: +(valueFractionOneDay * 24 * 60).toFixed(2),
+        standardTimeDecimalByNumberOfParts: +(
+          valueFractionOneDayByNumberOfParts *
+          24 *
+          60
+        ).toFixed(2),
+      };
+
+      setWorkPaceAssessmentDatas(data);
+    }
+  }, [activites, effort, hability, numberOfParts, setWorkPaceAssessmentDatas]);
+
   return (
-    <div className=' h-full flex items-center justify-center '>
-      <div className=' w-full rounded-lg flex flex-col p-4 '>
+    <div className=' h-full flex flex-col  justify-center '>
+      <div className=' w-full rounded-lg flex flex-col p-4'>
         <div className=' flex flex-col gap-2'>
           <Text variant={'text-label'}>Habilidade</Text>
           <div className='flex items-center w-full justify-between'>
@@ -104,6 +122,7 @@ const WorkPaceAssessment = ({
                 key={item.id}
                 onClick={() => setHability(item)}
                 variant={`${hability === item ? 'select-blue' : 'default'}`}
+                size={'md'}
               >
                 {item.subName}
               </Button>
@@ -119,6 +138,7 @@ const WorkPaceAssessment = ({
                 key={item.id}
                 onClick={() => setEffort(item)}
                 variant={`${effort === item ? 'select-blue' : 'default'}`}
+                size={'md'}
               >
                 {item.subName}
               </Button>
@@ -127,8 +147,8 @@ const WorkPaceAssessment = ({
         </div>
       </div>
 
-      <div className='w-full border border-dashed border-border rounded-lg gap-5 flex flex-col py-7 px-4'>
-        <Text className=''>Calculo tempo padrão</Text>
+      <div className='w-full border border-dashed border-border rounded-lg gap-5 flex flex-col p-4'>
+        <Text className=' font-semibold'>Calculo tempo padrão</Text>
         <div className=' flex h-full items-center gap-4 '>
           <div className=' flex-col flex tems-start justify-center w-full'>
             <Text variant={'text-label'}>Habilidade</Text>
@@ -180,6 +200,26 @@ const WorkPaceAssessment = ({
               {workPaceAssessmentDatas && (
                 <Text variant={'sub-title'}>
                   {workPaceAssessmentDatas?.standardTime}
+                </Text>
+              )}
+            </div>
+          </div>
+          <div className=' flex-col flex tems-start justify-center w-full'>
+            <Text variant={'text-label'}>Padrão decimal</Text>
+            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+              {workPaceAssessmentDatas && (
+                <Text variant={'sub-title'}>
+                  {workPaceAssessmentDatas?.standardTimeDecimal}
+                </Text>
+              )}
+            </div>
+          </div>
+          <div className=' flex-col flex tems-start justify-center w-full'>
+            <Text variant={'text-label'}>Padrão decimal / peça</Text>
+            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+              {workPaceAssessmentDatas && (
+                <Text variant={'sub-title'}>
+                  {workPaceAssessmentDatas?.standardTimeDecimalByNumberOfParts}
                 </Text>
               )}
             </div>

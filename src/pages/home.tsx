@@ -1,66 +1,70 @@
 import {
-  listChronoanalysis,
-  listChronoanalysisProps,
-  ListCountChronoanalysisByDay,
-  ListCountChronoanalysisByDayProps,
+  DashboardDataProps,
+  listDatasInformationsForDashBoard,
 } from '@/api/chronoanalysis-api';
 import { getTotalChronoanalyzedParts } from '@/api/parts-api';
-import ChartLine from '@/components/chart-line';
-import TableChronoanalysis from '@/components/table-chronoanalysis';
-import Card from '@/components/ui/card/card';
+import { DashBoardBarChart } from '@/components/chart-bar-clients';
+import { ChartBarCostCenter } from '@/components/chart-bar-costcenter';
+import { DatePicker } from '@/components/date-picker';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import Text from '@/components/ui/text';
-import { Calendar, Cog, Timer } from 'lucide-react';
+import { Cog, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 
 const HomePage = () => {
-  const [isListChronoanalysis, setListChronoanalysis] = useState<
-    listChronoanalysisProps[]
-  >([]);
-  const [isListCountChronoanalysisByDay, setIsListCountChronoanalysisByDay] =
-    useState<ListCountChronoanalysisByDayProps[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    to: new Date(),
+    from: new Date(),
+  });
   const [totalChronoanalyzedParts, setTotalChronoanalyzedParts] =
     useState<number>(0);
-  const [totalChronoanalyzedPartsInWeek, setTotalChronoanalyzedPartsInWeek] =
+  const [totalChronoanalyzedPartsRange, setTotalChronoanalyzedPartsRange] =
     useState<number>(0);
 
+  const [dashBoardData, setDashBoardData] = useState<null | DashboardDataProps>(
+    null
+  );
+
   useEffect(() => {
-    const supportListCountChronoanalysisByDay = async () => {
-      const { data, error, status } = await ListCountChronoanalysisByDay();
-
-      if (!status) return toast.info(error);
-
-      if (status && data) {
-        setIsListCountChronoanalysisByDay(data);
-        setTotalChronoanalyzedPartsInWeek(
-          data.reduce((acc, curr) => acc + curr.count, 0)
+    const supportDataToDashBoard = async () => {
+      if (dateRange && dateRange.from && dateRange.to) {
+        const {
+          status,
+          error,
+          data,
+        }: {
+          status: boolean;
+          error: string | null;
+          data: DashboardDataProps | null;
+        } = await listDatasInformationsForDashBoard(
+          dateRange.from,
+          dateRange.to
         );
+
+        if (status && data) {
+          const totalParts = data.clientsInformations.reduce(
+            (acc, item) => acc + item.value,
+            0
+          );
+          setTotalChronoanalyzedPartsRange(totalParts);
+          setDashBoardData(data);
+          return;
+        }
+
+        toast.error(error);
       }
     };
 
-    supportListCountChronoanalysisByDay();
-  }, []);
-
-  useEffect(() => {
-    const supportListChronoanalysis = async () => {
-      const { data, error, status } = await listChronoanalysis();
-
-      if (!status) return toast.info(error);
-
-      const info: listChronoanalysisProps[] = data;
-
-      if (status) {
-        setListChronoanalysis(
-          info
-            .sort((a, b) => Date.parse(b.startDate) - Date.parse(a.startDate))
-            .slice(0, 8)
-        );
-      }
-    };
-
-    supportListChronoanalysis();
-  }, []);
+    supportDataToDashBoard();
+  }, [dateRange, dateRange?.from, dateRange?.to]);
 
   useEffect(() => {
     const supportTotalChronoanalyzedParts = async () => {
@@ -77,32 +81,21 @@ const HomePage = () => {
   }, []);
 
   return (
-    <section className='h-[90%]'>
+    <section className=' w-full relative'>
+      <div className=' absolute top-0 right-[40%] w-fit'>
+        <DatePicker value={dateRange} onChange={setDateRange} />
+      </div>
       <Text variant={'title'}>Dashboard</Text>
-      <div className=' flex flex-col h-full gap-2 py-2'>
-        <div className='flex gap-2 h-full'>
-          <Card text='Ultimas cronoanálises' className=' justify-start h-full'>
-            <Link to={'/analysis'}>
-              <TableChronoanalysis data={isListChronoanalysis} isView />
-            </Link>
-          </Card>
-          <Card text='Semana de cronoanálise' className=' justify-start'>
-            <ChartLine data={isListCountChronoanalysisByDay} />
-          </Card>
-        </div>
-        <div className=' flex h-[35%] gap-2 w-full'>
-          <Card text='Total de peças' className='justify-start'>
-            <div className=' w-full h-full flex items-center gap-6'>
-              <div className=' flex items-center justify-center gap-0'>
-                <Cog size={40} className='stroke-background-base-blue-select' />
-              </div>
-              <span className=' font-medium text-2xl text-zinc-100'>
-                em breve
-              </span>
-            </div>
-          </Card>
-          <Card text='Peças cronometradas' className='justify-start'>
-            <div className=' w-full h-full flex items-center gap-6'>
+      <div className=' flex flex-col gap-2 py-2 mt-15'>
+        <div className=' flex gap-2 w-full'>
+          <Card className='w-full border-border '>
+            <CardHeader>
+              <CardTitle>Peças Cronometradas Geral</CardTitle>
+              <CardDescription>
+                Total de peças unicas cronometradas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='flex items-center gap-3'>
               <div className=' flex items-center justify-center gap-0'>
                 <Timer size={40} className='stroke-background-blue-active' />
                 <Cog size={25} className='stroke-background-blue-active' />
@@ -111,21 +104,40 @@ const HomePage = () => {
                 {totalChronoanalyzedParts}{' '}
                 {totalChronoanalyzedParts === 1 ? 'peça' : 'peças'}
               </span>
-            </div>
+            </CardContent>
           </Card>
-          <Card text='Total de cronoanálise - semana' className='justify-start'>
-            <div className=' w-full h-full flex items-center gap-6'>
+          <Card className='w-full border-border'>
+            <CardHeader>
+              <CardTitle>Peças Cronometradas</CardTitle>
+              <CardDescription>
+                Total de peças cronometradas -{' '}
+                {dateRange?.from?.toLocaleDateString()} -{' '}
+                {dateRange?.to?.toLocaleDateString()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='flex items-center gap-3'>
               <div className=' flex items-center justify-center gap-0'>
                 <Timer size={40} className='stroke-background-blue-active' />
-                <Calendar size={25} className='stroke-background-blue-active' />
+                <Cog size={25} className='stroke-background-blue-active' />
               </div>
               <span className=' font-semibold text-2xl text-initial'>
-                {totalChronoanalyzedPartsInWeek}{' '}
-                {totalChronoanalyzedPartsInWeek === 1 ? 'peça' : 'peças'}
+                {totalChronoanalyzedPartsRange}{' '}
+                {totalChronoanalyzedPartsRange === 1 ? 'peça' : 'peças'}
               </span>
-            </div>
+            </CardContent>
           </Card>
         </div>
+      </div>
+      <div className=' flex flex-col h-fit gap-2 py-2'>
+        {dashBoardData && (
+          <div className=' flex  gap-3 w-full'>
+            <DashBoardBarChart chartData={dashBoardData.clientsInformations} />
+
+            <ChartBarCostCenter
+              chartData={dashBoardData.costCenterInformations}
+            />
+          </div>
+        )}
       </div>
     </section>
   );

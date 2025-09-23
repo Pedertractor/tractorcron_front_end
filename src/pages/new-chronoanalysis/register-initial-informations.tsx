@@ -17,11 +17,7 @@ import Select from '../../components/ui/select';
 import { clients } from '../../seed/seed-client';
 import { useNavigate } from 'react-router';
 import ListActivities from '../../components/list-activities';
-import {
-  listPinedActivities,
-  pinedActivitie,
-  syncPresetActivities,
-} from '../../db/db-functions-preset-activities';
+import { changePresetActivities } from '../../db/db-functions-preset-activities';
 import { seedActivities } from '../../seed/seed-activities';
 import { verifyUuidRegister } from '@/api/chronoanalysis-api';
 import Button from '@/components/ui/button/button';
@@ -29,18 +25,21 @@ import Label from '@/components/ui/label/label';
 import { useParts } from '@/hooks/use-parts';
 import CheckRequestStatus from '@/components/check-request-status';
 import { useSector } from '@/hooks/use-sectors';
-import { useEmployee } from '@/hooks/use-employees';
 import ModalImage from '@/components/modal-image';
 import { Images } from 'lucide-react';
 import { useOf } from '@/hooks/use-of';
+import AddChronoanalysisEmployee, {
+  EmployeeProps,
+} from '@/components/add-chronoanalysis-employees';
+import CounterParts from '@/components/counter-parts';
 
 const RegisterInitialInformationsPage = () => {
-  const [pinedActivities, setPinedACtivities] = useState<
+  const [pinedActivities, setPinedActivities] = useState<
     RegisterPresetActivities[]
   >([]);
-  const [attListPinedActivities, setAttListPinedActivities] =
-    useState<boolean>(false);
   const [isOpenImage, setIsOpenImage] = useState(false);
+  const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
+  const [numberOfParts, setNumberOfParts] = useState<number>(1);
 
   const navigate = useNavigate();
 
@@ -54,19 +53,20 @@ const RegisterInitialInformationsPage = () => {
     resolver: zodResolver(initialInformationsSchema),
     mode: 'onChange',
     defaultValues: {
-      employeeName: '',
       sectorName: '',
       clientId: '',
       sop: false,
+      typeOfChronoanalysis: 'welding',
+      isKaizen: false,
     },
   });
 
-  const unit = watch('employeeUnit');
-  const cardNumber = watch('employeeCardNumber');
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
   const sop = watch('sop');
+  const typeOfChron = watch('typeOfChronoanalysis');
+  const isKaizen = watch('isKaizen');
 
   const { partData, isLoading, isStatus } = useParts(partCode);
 
@@ -75,13 +75,6 @@ const RegisterInitialInformationsPage = () => {
     isLoading: isLoadingSector,
     isStatus: isStatusSector,
   } = useSector(costCenter);
-
-  const {
-    employeeData,
-    isLoading: isLoadingEmployee,
-    isStatus: isStatusEmployee,
-    isDisabled,
-  } = useEmployee(unit, cardNumber);
 
   const {
     isLoading: isLoadingOf,
@@ -110,61 +103,31 @@ const RegisterInitialInformationsPage = () => {
   }, [isLoadingSector, isStatusSector, sectorData, setValue]);
 
   useEffect(() => {
-    if (!isStatusEmployee || isDisabled) {
-      setValue('employeeName', '', { shouldValidate: true });
-      setValue('employeeId', undefined, { shouldValidate: true });
-    }
-
-    if (!isLoadingEmployee && isStatusEmployee && employeeData) {
-      console.log('entrou', employeeData);
-      setValue('employeeName', employeeData.name, { shouldValidate: true });
-      setValue('employeeId', employeeData.id, { shouldValidate: true });
-    }
-  }, [employeeData, isDisabled, isLoadingEmployee, isStatusEmployee, setValue]);
-
-  useEffect(() => {
     const syncAndListActivities = async () => {
-      const existingPresetActivites = await listPinedActivities();
-
-      if (existingPresetActivites) {
-        const filter = seedActivities.filter(
-          (activity) =>
-            !existingPresetActivites.some(
-              (preset) => preset.name === activity.name
-            )
+      setPinedActivities([]);
+      if (typeOfChron === 'welding') {
+        const filterWelding = seedActivities.filter(
+          (activity) => activity.activityType !== 'MONTAGEM'
         );
-
-        if (filter.length > 0) {
-          await syncPresetActivities(filter);
-        }
-      } else {
-        await syncPresetActivities(seedActivities);
+        setPinedActivities(filterWelding);
+        await changePresetActivities(filterWelding);
       }
-      const updatedList = await listPinedActivities();
 
-      if (updatedList) setPinedACtivities(updatedList);
+      if (typeOfChron === 'montage') {
+        const filterMontage = seedActivities.filter(
+          (activity) => activity.activityType !== 'SOLDAGEM'
+        );
+        setPinedActivities(filterMontage);
+        await changePresetActivities(filterMontage);
+      }
     };
 
     syncAndListActivities();
-  }, []);
-
-  useEffect(() => {
-    const listPined = async () => {
-      const list = await listPinedActivities();
-
-      if (list) setPinedACtivities(list);
-    };
-
-    if (attListPinedActivities) {
-      listPined();
-      return setAttListPinedActivities(false);
-    }
-  }, [attListPinedActivities]);
+  }, [typeOfChron]);
 
   const handleAddInitialInformations = async (
     data: TypeInitialInformationsData
   ) => {
-    console.log(data);
     let uuIdRegisterChronoanalysis = uuidv4();
 
     let isUuidValid = await verifyUuidRegister(uuIdRegisterChronoanalysis);
@@ -178,15 +141,11 @@ const RegisterInitialInformationsPage = () => {
 
     const testInitialInformations = {
       id: uuIdRegisterChronoanalysis,
-      employeeId: data.employeeId ? data.employeeId : 0,
-      employeeName: data.employeeName ? data.employeeName : '',
-      employeeCardNumber: data.employeeCardNumber
-        ? data.employeeCardNumber
-        : '',
+      employees: employeeList,
+      howManyParts: numberOfParts,
       sectorId: data.sectorId ? data.sectorId : 0,
       sectorName: data.sectorName ? data.sectorName : '',
       sectorCostCenter: data.sectorCostCenter ? data.sectorCostCenter : '',
-      employeeUnit: data.employeeUnit ? data.employeeUnit : '',
       clientId: +data.clientId,
       of: data.of,
       op: data.op,
@@ -194,6 +153,8 @@ const RegisterInitialInformationsPage = () => {
       revision: data.revision,
       internalCode: data.internalCode,
       partNumber: data.partNumber,
+      typeOfChronoanalysis: data.typeOfChronoanalysis,
+      isKaizen: data.isKaizen,
     };
 
     await dbRegisterChronoanalysis.register.add(testInitialInformations);
@@ -202,6 +163,7 @@ const RegisterInitialInformationsPage = () => {
       replace: true,
     });
   };
+
   return (
     <section className=''>
       {isOpenImage ? (
@@ -214,53 +176,11 @@ const RegisterInitialInformationsPage = () => {
         <>
           <Text variant={'title'}>Nova cronoanálise</Text>
           <form onSubmit={handleSubmit(handleAddInitialInformations)}>
-            <Card text='Informações do colaborador' className='flex mt-5'>
-              <div className=' flex gap-4 w-full items-center justify-center'>
-                <Label title='Cartão' className=' relative h-25'>
-                  <CheckRequestStatus
-                    data={employeeData}
-                    loading={isLoadingEmployee}
-                    status={isStatusEmployee}
-                    disabled={isDisabled}
-                  />
-                  <div className=' flex items-center gap-0.5 w-full'>
-                    <Button
-                      type='button'
-                      variant={`${
-                        unit === 'PEDERTRACTOR' ? 'select-blue' : 'default'
-                      }`}
-                      onClick={() => setValue('employeeUnit', 'PEDERTRACTOR')}
-                    >
-                      P
-                    </Button>
-                    <Button
-                      type='button'
-                      variant={`${
-                        unit === 'TRACTOR' ? 'select-blue' : 'default'
-                      }`}
-                      onClick={() => setValue('employeeUnit', 'TRACTOR')}
-                    >
-                      T
-                    </Button>
-                    <Input
-                      disabled={!unit ? true : false}
-                      className='w-full'
-                      maxLength={4}
-                      inputMode='numeric'
-                      placeholder='ex: 0072 | ex: 5532'
-                      {...register('employeeCardNumber')}
-                    />
-                  </div>
-                  {errors.employeeCardNumber && (
-                    <span className='text-red-500 text-sm absolute left-22 bottom-0 '>
-                      {errors.employeeCardNumber.message}
-                    </span>
-                  )}
-                </Label>
-                <Label title='Nome do colaborador' className=' w-4/5 h-25'>
-                  <Input {...register('employeeName')} disabled />
-                </Label>
-              </div>
+            <AddChronoanalysisEmployee
+              employeeList={employeeList}
+              setEmployeeList={setEmployeeList}
+            />
+            <Card text='Informações do setor' className='flex mt-5'>
               <div className=' flex gap-4 justify-center w-full items-center'>
                 <Label title='Centro de custo' className='relative h-25'>
                   <CheckRequestStatus
@@ -302,35 +222,43 @@ const RegisterInitialInformationsPage = () => {
                 svg={Images}
                 className='absolute top-3 right-3 '
               />
-              <div className=' flex gap-4 w-full '>
-                <Label title='Código interno' className=' relative '>
-                  <CheckRequestStatus
-                    data={partData}
-                    status={isStatus}
-                    loading={isLoading}
+              <div className=' flex flex-col gap-4 w-full '>
+                <div className=' flex gap-4 w-full'>
+                  <Label title='Código interno' className=' relative '>
+                    <CheckRequestStatus
+                      data={partData}
+                      status={isStatus}
+                      loading={isLoading}
+                    />
+                    <Input
+                      {...register('internalCode')}
+                      maxLength={10}
+                      inputMode='numeric'
+                    />
+                    {errors.internalCode && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.internalCode.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='Part number'>
+                    <Input {...register('partNumber')} disabled />
+                  </Label>
+                </div>
+                <div className=' flex gap-4 w-full'>
+                  <Label title='Revisão'>
+                    <Input {...register('revision')} />
+                    {errors.revision && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.revision.message}
+                      </span>
+                    )}
+                  </Label>
+                  <CounterParts
+                    numberOfParts={numberOfParts}
+                    setNumberOfParts={setNumberOfParts}
                   />
-                  <Input
-                    {...register('internalCode')}
-                    maxLength={10}
-                    inputMode='numeric'
-                  />
-                  {errors.internalCode && (
-                    <span className='text-red-500 text-sm'>
-                      {errors.internalCode.message}
-                    </span>
-                  )}
-                </Label>
-                <Label title='Revisão'>
-                  <Input {...register('revision')} />
-                  {errors.revision && (
-                    <span className='text-red-500 text-sm'>
-                      {errors.revision.message}
-                    </span>
-                  )}
-                </Label>
-                <Label title='Part number'>
-                  <Input {...register('partNumber')} disabled />
-                </Label>
+                </div>
               </div>
             </Card>
             <Card text='Informações extras' className='flex'>
@@ -400,21 +328,66 @@ const RegisterInitialInformationsPage = () => {
                     )}
                   </Label>
                 </div>
+                <div className=' flex items-center gap-4'>
+                  {/* preciso adicionar a lógica de do isKaizen para armazenar/enviar no obj */}
+                  <Label title='É uma cronoanálise para KAIZEN?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${isKaizen ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isKaizen', true)} //não é SOP preciso criar uma prop isKaizen
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!isKaizen ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isKaizen', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.isKaizen && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.isKaizen.message}
+                      </span>
+                    )}
+                  </Label>
+                </div>
               </div>
             </Card>
             <Card text='Preset das atividades' className='flex flex-col mt-5'>
-              {/* <Label title='Tipo de cronoanálise'>
-            <Select
-              listTypeChronoanalist={['Soldagem', 'Montagem']}
-              disabled={false} //i can put loading fetch of clients
-              {...register('clientId')}
-            />
-          </Label> */}
-              <ListActivities
-                activities={pinedActivities}
-                pinedActivitie={pinedActivitie}
-                setAttListPinedActivities={setAttListPinedActivities}
-              />
+              <Label title='Tipo de cronoanálise' className=' flex w-full'>
+                <div className=' flex gap-1'>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'welding' ? 'select-blue' : 'default'
+                    }`}
+                    onClick={() => setValue('typeOfChronoanalysis', 'welding')}
+                  >
+                    soldagem
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'montage' ? 'select-blue' : 'default'
+                    }`}
+                    onClick={() => setValue('typeOfChronoanalysis', 'montage')}
+                  >
+                    montagem
+                  </Button>
+                </div>
+              </Label>
+              <ListActivities activities={pinedActivities} />
             </Card>
             <div className=' flex gap-4 w-full justify-end items-center mt-5'>
               <Button variant={'red'} size={'md'} type='button'>

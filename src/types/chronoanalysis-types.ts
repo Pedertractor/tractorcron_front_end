@@ -1,10 +1,10 @@
+import { EmployeeProps } from '@/components/add-chronoanalysis-employees';
+
 export interface PropsChronoanalysis {
   id?: string;
   clientId: number;
   unit?: string;
-  employeeId?: number;
-  employeeName?: string;
-  employeeCardNumber: string;
+  employees: EmployeeProps[];
   sectorId?: number;
   sectorName?: string;
   sectorCostCenter?: string;
@@ -16,4 +16,6 @@ export interface PropsChronoanalysis {
   revision: string;
   startTime: string | Date;
   endTime: string | Date;
+  howManyParts: number;
+  enhancement?: string;
 }

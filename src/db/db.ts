@@ -1,12 +1,10 @@
+import { EmployeeProps } from '@/components/add-chronoanalysis-employees';
 import Dexie, { type EntityTable } from 'dexie';
 
 export interface RegisterChronoanalysis {
   id: string;
   clientId: number;
-  employeeUnit: string;
-  employeeId: number;
-  employeeName: string;
-  employeeCardNumber: string;
+  employees: EmployeeProps[];
   sectorId: number;
   sectorName: string;
   sectorCostCenter: string;
@@ -16,6 +14,9 @@ export interface RegisterChronoanalysis {
   op: string;
   partNumber: string;
   revision: string;
+  typeOfChronoanalysis: string;
+  isKaizen: boolean;
+  howManyParts: number;
 }
 
 export interface RegisterActivities {
@@ -31,9 +32,10 @@ export interface RegisterActivities {
 
 export interface RegisterPresetActivities {
   id: number;
+  activityType: string;
+  classification: string;
   name: string;
-  description?: string;
-  liked: boolean;
+  typeMovimation: string;
 }
 
 export const dbRegisterChronoanalysis = new Dexie('Chronoanalysis') as Dexie & {

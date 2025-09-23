@@ -1,3 +1,4 @@
+import { EmployeeProps } from '@/components/add-chronoanalysis-employees';
 import type { PropsActivities } from '../types/activities-types';
 import type { PropsChronoanalysis } from '../types/chronoanalysis-types';
 import type { PropsWorkPaceAssessment } from '../types/work-pace-assessment-types';
@@ -12,13 +13,15 @@ export interface listChronoanalysisProps {
   of: string;
   op: string;
   sop: boolean;
-  employeeName: string;
-  employeeUnit: string;
-  employeeCardNumber: string;
   sectorName: string;
   sectorCostCenter: string;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
+  isKaizen: boolean;
+  isSend: boolean;
+  startDate: string;
+  endDate: string;
+  howManyParts: number;
+  enhancement?: string;
+  chronoanalysisEmployee: EmployeeProps[];
   client: {
     id: number;
     name: string;
@@ -28,8 +31,8 @@ export interface listChronoanalysisProps {
     employeeId: number;
   };
   activities: {
-    startTime: string; // ISO date string
-    endTime: string; // ISO date string
+    startTime: string;
+    endTime: string;
     id: number;
     name: string;
     registerId: string;
@@ -47,7 +50,14 @@ export interface listChronoanalysisProps {
     effortPorcent: number;
     hability: string;
     habilityPorcent: number;
+    standardTimeDecimal: number;
+    standardTimeDecimalByNumberOfParts: number;
   };
+}
+
+export interface DashboardDataProps {
+  costCenterInformations: { costcenter: string; value: number }[];
+  clientsInformations: { name: string; value: number }[];
 }
 
 export interface PropsFinalData {
@@ -56,19 +66,9 @@ export interface PropsFinalData {
   workPaceAssessment: PropsWorkPaceAssessment;
 }
 
-export interface ListCountChronoanalysisByDayProps {
-  day: string;
-  count: number;
-}
-
-export async function ListCountChronoanalysisByDay(): Promise<{
-  status: boolean;
-  error: string | null;
-  data: ListCountChronoanalysisByDayProps[] | null;
-}> {
+export async function exportPDFReport(uuid: string) {
   const token = localStorage.getItem('token');
-
-  const response = await fetch(`${url}/chronoanalysis/list/cronobydays`, {
+  const response = await fetch(`${url}/chronoanalysis/report/${uuid}`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -76,12 +76,34 @@ export async function ListCountChronoanalysisByDay(): Promise<{
     },
   });
 
+  const blob = await response.blob();
+
+  return { blob, status: response.status };
+}
+
+export async function listDatasInformationsForDashBoard(
+  firstDate: Date,
+  secondDate: Date
+) {
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(
+    `${url}/chronoanalysis/dashboard/${firstDate.toISOString()}/${secondDate.toISOString()}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
   const data = await response.json();
 
   if (response.status !== 200)
     return {
       status: false,
-      error: data.error,
+      error: data.message,
       data: null,
     };
 
@@ -104,7 +126,6 @@ export async function listChronoanalysis() {
   });
 
   const data = await response.json();
-  console.log(data);
 
   if (response.status !== 200)
     return {
@@ -161,4 +182,21 @@ export async function verifyUuidRegister(uuid: string) {
   if (response.status === 200) return true;
 
   return false;
+}
+
+export async function changeSendStatus(idChronoanalysis: string) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(
+    `${url}/chronoanalysis/send/${idChronoanalysis}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  return { status: response.status, message: data.message };
 }

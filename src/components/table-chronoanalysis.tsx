@@ -17,7 +17,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination';
-import { listChronoanalysisProps } from '@/api/chronoanalysis-api';
+import {
+  exportPDFReport,
+  listChronoanalysisProps,
+} from '@/api/chronoanalysis-api';
+import { Checkbox } from './ui/checkbox';
+import { Download, Send, Users } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
@@ -27,7 +33,6 @@ export interface TableChronoanalysisProps {
   totalPages?: number;
   setIsChronoanalysis?: (item: listChronoanalysisProps | undefined) => void;
   setIsOpenModal?: (props: boolean) => void;
-  isView: boolean;
 }
 
 const TableChronoanalysis = ({
@@ -38,45 +43,24 @@ const TableChronoanalysis = ({
   totalPages,
   setIsChronoanalysis,
   setIsOpenModal,
-  isView,
 }: TableChronoanalysisProps) => {
-  if (isView)
-    return (
-      <div className=' overflow-y-auto rounded-md  '>
-        <Table>
-          <TableHeader>
-            <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
-              <TableHead>ID</TableHead>
-              <TableHead>Código interno</TableHead>
-              <TableHead>Cronoanalista</TableHead>
-              <TableHead>Tempo geral</TableHead>
-              <TableHead>Data</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((item) => (
-              <TableRow
-                key={item.id}
-                className=' border-border text-sm text-initial'
-              >
-                <TableCell>{item.id.slice(0, 7)} ...</TableCell>
-                <TableCell>{item.internalCode}</TableCell>
-                <TableCell>
-                  {item.user.employeeName.toLowerCase().slice(0, 15)}...
-                </TableCell>
+  async function handleDownloadReport(uuid: string) {
+    const { blob, status } = await exportPDFReport(uuid);
 
-                <TableCell>{item.workPaceAssessment.timeCalculate}</TableCell>
-                <TableCell>
-                  {new Date(item.startDate).toLocaleDateString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
+    if (status === 200) {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cronoanalise_${uuid}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      return;
+    }
 
-  if (setIsChronoanalysis && !isView && setIsOpenModal)
+    toast.error('Erro ao baixar relatório');
+  }
+
+  if (setIsChronoanalysis && setIsOpenModal)
     return (
       <Card>
         <div className=' overflow-y-auto rounded-md'>
@@ -84,45 +68,60 @@ const TableChronoanalysis = ({
             <TableCaption>lista das cronoanálises</TableCaption>
             <TableHeader>
               <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
-                <TableHead>ID</TableHead>
                 <TableHead>Part number</TableHead>
                 <TableHead>Código interno</TableHead>
-                <TableHead>OF</TableHead>
                 <TableHead>Cronoanalista</TableHead>
-                <TableHead>Funcinário</TableHead>
+                <TableHead>
+                  <Users size={18} />
+                </TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead>Decimal</TableHead>
                 <TableHead>Data</TableHead>
+                <TableHead>
+                  <Send size={15} className=' text-zinc-800' />
+                </TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((item) => (
                 <TableRow
                   key={item.id}
-                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 hover:cursor-pointer'
+                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 hover:cursor-pointer '
                   onClick={() => {
                     setIsChronoanalysis(item);
                     setIsOpenModal(true);
                   }}
                 >
-                  <TableCell>{item.id.slice(0, 16)} ...</TableCell>
                   <TableCell>{item.partNumber}</TableCell>
                   <TableCell>{item.internalCode}</TableCell>
-                  <TableCell>{item.of}</TableCell>
                   <TableCell>
                     {item.user.employeeName.toLowerCase().slice(0, 15)}...
                   </TableCell>
-                  <TableCell>{item.employeeName}</TableCell>
+                  <TableCell className=''>
+                    {item.chronoanalysisEmployee.length}
+                  </TableCell>
                   <TableCell>{item.client.name.toLowerCase()}</TableCell>
                   <TableCell>
+                    {item.workPaceAssessment.standardTimeDecimal}
+                  </TableCell>
+
+                  <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox checked={item.isSend} />
+                  </TableCell>
+                  <TableCell onClick={() => handleDownloadReport(item.id)}>
+                    <Download size={18} className=' text-zinc-800' />
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          {currentPage && handlePageChange && totalPages && (
+          {currentPage && handlePageChange && totalPages ? (
             <div className=' mt-5 px-2 flex items-center justify-center'>
-              <span className=' p-1 px-3 flex items-center text-xs justify-center w-10 border border-border rounded-lg text-secondary  font-medium'>
+              <span className=' p-1.5 px-3 flex items-center text-xs justify-center w-15 border border-border rounded-lg text-secondary font-medium'>
                 {PagesLength}
               </span>
               <Pagination className=''>
@@ -182,9 +181,9 @@ const TableChronoanalysis = ({
                 </PaginationContent>
               </Pagination>
 
-              <p className=' p-1 px-3 flex items-center justify-center w-14 border border-border rounded-lg text-secondary text-xs font-medium'>{`${currentPage}${' '}/${' '}${totalPages}`}</p>
+              <p className=' p-1.5 px-3 flex items-center justify-center w-25 border border-border rounded-lg text-secondary text-xs font-medium'>{`${currentPage}${' '}/${' '}${totalPages}`}</p>
             </div>
-          )}
+          ) : null}
         </div>
       </Card>
     );
