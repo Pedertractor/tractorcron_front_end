@@ -52,7 +52,6 @@ const RegisterFinishInformationsPage = () => {
   >([]);
   const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
   const [numberOfParts, setNumberOfParts] = useState<number>(1);
-  const [enhancement, setEnhancement] = useState<string>('');
 
   const [idRegister] = useState<string | null>(() =>
     localStorage.getItem('idRegister')
@@ -174,7 +173,7 @@ const RegisterFinishInformationsPage = () => {
         clientId: +data.clientId,
         employees: employeeList,
         howManyParts: numberOfParts,
-        enhancement,
+        enhancement: data.enhancement,
         sectorId: data.sectorId ? +data.sectorId : undefined,
         sop: data.sop ? true : false,
         startTime,
@@ -397,7 +396,6 @@ const RegisterFinishInformationsPage = () => {
               </Label>
             </div>
             <div className=' flex items-center gap-4'>
-              {/* preciso adicionar a lógica de do isKaizen para armazenar/enviar no obj */}
               <Label title='É uma cronoanálise para KAIZEN?'>
                 <div className=' flex items-center gap-1 w-full'>
                   <Button
@@ -405,7 +403,7 @@ const RegisterFinishInformationsPage = () => {
                     className=' py-2.5 w-full'
                     type='button'
                     variant={`${isKaizen ? 'select-blue' : 'default'}`}
-                    onClick={() => setValue('isKaizen', true)} //não é SOP preciso criar uma prop isKaizen
+                    onClick={() => setValue('isKaizen', true)}
                   >
                     sim
                   </Button>
@@ -446,17 +444,12 @@ const RegisterFinishInformationsPage = () => {
         </Card>
 
         <Card text='Melhorias e observações' className=' my-5'>
-          <Label title=''>
-            <textarea
-              value={enhancement}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setEnhancement(e.target.value)
-              }
-              rows={8}
-              placeholder='Digite aqui suas observações ou melhorias...'
-              className=' p-2 border border-border rounded-xl text-secondary resize-none'
-            />
-          </Label>
+          <textarea
+            {...register('enhancement')}
+            rows={8}
+            placeholder='Digite aqui suas observações ou melhorias...'
+            className=' p-2 border border-border rounded-xl text-secondary resize-none'
+          />
         </Card>
 
         <div className=' flex gap-4 w-full justify-end items-center mt-5'>

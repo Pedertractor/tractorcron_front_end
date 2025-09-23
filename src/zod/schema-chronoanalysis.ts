@@ -21,6 +21,7 @@ export const initialInformationsSchema = z.object({
   partNumber: z.string().min(4, 'Part Number obrigatório'),
   typeOfChronoanalysis: z.string().min(1, 'Tipo de cronoanálise obrigatório'),
   isKaizen: z.boolean(),
+  enhancement: z.string().optional(),
 });
 
 export type TypeInitialInformationsData = z.infer<

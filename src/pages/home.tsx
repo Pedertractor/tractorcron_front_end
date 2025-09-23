@@ -50,7 +50,6 @@ const HomePage = () => {
         );
 
         if (status && data) {
-          console.log(data);
           const totalParts = data.clientsInformations.reduce(
             (acc, item) => acc + item.value,
             0
