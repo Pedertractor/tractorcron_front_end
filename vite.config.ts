@@ -8,8 +8,8 @@ import path from 'path';
 export default defineConfig({
   plugins: [react(), tailwindcss(), svgr()],
   server: {
-    // host: '172.31.98.130',
-    // port: 1717,
+    host: '10.20.2.79',
+    port: 8888,
   },
   resolve: {
     alias: {
