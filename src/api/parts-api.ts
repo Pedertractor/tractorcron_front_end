@@ -5,13 +5,16 @@ const APPKEY = import.meta.env.VITE_APPKEY;
 
 export async function findUniquePart(partCode: string) {
   try {
-    const response = await fetch(`${URL_API_BASE}/part/unique/${partCode}`, {
-      method: 'GET',
-      headers: {
-        nameApplication: NAMEAPLLICATION,
-        key: APPKEY,
-      },
-    });
+    const response = await fetch(
+      `${URL_API_BASE}/part/unique/${partCode}?convert=true`,
+      {
+        method: 'GET',
+        headers: {
+          nameApplication: NAMEAPLLICATION,
+          key: APPKEY,
+        },
+      }
+    );
 
     const data = await response.json();
 
