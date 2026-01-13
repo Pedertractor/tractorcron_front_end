@@ -27,6 +27,7 @@ import ModalImage from './modal-image';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import StrikeZoneClassification from './strike-zone-classification';
+import GoldenZoneClassification from './golden-zone-classification';
 
 export interface ModalDetailProps {
   open: boolean;
@@ -448,7 +449,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             <div className=' flex items-center justify-center gap-2 w-full'>
               <div className=' w-1/2 h-full  p-2 border border-border rounded-lg'>
                 <h4 className=' text-sm font-medium'>
-                  Classificação Strike Zone
+                  Classificação Ergonomia do Movimento - ST
                 </h4>
                 {isLoading && <Loading />}
                 {dataGraph && !isLoading && (
@@ -460,11 +461,15 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
 
               <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
                 <h4 className=' text-sm font-medium'>
-                  Classificação Golden Zone
+                  Classificação Ergonomia do Movimento - GZ
                 </h4>
                 {isLoading && <Loading />}
 
-                {dataGraph && !isLoading && <div className=' h-full'>oi</div>}
+                {dataGraph && !isLoading && (
+                  <GoldenZoneClassification
+                    totalGoldenZone={dataGraph.totalGoldenZone}
+                  />
+                )}
               </div>
             </div>
           </div>
