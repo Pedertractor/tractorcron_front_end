@@ -26,6 +26,7 @@ import { Cog, IdCardLanyard, Image, Send, User, Users } from 'lucide-react';
 import ModalImage from './modal-image';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
+import StrikeZoneClassification from './strike-zone-classification';
 
 export interface ModalDetailProps {
   open: boolean;
@@ -57,6 +58,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
       }
 
       if (status) {
+        console.log(data);
         setDataGraph(data);
       }
     };
@@ -418,7 +420,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 )}
               </div>
               <div className=' flex items-center justify-center gap-2 w-full'>
-                <div className=' w-1/2  p-2 border border-border rounded-lg'>
+                <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
                   <h4 className=' text-sm font-medium'>
                     Classificação do movimento
                   </h4>
@@ -430,7 +432,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   )}
                 </div>
 
-                <div className=' w-1/2 p-2 border border-border rounded-lg'>
+                <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
                   <h4 className=' text-sm font-medium'>Tipo do movimento</h4>
                   {isLoading && <Loading />}
 
@@ -441,6 +443,28 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                     />
                   )}
                 </div>
+              </div>
+            </div>
+            <div className=' flex items-center justify-center gap-2 w-full'>
+              <div className=' w-1/2 h-full  p-2 border border-border rounded-lg'>
+                <h4 className=' text-sm font-medium'>
+                  Classificação Strike Zone
+                </h4>
+                {isLoading && <Loading />}
+                {dataGraph && !isLoading && (
+                  <StrikeZoneClassification
+                    totalStrikeZone={dataGraph.totalStrikeZone}
+                  />
+                )}
+              </div>
+
+              <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
+                <h4 className=' text-sm font-medium'>
+                  Classificação Golden Zone
+                </h4>
+                {isLoading && <Loading />}
+
+                {dataGraph && !isLoading && <div className=' h-full'>oi</div>}
               </div>
             </div>
           </div>

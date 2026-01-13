@@ -25,7 +25,6 @@ const ChartBarMonthTime = ({
 }: {
   chartData: { month: string; totalTimeSeconds: number }[];
 }) => {
-  console.log(chartData);
   return (
     <Card className='w-full h-[22rem] border-border'>
       <CardHeader className=''>
