@@ -29,7 +29,7 @@ const StrikeZoneClassification = ({
   }, [totalStrikeZone]);
 
   return (
-    <div className='flex flex-col items-center justify-center my-10'>
+    <div className='flex flex-col items-center justify-center h-full'>
       <div className=' flex items-center gap-1 relative '>
         <img
           src='./strike_man_2.png'
