@@ -45,7 +45,7 @@ const Analysis = () => {
   >(undefined);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 15;
   const totalPages = Math.ceil(filterListChronoanalysis.length / pageSize);
   const paginatedData = filterListChronoanalysis
     .sort((a, b) => Date.parse(b.startDate) - Date.parse(a.startDate))
