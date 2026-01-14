@@ -12,8 +12,9 @@ import type { DateRange } from 'react-day-picker';
 type Props = {
   value?: DateRange;
   onChange: (value: DateRange | undefined) => void;
+  homePage?: boolean;
 };
-export function DatePicker({ value, onChange }: Props) {
+export function DatePicker({ value, onChange, homePage }: Props) {
   const [open, setOpen] = useState(false);
   const [isYear, setIsYear] = useState<string | null>(null);
 
@@ -58,21 +59,22 @@ export function DatePicker({ value, onChange }: Props) {
           <CalendarRange dateRange={value} setDateRange={onChange} />
         </PopoverContent>
       </Popover>
-      {years.map((year, index) => (
-        <Button
-          variant={'outline'}
-          size={'sm'}
-          key={`${index}-${year}`}
-          className={`cursor-pointer text-secondary border-border ${
-            isYear === year
-              ? 'bg-background-blue-active border-background-base-blue-active'
-              : ''
-          }  `}
-          onClick={() => handleClickYear(year)}
-        >
-          {year}
-        </Button>
-      ))}
+      {homePage &&
+        years.map((year, index) => (
+          <Button
+            variant={'outline'}
+            size={'sm'}
+            key={`${index}-${year}`}
+            className={`cursor-pointer text-secondary border-border ${
+              isYear === year
+                ? 'bg-background-blue-active border-background-base-blue-active'
+                : ''
+            }  `}
+            onClick={() => handleClickYear(year)}
+          >
+            {year}
+          </Button>
+        ))}
     </div>
   );
 }
