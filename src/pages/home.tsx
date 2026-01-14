@@ -56,7 +56,7 @@ const HomePage = () => {
   return (
     <section className=' w-full relative'>
       <div className=' absolute top-0 right-[40%] w-fit'>
-        <DatePicker value={dateRange} onChange={setDateRange} />
+        <DatePicker value={dateRange} onChange={setDateRange} homePage />
       </div>
       <Text variant={'title'}>Dashboard</Text>
       {dashBoardData && (
