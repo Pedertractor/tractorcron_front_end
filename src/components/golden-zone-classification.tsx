@@ -9,14 +9,13 @@ const GoldenZoneClassification = ({
     total: number;
   }[];
 }) => {
-  console.log(totalGoldenZone);
   const structGoldenZone = useMemo(() => {
     const base = [
-      { name: 'AA', total: 0, right: 38, bottom: 52 },
-      { name: 'A', total: 0, right: 20, bottom: 35 },
-      { name: 'B', total: 0, right: 38, bottom: 63 },
-      { name: 'C', total: 0, right: 37, bottom: 15 },
-      { name: 'D', total: 0, right: 5, bottom: 12 },
+      { name: 'AA', total: 0 },
+      { name: 'B', total: 0 },
+      { name: 'C', total: 0 },
+      { name: 'D', total: 0 },
+      { name: 'A', total: 0 },
     ];
 
     return base.map((item) => {
@@ -30,17 +29,26 @@ const GoldenZoneClassification = ({
       };
     });
   }, [totalGoldenZone]);
+
   return (
     <div className='flex flex-col items-center justify-center h-full'>
       <div className=' flex items-center gap-1 relative '>
         {structGoldenZone.map((item, index) => (
           <div
             key={index}
-            className={`absolute right-${item.right} bottom-${item.bottom} h-10 w-10`}
+            className={`absolute ${
+              item.name === 'AA'
+                ? ' right-45 bottom-55'
+                : item.name === 'A'
+                ? ' right-26 bottom-39'
+                : item.name === 'B'
+                ? ' right-45 bottom-66'
+                : item.name === 'C'
+                ? 'right-45 bottom-17'
+                : 'right-10 bottom-15'
+            }`}
           >
-            <span className=' font-bold text-md text-white w-full'>
-              {item.total}
-            </span>
+            <span className=' font-bold text-md text-white '>{item.total}</span>
           </div>
         ))}
 
