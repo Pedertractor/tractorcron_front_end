@@ -18,11 +18,12 @@ import {
   PaginationPrevious,
 } from './ui/pagination';
 import {
+  changeSendStatus,
   exportPDFReport,
   listChronoanalysisProps,
 } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Download, Send, Users } from 'lucide-react';
+import { Download, EyeIcon, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface TableChronoanalysisProps {
@@ -44,6 +45,17 @@ const TableChronoanalysis = ({
   setIsChronoanalysis,
   setIsOpenModal,
 }: TableChronoanalysisProps) => {
+  async function onChangeChangeSendStatus(id: string) {
+    const { status, message } = await changeSendStatus(id);
+
+    if (status === 200) {
+      toast.success(message);
+      window.location.reload();
+      return;
+    }
+
+    toast.error(message);
+  }
   async function handleDownloadReport(uuid: string) {
     const { blob, status } = await exportPDFReport(uuid);
 
@@ -70,16 +82,16 @@ const TableChronoanalysis = ({
               <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
                 <TableHead>Part number</TableHead>
                 <TableHead>Código interno</TableHead>
+                <TableHead>OP</TableHead>
                 <TableHead>Cronoanalista</TableHead>
                 <TableHead>
                   <Users size={18} />
                 </TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Decimal</TableHead>
+                <TableHead>Tempo Padrão</TableHead>
                 <TableHead>Data</TableHead>
-                <TableHead>
-                  <Send size={15} className=' text-zinc-800' />
-                </TableHead>
+                <TableHead></TableHead>
+                <TableHead></TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -87,14 +99,11 @@ const TableChronoanalysis = ({
               {data.map((item) => (
                 <TableRow
                   key={item.id}
-                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 hover:cursor-pointer '
-                  onClick={() => {
-                    setIsChronoanalysis(item);
-                    setIsOpenModal(true);
-                  }}
+                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 '
                 >
                   <TableCell>{item.partNumber}</TableCell>
                   <TableCell>{item.internalCode}</TableCell>
+                  <TableCell>{item.op}</TableCell>
                   <TableCell>
                     {item.user.employeeName.toLowerCase().slice(0, 15)}...
                   </TableCell>
@@ -109,11 +118,27 @@ const TableChronoanalysis = ({
                   <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
-                    <Checkbox checked={item.isSend} />
+                  <TableCell className=' z-10'>
+                    <Checkbox
+                      className=' cursor-pointer'
+                      checked={item.isSend}
+                      onCheckedChange={() => onChangeChangeSendStatus(item.id)}
+                    />
                   </TableCell>
-                  <TableCell onClick={() => handleDownloadReport(item.id)}>
+                  <TableCell
+                    className=' cursor-pointer '
+                    onClick={() => handleDownloadReport(item.id)}
+                  >
                     <Download size={18} className=' text-zinc-800' />
+                  </TableCell>
+                  <TableCell
+                    className=' cursor-pointer '
+                    onClick={() => {
+                      setIsChronoanalysis(item);
+                      setIsOpenModal(true);
+                    }}
+                  >
+                    <EyeIcon size={18} className=' text-zinc-800' />
                   </TableCell>
                 </TableRow>
               ))}
