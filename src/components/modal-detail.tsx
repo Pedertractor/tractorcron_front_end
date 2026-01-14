@@ -1,7 +1,4 @@
-import {
-  changeSendStatus,
-  type listChronoanalysisProps,
-} from '@/api/chronoanalysis-api';
+import { type listChronoanalysisProps } from '@/api/chronoanalysis-api';
 import {
   Dialog,
   DialogContent,
@@ -67,17 +64,6 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
     supportGetDatasForGraph();
   }, [chronoanalysis.id]);
 
-  async function onChangeChangeSendStatus(id: string) {
-    const { status, message } = await changeSendStatus(id);
-
-    if (status === 200) {
-      toast.success(message);
-      window.location.reload();
-      return;
-    }
-
-    toast.error(message);
-  }
   return (
     <Dialog
       open={open}
@@ -126,13 +112,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             <span className=' flex items-center justify-center gap-1'>
               <Label className=' flex items-center justify-center gap-2.5 py-2 px-1.5 rounded-md hover:bg-zinc-50 transition cursor-pointer'>
                 <Send size={20} className='text-zinc-900' />
-                <Checkbox
-                  className=' cursor-pointer'
-                  checked={chronoanalysis.isSend}
-                  onCheckedChange={() =>
-                    onChangeChangeSendStatus(chronoanalysis.id)
-                  }
-                />
+                <Checkbox checked={chronoanalysis.isSend} />
               </Label>
             </span>
           </DialogDescription>
