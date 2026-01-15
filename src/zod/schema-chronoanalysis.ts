@@ -20,7 +20,10 @@ export const initialInformationsSchema = z.object({
     .max(10, 'O código interno está com muitas informações'),
   partNumber: z.string().min(4, 'Part Number obrigatório'),
   typeOfChronoanalysis: z.string().min(1, 'Tipo de cronoanálise obrigatório'),
+  isRequest: z.boolean(),
+  firstCron: z.boolean(),
   isKaizen: z.boolean(),
+  numberKaizen: z.string().optional(),
   enhancement: z.string().optional(),
 });
 
