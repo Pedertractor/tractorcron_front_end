@@ -30,10 +30,10 @@ const StrikeZoneClassification = ({
 
   return (
     <div className='flex flex-col items-center justify-center h-full'>
-      <div className=' flex items-center gap-1 relative '>
+      <div className=' flex items-center gap-1 relative'>
         <img
-          src='./strike_man_2.png'
-          alt=''
+          src='/strike_man_2.png'
+          alt='homem representando um funcioário com os braços curvados'
           className=' absolute right-10 h-43 z-10'
         />
         <div className='rounded-t-md rounded-b-md overflow-auto z-5'>
