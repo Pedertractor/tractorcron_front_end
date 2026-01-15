@@ -99,7 +99,10 @@ const RegisterFinishInformationsPage = () => {
             partNumber: info.register.partNumber,
             revision: info.register.revision,
             typeOfChronoanalysis: info.register.typeOfChronoanalysis,
+            isRequest: info.register.isRequest,
+            firstCron: info.register.firstCron,
             isKaizen: info.register.isKaizen,
+            numberKaizen: info.register.numberKaizen,
           });
         }
       }
@@ -126,6 +129,8 @@ const RegisterFinishInformationsPage = () => {
   const manufacturingOrder = watch('of');
   const sop = watch('sop');
   const isKaizen = watch('isKaizen');
+  const isRequest = watch('isRequest');
+  const firstCron = watch('firstCron');
 
   const {
     partData,
@@ -396,7 +401,7 @@ const RegisterFinishInformationsPage = () => {
               </Label>
             </div>
             <div className=' flex items-center gap-4'>
-              <Label title='É uma cronoanálise para KAIZEN?'>
+              <Label title='É uma cronoanálise para Kaizen?'>
                 <div className=' flex items-center gap-1 w-full'>
                   <Button
                     size={' md-desk'}
@@ -420,6 +425,72 @@ const RegisterFinishInformationsPage = () => {
                 {errors.isKaizen && (
                   <span className='text-red-500 text-sm'>
                     {errors.isKaizen.message}
+                  </span>
+                )}
+              </Label>
+              {isKaizen && (
+                <Label title='Número do Kaizen'>
+                  <Input {...register('numberKaizen')} />
+                  {errors.op && (
+                    <span className='text-red-500 text-sm'>
+                      {errors.op.message}
+                    </span>
+                  )}
+                </Label>
+              )}
+            </div>
+            <div className=' flex items-center gap-4'>
+              <Label title='É uma requisição?'>
+                <div className=' flex items-center gap-1 w-full'>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${isRequest ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('isRequest', true)}
+                  >
+                    sim
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${!isRequest ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('isRequest', false)}
+                  >
+                    não
+                  </Button>
+                </div>
+                {errors.isRequest && (
+                  <span className='text-red-500 text-sm'>
+                    {errors.isRequest.message}
+                  </span>
+                )}
+              </Label>
+              <Label title='É a primeira cronoanálise dessa peça?'>
+                <div className=' flex items-center gap-1 w-full'>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${firstCron ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('firstCron', true)}
+                  >
+                    sim
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${!firstCron ? 'select-blue' : 'default'}`}
+                    onClick={() => setValue('firstCron', false)}
+                  >
+                    não
+                  </Button>
+                </div>
+                {errors.firstCron && (
+                  <span className='text-red-500 text-sm'>
+                    {errors.firstCron.message}
                   </span>
                 )}
               </Label>
