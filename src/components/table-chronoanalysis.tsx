@@ -23,8 +23,11 @@ import {
   listChronoanalysisProps,
 } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Download, EyeIcon, Users } from 'lucide-react';
+import { Copy, CopyCheck, Download, EyeIcon, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { useState } from 'react';
+
+const url = import.meta.env.VITE_URL_FRONT_END_URL;
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
@@ -45,6 +48,8 @@ const TableChronoanalysis = ({
   setIsChronoanalysis,
   setIsOpenModal,
 }: TableChronoanalysisProps) => {
+  const [copied, setCopied] = useState('');
+
   async function onChangeChangeSendStatus(id: string) {
     const { status, message } = await changeSendStatus(id);
 
@@ -72,6 +77,11 @@ const TableChronoanalysis = ({
     toast.error('Erro ao baixar relatório');
   }
 
+  async function handleCopy(uuid: string) {
+    await navigator.clipboard.writeText(`${url}/${uuid}`);
+    setCopied(uuid);
+  }
+
   if (setIsChronoanalysis && setIsOpenModal)
     return (
       <Card>
@@ -90,6 +100,7 @@ const TableChronoanalysis = ({
                 <TableHead>Cliente</TableHead>
                 <TableHead>Tempo Padrão</TableHead>
                 <TableHead>Data</TableHead>
+                <TableHead></TableHead>
                 <TableHead></TableHead>
                 <TableHead></TableHead>
                 <TableHead></TableHead>
@@ -139,6 +150,18 @@ const TableChronoanalysis = ({
                     }}
                   >
                     <EyeIcon size={18} className=' text-zinc-800' />
+                  </TableCell>
+                  <TableCell
+                    className=' cursor-pointer '
+                    onClick={() => {
+                      handleCopy(item.id);
+                    }}
+                  >
+                    {copied === item.id ? (
+                      <CopyCheck size={18} className=' text-zinc-800' />
+                    ) : (
+                      <Copy size={18} className=' text-zinc-800' />
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
