@@ -58,6 +58,8 @@ const RegisterInitialInformationsPage = () => {
       sop: false,
       typeOfChronoanalysis: 'welding',
       isKaizen: false,
+      isRequest: false,
+      firstCron: true,
     },
   });
 
@@ -67,6 +69,9 @@ const RegisterInitialInformationsPage = () => {
   const sop = watch('sop');
   const typeOfChron = watch('typeOfChronoanalysis');
   const isKaizen = watch('isKaizen');
+  const numberKaizen = watch('numberKaizen');
+  const isRequest = watch('isRequest');
+  const firstCron = watch('firstCron');
 
   const { partData, isLoading, isStatus } = useParts(partCode);
 
@@ -154,7 +159,10 @@ const RegisterInitialInformationsPage = () => {
       internalCode: data.internalCode,
       partNumber: data.partNumber,
       typeOfChronoanalysis: data.typeOfChronoanalysis,
+      isRequest: data.isRequest,
+      firstCron: data.firstCron,
       isKaizen: data.isKaizen,
+      numberKaizen: data.numberKaizen,
     };
 
     await dbRegisterChronoanalysis.register.add(testInitialInformations);
@@ -329,15 +337,14 @@ const RegisterInitialInformationsPage = () => {
                   </Label>
                 </div>
                 <div className=' flex items-center gap-4'>
-                  {/* preciso adicionar a lógica de do isKaizen para armazenar/enviar no obj */}
-                  <Label title='É uma cronoanálise para KAIZEN?'>
+                  <Label title='É uma cronoanálise para Kaizen?'>
                     <div className=' flex items-center gap-1 w-full'>
                       <Button
                         size={' md-desk'}
                         className=' py-2.5 w-full'
                         type='button'
                         variant={`${isKaizen ? 'select-blue' : 'default'}`}
-                        onClick={() => setValue('isKaizen', true)} //não é SOP preciso criar uma prop isKaizen
+                        onClick={() => setValue('isKaizen', true)}
                       >
                         sim
                       </Button>
@@ -354,6 +361,72 @@ const RegisterInitialInformationsPage = () => {
                     {errors.isKaizen && (
                       <span className='text-red-500 text-sm'>
                         {errors.isKaizen.message}
+                      </span>
+                    )}
+                  </Label>
+                  {isKaizen && (
+                    <Label title='Número do Kaizen'>
+                      <Input {...register('numberKaizen')} />
+                      {errors.op && (
+                        <span className='text-red-500 text-sm'>
+                          {errors.op.message}
+                        </span>
+                      )}
+                    </Label>
+                  )}
+                </div>
+                <div className=' flex items-center gap-4'>
+                  <Label title='É uma requisição?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${isRequest ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isRequest', true)}
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!isRequest ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isRequest', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.isRequest && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.isRequest.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='É a primeira cronoanálise dessa peça?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${firstCron ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('firstCron', true)}
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!firstCron ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('firstCron', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.firstCron && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.firstCron.message}
                       </span>
                     )}
                   </Label>
@@ -394,8 +467,10 @@ const RegisterInitialInformationsPage = () => {
                 cancelar
               </Button>
               <Button
-                disabled={!isValid}
-                variant={`${!isValid ? 'default' : 'blue'}`}
+                disabled={!isValid || (isKaizen && !numberKaizen)}
+                variant={`${
+                  !isValid || (isKaizen && !numberKaizen) ? 'default' : 'blue'
+                }`}
                 size={'md'}
                 type='submit'
               >
