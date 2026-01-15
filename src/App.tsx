@@ -6,11 +6,13 @@ import LoginPage from './pages/login';
 import ProtectRoute from './routers/protect-route';
 import SideBar from './components/ui/side-bar';
 import Analysis from './pages/analysis';
+import MagickLinkPage from './pages/magic-link';
 
 const App = () => {
   return (
     <Routes>
       <Route path='/login' element={<LoginPage />} />
+      <Route path='/info/:uuid' element={<MagickLinkPage />} />
       <Route
         element={
           <ProtectRoute allowedRoles={['ADMIN', 'USER', 'CHRONOANALIST']} />
