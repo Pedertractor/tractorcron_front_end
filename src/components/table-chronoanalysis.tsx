@@ -19,11 +19,10 @@ import {
 } from './ui/pagination';
 import {
   changeSendStatus,
-  exportPDFReport,
   listChronoanalysisProps,
 } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Copy, CopyCheck, Download, EyeIcon, Users } from 'lucide-react';
+import { Copy, CopyCheck, Edit, EyeIcon, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -37,6 +36,8 @@ export interface TableChronoanalysisProps {
   totalPages?: number;
   setIsChronoanalysis?: (item: listChronoanalysisProps | undefined) => void;
   setIsOpenModal?: (props: boolean) => void;
+  setIsOpenModalEdit?: (props: boolean) => void;
+  setIsIdChrono?: (props: string | null) => void;
 }
 
 const TableChronoanalysis = ({
@@ -47,6 +48,8 @@ const TableChronoanalysis = ({
   totalPages,
   setIsChronoanalysis,
   setIsOpenModal,
+  setIsOpenModalEdit,
+  setIsIdChrono,
 }: TableChronoanalysisProps) => {
   const [copied, setCopied] = useState('');
 
@@ -61,28 +64,18 @@ const TableChronoanalysis = ({
 
     toast.error(message);
   }
-  async function handleDownloadReport(uuid: string) {
-    const { blob, status } = await exportPDFReport(uuid);
-
-    if (status === 200) {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cronoanalise_${uuid}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      return;
-    }
-
-    toast.error('Erro ao baixar relatório');
-  }
 
   async function handleCopy(uuid: string) {
     await navigator.clipboard.writeText(`${url}/${uuid}`);
     setCopied(uuid);
   }
 
-  if (setIsChronoanalysis && setIsOpenModal)
+  if (
+    setIsChronoanalysis &&
+    setIsOpenModal &&
+    setIsIdChrono &&
+    setIsOpenModalEdit
+  )
     return (
       <Card>
         <div className=' overflow-y-auto rounded-md'>
@@ -121,7 +114,7 @@ const TableChronoanalysis = ({
                   <TableCell className=''>
                     {item.chronoanalysisEmployee.length}
                   </TableCell>
-                  <TableCell>{item.client.name.toLowerCase()}</TableCell>
+                  <TableCell>{item.client.name?.toLowerCase()}</TableCell>
                   <TableCell>
                     {item.workPaceAssessment.standardTimeDecimal}
                   </TableCell>
@@ -138,18 +131,22 @@ const TableChronoanalysis = ({
                   </TableCell>
                   <TableCell
                     className=' cursor-pointer '
-                    onClick={() => handleDownloadReport(item.id)}
-                  >
-                    <Download size={18} className=' text-zinc-800' />
-                  </TableCell>
-                  <TableCell
-                    className=' cursor-pointer '
                     onClick={() => {
                       setIsChronoanalysis(item);
                       setIsOpenModal(true);
                     }}
                   >
                     <EyeIcon size={18} className=' text-zinc-800' />
+                  </TableCell>
+                  <TableCell
+                    className=' cursor-pointer '
+                    onClick={() => {
+                      setIsIdChrono(item.id);
+                      setIsOpenModalEdit(true);
+                      setIsOpenModal(false);
+                    }}
+                  >
+                    <Edit size={18} className=' text-zinc-800' />
                   </TableCell>
                   <TableCell
                     className=' cursor-pointer '
@@ -191,7 +188,7 @@ const TableChronoanalysis = ({
 
                   {Array.from(
                     { length: totalPages > 10 ? totalPages / 2 : totalPages },
-                    (_, i) => i + 1
+                    (_, i) => i + 1,
                   ).map((page) => (
                     <PaginationItem key={page}>
                       <PaginationLink
