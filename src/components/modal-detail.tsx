@@ -48,7 +48,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
     const supportGetDatasForGraph = async () => {
       const { data, error, status } = await getActivitiesDataCharts(
         chronoanalysis.id,
-        setIsloading
+        setIsloading,
       );
 
       if (!status) {
@@ -56,7 +56,6 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
       }
 
       if (status) {
-        console.log(data);
         setDataGraph(data);
       }
     };
@@ -87,17 +86,17 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
               <LabelActivitieInfo
                 text='Iniciado'
                 textInfo={new Date(
-                  chronoanalysis.startDate
+                  chronoanalysis.startDate,
                 ).toLocaleTimeString()}
                 secondTextInfo={new Date(
-                  chronoanalysis.startDate
+                  chronoanalysis.startDate,
                 ).toLocaleDateString()}
               />
               <LabelActivitieInfo
                 text='Finalizado'
                 textInfo={new Date(chronoanalysis.endDate).toLocaleTimeString()}
                 secondTextInfo={new Date(
-                  chronoanalysis.endDate
+                  chronoanalysis.endDate,
                 ).toLocaleDateString()}
               />
               <LabelActivitieInfo
