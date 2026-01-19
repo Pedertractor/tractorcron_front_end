@@ -30,6 +30,7 @@ const url = import.meta.env.VITE_URL_FRONT_END_URL;
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
+  role: string | null;
   PagesLength?: number;
   currentPage?: number;
   handlePageChange?: (value: number) => void;
@@ -42,6 +43,7 @@ export interface TableChronoanalysisProps {
 
 const TableChronoanalysis = ({
   data,
+  role,
   PagesLength,
   currentPage,
   handlePageChange,
@@ -95,7 +97,8 @@ const TableChronoanalysis = ({
                 <TableHead>Data</TableHead>
                 <TableHead></TableHead>
                 <TableHead></TableHead>
-                <TableHead></TableHead>
+                {role && role === 'ADMIN' && <TableHead></TableHead>}
+
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -138,16 +141,19 @@ const TableChronoanalysis = ({
                   >
                     <EyeIcon size={18} className=' text-zinc-800' />
                   </TableCell>
-                  <TableCell
-                    className=' cursor-pointer '
-                    onClick={() => {
-                      setIsIdChrono(item.id);
-                      setIsOpenModalEdit(true);
-                      setIsOpenModal(false);
-                    }}
-                  >
-                    <Edit size={18} className=' text-zinc-800' />
-                  </TableCell>
+                  {role && role === 'ADMIN' && (
+                    <TableCell
+                      className=' cursor-pointer '
+                      onClick={() => {
+                        setIsIdChrono(item.id);
+                        setIsOpenModalEdit(true);
+                        setIsOpenModal(false);
+                      }}
+                    >
+                      <Edit size={18} className=' text-zinc-800' />
+                    </TableCell>
+                  )}
+
                   <TableCell
                     className=' cursor-pointer '
                     onClick={() => {

@@ -32,6 +32,8 @@ import ModalEditChronoanalysis from '@/components/modal-edit';
 
 const Analysis = () => {
   const [isOpenModalEdit, setIsOpenModalEdit] = useState(false);
+  const [role] = useState(window.localStorage.getItem('role'));
+
   const [isRefetch, setIsRefetch] = useState(false);
   const [isIdChrono, setIsIdChrono] = useState<string | null>(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -375,6 +377,7 @@ const Analysis = () => {
         </Card>
         <TableChronoanalysis
           data={paginatedData}
+          role={role}
           PagesLength={filterListChronoanalysis.length}
           currentPage={currentPage}
           handlePageChange={handlePageChange}
