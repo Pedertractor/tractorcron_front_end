@@ -5,7 +5,8 @@ import Label from './ui/label/label';
 import { useEffect, useState } from 'react';
 import { useEmployee } from '@/hooks/use-employees';
 import CheckRequestStatus from './check-request-status';
-import { IdCardLanyard, Users } from 'lucide-react';
+import { CircleXIcon, IdCardLanyard, Users } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface EmployeeProps {
   employeeId: number | undefined;
@@ -45,7 +46,7 @@ const AddChronoanalysisEmployee = ({
       employeeData.unit
     ) {
       const alreadyExists = employeeList.some(
-        (emp) => emp.employeeId === employeeData.id
+        (emp) => emp.employeeId === employeeData.id,
       );
 
       if (!alreadyExists) {
@@ -77,7 +78,7 @@ const AddChronoanalysisEmployee = ({
 
   function removeEmployee(employeeId: number | undefined) {
     setEmployeeList((prev) =>
-      prev.filter((item) => item.employeeId !== employeeId)
+      prev.filter((item) => item.employeeId !== employeeId),
     );
   }
 
@@ -147,9 +148,19 @@ const AddChronoanalysisEmployee = ({
         {employeeList.map((item, index) => (
           <div
             key={index}
-            className=' border border-border rounded-lg p-3 px-5 flex items-center justify-between gap-5 cursor-pointer'
-            onClick={() => removeEmployee(item.employeeId)}
+            className=' border border-border rounded-lg p-3 px-5 flex items-center justify-between gap-5 cursor-pointer relative'
+            onClick={() => {
+              if (employeeList.length > 1) removeEmployee(item.employeeId);
+              else toast.info('Você precisa ter pelo menos um colaborador!');
+            }}
           >
+            {employeeList.length > 1 && (
+              <CircleXIcon
+                size={20}
+                className=' absolute bottom-14 left-70 bg-red-200 text-red-700 rounded-full'
+              />
+            )}
+
             <IdCardLanyard
               size={30}
               className=' text-background-base-blue-select'
