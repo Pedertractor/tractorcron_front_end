@@ -19,9 +19,8 @@ import Loading from './loading';
 import { CharPieDefault } from './chart-pie';
 import { useParts } from '@/hooks/use-parts';
 import { Button } from './ui/button';
-import { Cog, IdCardLanyard, Image, Send, User, Users } from 'lucide-react';
+import { Cog, IdCardLanyard, Image, User, Users } from 'lucide-react';
 import ModalImage from './modal-image';
-import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import StrikeZoneClassification from './strike-zone-classification';
 import GoldenZoneClassification from './golden-zone-classification';
@@ -104,16 +103,6 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 textInfo={chronoanalysis.workPaceAssessment.standardTimeDecimal.toString()}
               />
             </span>
-            <span className=' flex items-center justify-center gap-2.5  py-1 px-1.5 rounded-md'>
-              <span className='text-zinc-900 font-semibold'>KAIZEN</span>
-              <Checkbox checked={chronoanalysis.isKaizen} />
-            </span>
-            <span className=' flex items-center justify-center gap-1'>
-              <Label className=' flex items-center justify-center gap-2.5 py-2 px-1.5 rounded-md hover:bg-zinc-50 transition cursor-pointer'>
-                <Send size={20} className='text-zinc-900' />
-                <Checkbox checked={chronoanalysis.isSend} />
-              </Label>
-            </span>
           </DialogDescription>
         </DialogHeader>
         <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
@@ -144,54 +133,26 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             <h3 className=' text-initial font-semibold'>
               Informações das peças
             </h3>
-            <div className=' flex items-center justify-between'>
-              <div className=' flex flex-col text-sm gap-1  text-initial'>
+            <div className=' flex items-center gap-5 justify-between w-full'>
+              <div className=' flex flex-col text-sm gap-1  text-initial w-full'>
                 <p className='font-semibold'>Part number</p>
-                <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                <span className='rounded-lg border border-border py-1 px-2 '>
                   {chronoanalysis.partNumber}
                 </span>
               </div>
-              <div className=' flex gap-1'>
-                <div className=' flex flex-col text-sm gap-1  text-initial'>
+              <div className=' flex gap-2 w-full '>
+                <div className=' flex flex-col text-sm gap-1 text-initial'>
                   <p className='font-semibold'>Revisão</p>
                   <span className=' text-center rounded-lg border border-border py-1 px-2 '>
                     {chronoanalysis.revision}
                   </span>
                 </div>
-                <div className=' flex flex-col text-sm gap-1  text-initial'>
+                <div className=' flex flex-col text-sm gap-1  w-full text-initial'>
                   <p className='font-semibold'>Código interno</p>
-                  <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                  <span className=' rounded-lg border border-border py-1 px-2 '>
                     {chronoanalysis.internalCode}
                   </span>
                 </div>
-              </div>
-
-              <div className=' flex flex-col text-sm gap-1  text-initial'>
-                <p className='font-semibold'>Ordem de fabricação (OF)</p>
-                <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                  {chronoanalysis.of}
-                </span>
-              </div>
-              <div className=' flex gap-1'>
-                <div className=' flex flex-col text-sm gap-1  text-initial'>
-                  <p className='font-semibold'>SOP</p>
-                  <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                    {chronoanalysis.sop ? 'existe' : 'não existe'}
-                  </span>
-                </div>
-                <div className=' flex flex-col text-sm gap-1  text-initial'>
-                  <p className='font-semibold'>OP</p>
-                  <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                    {chronoanalysis.op}
-                  </span>
-                </div>
-              </div>
-
-              <div className=' flex flex-col text-sm gap-1  text-initial'>
-                <p className='font-semibold'>Cliente</p>
-                <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                  {chronoanalysis.client.name}
-                </span>
               </div>
             </div>
           </div>
@@ -271,6 +232,108 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative'>
+            <h3 className=' text-initial font-semibold'>Informações extras</h3>
+            <div className=' flex items-center justify-center gap-3 w-full'>
+              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                <p className='font-semibold'>Cronoanálise para Kaizen</p>
+                <div className='w-full flex gap-1'>
+                  <div
+                    className={` ${chronoanalysis.isKaizen ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Sim
+                  </div>
+                  <div
+                    className={` ${chronoanalysis.isKaizen ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Não
+                  </div>
+                </div>
+              </div>
+              {chronoanalysis.isKaizen && chronoanalysis.numberKaizen && (
+                <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                  <p className='font-semibold'>Nº do KAIZEN</p>
+                  <span className=' rounded-lg border border-border py-1 px-2 '>
+                    {chronoanalysis.numberKaizen}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className=' flex items-center justify-center gap-20 w-full mt-2'>
+              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                <p className='font-semibold'>Registrado no sistema EEPROM</p>
+                <div className='w-full flex gap-1'>
+                  <div
+                    className={` ${chronoanalysis.isSend ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg  w-full py-1 flex items-center justify-center`}
+                  >
+                    Sim
+                  </div>
+                  <div
+                    className={` ${chronoanalysis.isSend ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Não
+                  </div>
+                </div>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                <p className='font-semibold'>Requisição</p>
+                <div className='w-full flex gap-1'>
+                  <div
+                    className={` ${chronoanalysis.isRequest ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg  w-full py-1 flex items-center justify-center`}
+                  >
+                    Sim
+                  </div>
+                  <div
+                    className={` ${chronoanalysis.isRequest ? ' border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Não
+                  </div>
+                </div>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                <p className='font-semibold'>Primeira cronoanálise</p>
+                <div className='w-full flex gap-1'>
+                  <div
+                    className={` ${chronoanalysis.firstCron ? 'bg-background-base-blue-select text-white font-bold' : 'border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Sim
+                  </div>
+                  <div
+                    className={` ${chronoanalysis.firstCron ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Não
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className=' flex gap-5 mt-5'>
+              <div className=' flex flex-col text-sm gap-1 w-full text-initial'>
+                <p className='font-semibold'>OP</p>
+                <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                  {chronoanalysis.op}
+                </span>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
+                <p className='font-semibold'>SOP</p>
+                <span className=' rounded-lg text-center border border-border py-1 px-2 '>
+                  {chronoanalysis.sop ? 'existe' : 'não existe'}
+                </span>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
+                <p className='font-semibold'>Cliente</p>
+                <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                  {chronoanalysis.client.name}
+                </span>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 w-full text-initial'>
+                <p className='font-semibold'>Ordem de fabricação (OF)</p>
+                <span className=' rounded-lg border border-border py-1 px-2  text-center'>
+                  {chronoanalysis.of}
+                </span>
               </div>
             </div>
           </div>

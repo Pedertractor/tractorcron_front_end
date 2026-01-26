@@ -8,10 +8,9 @@ import GoldenZoneClassification from '@/components/golden-zone-classification';
 import LabelActivitieInfo from '@/components/label-activities-info';
 import StrikeZoneClassification from '@/components/strike-zone-classification';
 import TableActivities from '@/components/table-activities';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import Text from '@/components/ui/text';
-import { Cog, IdCardLanyard, Send, User, Users } from 'lucide-react';
+import { Cog, IdCardLanyard, User, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -68,19 +67,9 @@ const MagickLinkPage = () => {
                 textInfo={report.chronoanalysis.workPaceAssessment.standardTimeDecimal.toString()}
               />
             </span>
-            <span className=' flex items-center justify-center gap-2.5  py-1 px-1.5 rounded-md'>
-              <span className='text-zinc-900 font-semibold'>KAIZEN</span>
-              <Checkbox checked={report.chronoanalysis.isKaizen} />
-            </span>
-            <span className=' flex items-center justify-center gap-1'>
-              <Label className=' flex items-center justify-center gap-2.5 py-2 px-1.5 rounded-md '>
-                <Send size={20} className='text-zinc-900' />
-                <Checkbox checked={report.chronoanalysis.isSend} />
-              </Label>
-            </span>
           </div>
           <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
-            <div className=' flex flex-col  gap-3 border border-border rounded-lg  relative px-4 py-5'>
+            <div className=' flex flex-col  gap-3 border border-border rounded-lg mt-5  relative px-4 py-5'>
               <div className=' absolute top-2 right-2 flex items-center justify-center gap-5'>
                 <div className=' flex items-center justify-center border border-border py-1 px-3 rounded-lg gap-2'>
                   <Cog
@@ -94,59 +83,31 @@ const MagickLinkPage = () => {
               <h3 className=' text-initial font-semibold'>
                 Informações das peças
               </h3>
-              <div className=' flex items-center justify-between'>
-                <div className=' flex flex-col text-sm gap-1  text-initial'>
+              <div className=' flex items-center justify-between gap-5'>
+                <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
                   <p className='font-semibold'>Part number</p>
-                  <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                  <span className='  rounded-lg border border-border py-1 px-2'>
                     {report.chronoanalysis.partNumber}
                   </span>
                 </div>
-                <div className=' flex gap-1'>
+                <div className=' flex gap-1 w-full'>
                   <div className=' flex flex-col text-sm gap-1  text-initial'>
                     <p className='font-semibold'>Revisão</p>
                     <span className=' text-center rounded-lg border border-border py-1 px-2 '>
                       {report.chronoanalysis.revision}
                     </span>
                   </div>
-                  <div className=' flex flex-col text-sm gap-1  text-initial'>
+                  <div className=' flex flex-col text-sm gap-1  text-initial w-full'>
                     <p className='font-semibold'>Código interno</p>
-                    <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                    <span className='  rounded-lg border border-border py-1 px-2 '>
                       {report.chronoanalysis.internalCode}
                     </span>
                   </div>
                 </div>
-
-                <div className=' flex flex-col text-sm gap-1  text-initial'>
-                  <p className='font-semibold'>Ordem de fabricação (OF)</p>
-                  <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                    {report.chronoanalysis.of}
-                  </span>
-                </div>
-                <div className=' flex gap-1'>
-                  <div className=' flex flex-col text-sm gap-1  text-initial'>
-                    <p className='font-semibold'>SOP</p>
-                    <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                      {report.chronoanalysis.sop ? 'existe' : 'não existe'}
-                    </span>
-                  </div>
-                  <div className=' flex flex-col text-sm gap-1  text-initial'>
-                    <p className='font-semibold'>OP</p>
-                    <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                      {report.chronoanalysis.op}
-                    </span>
-                  </div>
-                </div>
-
-                <div className=' flex flex-col text-sm gap-1  text-initial'>
-                  <p className='font-semibold'>Cliente</p>
-                  <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                    {report.chronoanalysis.client.name}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative mt-5'>
             <div className=' absolute top-2 right-2 flex items-center justify-center gap-3 py-1 px-3  border border-border rounded-lg'>
               {report.chronoanalysis.chronoanalysisEmployee.length > 1 ? (
                 <Users
@@ -223,6 +184,93 @@ const MagickLinkPage = () => {
                     ),
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg mt-5  p-4 w-full relative'>
+            <h3 className=' text-initial font-semibold'>Informações extras</h3>
+            <div className=' flex items-center justify-center gap-3 w-full'>
+              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                <p className='font-semibold'>Cronoanálise para Kaizen</p>
+                <div className='w-full flex gap-1'>
+                  <div
+                    className={` ${report.chronoanalysis.isKaizen ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Sim
+                  </div>
+                  <div
+                    className={` ${report.chronoanalysis.isKaizen ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Não
+                  </div>
+                </div>
+              </div>
+              {report.chronoanalysis.isKaizen &&
+                report.chronoanalysis.numberKaizen && (
+                  <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                    <p className='font-semibold'>Nº do KAIZEN</p>
+                    <span className=' rounded-lg border border-border py-1 px-2 '>
+                      {report.chronoanalysis.numberKaizen}
+                    </span>
+                  </div>
+                )}
+            </div>
+            <div className=' flex items-center justify-center gap-20 w-full mt-2'>
+              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                <p className='font-semibold'>Requisição</p>
+                <div className='w-full flex gap-1'>
+                  <div
+                    className={` ${report.chronoanalysis.isRequest ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg  w-full py-1 flex items-center justify-center`}
+                  >
+                    Sim
+                  </div>
+                  <div
+                    className={` ${report.chronoanalysis.isRequest ? ' border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Não
+                  </div>
+                </div>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                <p className='font-semibold'>Primeira cronoanálise</p>
+                <div className='w-full flex gap-1'>
+                  <div
+                    className={` ${report.chronoanalysis.firstCron ? 'bg-background-base-blue-select text-white font-bold' : 'border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Sim
+                  </div>
+                  <div
+                    className={` ${report.chronoanalysis.firstCron ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                  >
+                    Não
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className=' flex gap-5 mt-5'>
+              <div className=' flex flex-col text-sm gap-1 w-full text-initial'>
+                <p className='font-semibold'>OP</p>
+                <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                  {report.chronoanalysis.op}
+                </span>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
+                <p className='font-semibold'>SOP</p>
+                <span className=' rounded-lg text-center border border-border py-1 px-2 '>
+                  {report.chronoanalysis.sop ? 'existe' : 'não existe'}
+                </span>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
+                <p className='font-semibold'>Cliente</p>
+                <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                  {report.chronoanalysis.client.name}
+                </span>
+              </div>
+              <div className=' flex flex-col text-sm gap-1 w-full text-initial'>
+                <p className='font-semibold'>Ordem de fabricação (OF)</p>
+                <span className=' rounded-lg border border-border py-1 px-2  text-center'>
+                  {report.chronoanalysis.of}
+                </span>
               </div>
             </div>
           </div>
