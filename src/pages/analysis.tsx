@@ -28,8 +28,16 @@ import { BrushCleaning } from 'lucide-react';
 import ModalDetail from '@/components/modal-detail';
 import TableChronoanalysis from '@/components/table-chronoanalysis';
 import { Switch } from '@/components/ui/switch';
+import ModalEditChronoanalysis from '@/components/modal-edit';
+import ModalDelete from '@/components/modal-delete';
 
 const Analysis = () => {
+  const [isOpenModalEdit, setIsOpenModalEdit] = useState(false);
+  const [isOpenModalDelete, setIsOpenModalDelete] = useState(false);
+  const [role] = useState(window.localStorage.getItem('role'));
+
+  const [isRefetch, setIsRefetch] = useState(false);
+  const [isIdChrono, setIsIdChrono] = useState<string | null>(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isListChronoanalist, setListChronoanalist] = useState<
     listChronoanalistProps[]
@@ -107,7 +115,11 @@ const Analysis = () => {
     };
 
     supportListChronoanalysis();
-  }, []);
+
+    if (isRefetch) {
+      setIsRefetch(false);
+    }
+  }, [isRefetch]);
 
   useEffect(() => {
     let filtered = [...isListChronoanalysis];
@@ -118,40 +130,40 @@ const Analysis = () => {
     if (unit) {
       filtered = filtered.filter((item) =>
         item.chronoanalysisEmployee.some(
-          (employee) => employee.employeeUnit === unit
-        )
+          (employee) => employee.employeeUnit === unit,
+        ),
       );
     }
 
     if (cardNumber) {
       filtered = filtered.filter((item) =>
         item.chronoanalysisEmployee.some((employee) =>
-          employee.employeeCardNumber?.includes(cardNumber)
-        )
+          employee.employeeCardNumber?.includes(cardNumber),
+        ),
       );
     }
 
     if (partNumber) {
       filtered = filtered.filter((item) =>
-        item.partNumber.includes(partNumber)
+        item.partNumber.includes(partNumber),
       );
     }
 
     if (internalCode) {
       filtered = filtered.filter((item) =>
-        item.internalCode.includes(internalCode)
+        item.internalCode.includes(internalCode),
       );
     }
 
     if (userChronoanalistId) {
       filtered = filtered.filter(
-        (item) => item.user.employeeId === +userChronoanalistId
+        (item) => item.user.employeeId === +userChronoanalistId,
       );
     }
 
     if (costCenter) {
       filtered = filtered.filter((item) =>
-        item.sectorCostCenter.includes(costCenter)
+        item.sectorCostCenter.includes(costCenter),
       );
     }
 
@@ -293,7 +305,7 @@ const Analysis = () => {
                                 from: val.from?.toISOString(),
                                 to: val.to?.toISOString(),
                               }
-                            : undefined
+                            : undefined,
                         );
                       }}
                     />
@@ -367,14 +379,36 @@ const Analysis = () => {
         </Card>
         <TableChronoanalysis
           data={paginatedData}
+          role={role}
           PagesLength={filterListChronoanalysis.length}
           currentPage={currentPage}
           handlePageChange={handlePageChange}
           totalPages={totalPages}
           setIsChronoanalysis={setIsChronoanalysis}
           setIsOpenModal={setIsOpenModal}
+          setIsIdChrono={setIsIdChrono}
+          setIsOpenModalEdit={setIsOpenModalEdit}
+          setIsOpenModalDelete={setIsOpenModalDelete}
         />
       </div>
+      {isOpenModalDelete && isIdChrono && (
+        <ModalDelete
+          idChronoanalysis={isIdChrono}
+          setIdChrono={setIsIdChrono}
+          open={isOpenModalDelete}
+          setOpen={setIsOpenModalDelete}
+          setIsRefetch={setIsRefetch}
+        />
+      )}
+      {isOpenModalEdit && isIdChrono && (
+        <ModalEditChronoanalysis
+          open={isOpenModalEdit}
+          setOpen={setIsOpenModalEdit}
+          idChrono={isIdChrono}
+          setIdChrono={setIsIdChrono}
+          setIsRefetch={setIsRefetch}
+        />
+      )}
       {isChronoanalysis && (
         <ModalDetail
           open={isOpenModal}

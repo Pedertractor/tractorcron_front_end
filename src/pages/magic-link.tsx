@@ -31,7 +31,6 @@ const MagickLinkPage = () => {
         return;
       }
 
-      console.log(data);
       setReport(data);
     };
 
@@ -49,19 +48,19 @@ const MagickLinkPage = () => {
               <LabelActivitieInfo
                 text='Iniciado'
                 textInfo={new Date(
-                  report.chronoanalysis.startDate
+                  report.chronoanalysis.startDate,
                 ).toLocaleTimeString()}
                 secondTextInfo={new Date(
-                  report.chronoanalysis.startDate
+                  report.chronoanalysis.startDate,
                 ).toLocaleDateString()}
               />
               <LabelActivitieInfo
                 text='Finalizado'
                 textInfo={new Date(
-                  report.chronoanalysis.endDate
+                  report.chronoanalysis.endDate,
                 ).toLocaleTimeString()}
                 secondTextInfo={new Date(
-                  report.chronoanalysis.endDate
+                  report.chronoanalysis.endDate,
                 ).toLocaleDateString()}
               />
               <LabelActivitieInfo
@@ -221,7 +220,7 @@ const MagickLinkPage = () => {
                           </div>
                         </div>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>

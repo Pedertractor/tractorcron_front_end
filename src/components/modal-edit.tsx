@@ -1,0 +1,582 @@
+import PlayIconComponent from '../assets/icons/play-icon.svg?react';
+import EndIconComponent from '../assets/icons/check-icon.svg?react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import Label from '@/components/ui/label/label';
+import Button from '@/components/ui/button/button';
+import { useParts } from '@/hooks/use-parts';
+import CheckRequestStatus from '@/components/check-request-status';
+import { useSector } from '@/hooks/use-sectors';
+import { useOf } from '@/hooks/use-of';
+import AddChronoanalysisEmployee, {
+  EmployeeProps,
+} from '@/components/add-chronoanalysis-employees';
+import CounterParts from '@/components/counter-parts';
+import { useEffect, useState } from 'react';
+import WorkPaceAssessment, { DataWorkPaceProps } from './work-pace-assessment';
+import { RegisterActivities } from '@/db/db';
+import {
+  editInformationsSchema,
+  TypeEditInformations,
+} from '@/zod/schema-chronoanalysis';
+import {
+  getUnique,
+  listChronoanalysisProps,
+  updateChrono,
+  updatedChronoanalysisProps,
+} from '@/api/chronoanalysis-api';
+import Card from './ui/card/card';
+import LabelActivitieInfo from './label-activities-info';
+import Input from './ui/input';
+import Select from './ui/select';
+import { clients } from '@/seed/seed-client';
+import Modal from './ui/modal';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+
+export interface ModalEditProps {
+  idChrono: string;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  setIsRefetch: (props: boolean) => void;
+  setIdChrono: (props: string | null) => void;
+}
+
+const ModalEditChronoanalysis = ({
+  open,
+  setOpen,
+  idChrono,
+  setIsRefetch,
+  setIdChrono,
+}: ModalEditProps) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [chronoanalysis, setChronoanalysis] =
+    useState<null | listChronoanalysisProps>(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [workPaceAssessment, setWorkPaceAssessment] =
+    useState<DataWorkPaceProps | null>(null);
+  const [finalRegisterActivities, setFinalRegisterActivities] = useState<
+    RegisterActivities[]
+  >([]);
+  const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
+  const [numberOfParts, setNumberOfParts] = useState<number>(1);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<TypeEditInformations>({
+    resolver: zodResolver(editInformationsSchema),
+    mode: 'onChange',
+  });
+
+  useEffect(() => {
+    const getInformationsToEdit = async () => {
+      const {
+        status,
+        error,
+        data,
+      }: {
+        status: boolean;
+        error: string | null;
+        data: listChronoanalysisProps | null;
+      } = await getUnique(idChrono);
+
+      if (!status) {
+        return toast.info(error);
+      }
+
+      if (data) {
+        setWorkPaceAssessment({
+          ...data.workPaceAssessment,
+          efficiency: data.workPaceAssessment.efficiencyPorcent,
+        });
+        setFinalRegisterActivities(data.activities);
+        setChronoanalysis(data);
+        setEmployeeList(data.chronoanalysisEmployee);
+        setNumberOfParts(data.howManyParts);
+
+        reset({
+          id: data.id,
+          clientId: String(data.client.id),
+          sectorId: +data.sectorId,
+          sectorName: data.sectorName,
+          sectorCostCenter: data.sectorCostCenter,
+          sop: data.sop,
+          internalCode: data.internalCode,
+          of: data.of,
+          op: data.op,
+          partNumber: data.partNumber,
+          revision: data.revision,
+          isRequest: data.isRequest,
+          firstCron: data.firstCron,
+          isKaizen: data.isKaizen,
+          howManyParts: data.howManyParts,
+          numberKaizen: data.numberKaizen,
+          enhancement: data.enhancement,
+        });
+      }
+    };
+    getInformationsToEdit();
+  }, [idChrono, reset]);
+
+  const costCenter = watch('sectorCostCenter');
+  const partCode = watch('internalCode');
+  const manufacturingOrder = watch('of');
+  const sop = watch('sop');
+  const isKaizen = watch('isKaizen');
+  const isRequest = watch('isRequest');
+  const firstCron = watch('firstCron');
+
+  const {
+    partData,
+    isLoading: isLoadingPart,
+    isStatus: isStatusPart,
+  } = useParts(partCode);
+
+  const {
+    sectorData,
+    isLoading: isLoadingSector,
+    isStatus: isStatusSector,
+  } = useSector(costCenter);
+
+  const {
+    isLoading: isLoadingOf,
+    isStatus: isStatusOf,
+    ofData,
+  } = useOf(manufacturingOrder);
+
+  useEffect(() => {
+    if (isStatusPart && partData && !isLoadingPart)
+      return setValue('partNumber', partData.partNumber, {
+        shouldValidate: true,
+      });
+
+    setValue('partNumber', '', { shouldValidate: true });
+  }, [isLoadingPart, isStatusPart, partData, setValue]);
+
+  useEffect(() => {
+    if (!isStatusSector) {
+      setValue('sectorName', '', { shouldValidate: true });
+      setValue('sectorId', 0, { shouldValidate: true });
+    }
+    if (!isLoadingSector && isStatusSector && sectorData) {
+      setValue('sectorId', +sectorData.id, { shouldValidate: true });
+      setValue('sectorName', sectorData.name, { shouldValidate: true });
+    }
+  }, [isLoadingSector, isStatusSector, sectorData, setValue]);
+
+  async function handleSubmitInformations(data: TypeEditInformations) {
+    setIsLoading(true);
+
+    if (workPaceAssessment) {
+      const chronoanalysis: updatedChronoanalysisProps = {
+        id: data.id,
+        partNumber: data.partNumber,
+        internalCode: data.internalCode,
+        revision: data.revision,
+        of: data.of,
+        op: data.op,
+        sop: data.sop,
+        sectorName: data.sectorName,
+        sectorId: data.sectorId,
+        isRequest: data.isRequest,
+        firstCron: data.firstCron,
+        numberKaizen: data.numberKaizen,
+        sectorCostCenter: data.sectorCostCenter,
+        isKaizen: data.isKaizen,
+        howManyParts: data.howManyParts,
+        enhancement: data.enhancement,
+        clientId: +data.clientId,
+        chronoanalysisEmployee: employeeList,
+        workPaceAssessment: {
+          hability: workPaceAssessment.hability,
+          habilityPorcent: workPaceAssessment.habilityPorcent,
+          effort: workPaceAssessment.effort,
+          effortPorcent: workPaceAssessment.effortPorcent,
+          efficiency: workPaceAssessment.efficiency,
+          timeCalculate: workPaceAssessment.timeCalculate,
+          standardTime: workPaceAssessment.standardTime,
+          standardTimeDecimal: workPaceAssessment.standardTimeDecimal,
+          standardTimeDecimalByNumberOfParts:
+            workPaceAssessment.standardTimeDecimalByNumberOfParts,
+        },
+      };
+
+      const isOnline = navigator.onLine;
+
+      if (!isOnline) {
+        setIsLoading(false);
+        return toast.warning(
+          'Sem conexão com a internet, porfavor verifique antes de enviar.',
+        );
+      }
+
+      const {
+        data: message,
+        error,
+        status,
+      } = await updateChrono(chronoanalysis, idChrono);
+
+      if (!status) {
+        setIsLoading(false);
+        toast.error(error);
+        return;
+      }
+
+      if (status) {
+        setIsLoading(false);
+        setOpenModal(false);
+        setChronoanalysis(null);
+        setWorkPaceAssessment(null);
+        setFinalRegisterActivities([]);
+        setEmployeeList([]);
+        setIdChrono(null);
+        toast.success(message);
+        setIsRefetch(true);
+      }
+    }
+  }
+
+  if (chronoanalysis)
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className=' bg-white border-none flex flex-col'>
+          <DialogHeader className=' h-fit'>
+            <DialogTitle>Editar cronoanálise</DialogTitle>
+            <DialogDescription className=' flex justify-between items-center'>
+              <LabelActivitieInfo text='ID' textInfo={chronoanalysis.id} />
+              <LabelActivitieInfo
+                svg={PlayIconComponent}
+                textInfo={
+                  chronoanalysis.startDate &&
+                  new Date(chronoanalysis.startDate).toLocaleDateString()
+                }
+                secondTextInfo={
+                  chronoanalysis.startDate &&
+                  new Date(chronoanalysis.startDate).toLocaleTimeString()
+                }
+              />
+              <LabelActivitieInfo
+                svg={EndIconComponent}
+                textInfo={
+                  chronoanalysis.endDate &&
+                  new Date(chronoanalysis.endDate).toLocaleDateString()
+                }
+                secondTextInfo={
+                  chronoanalysis.endDate &&
+                  new Date(chronoanalysis.endDate).toLocaleTimeString()
+                }
+              />
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={handleSubmit(handleSubmitInformations)}
+            className=' flex flex-col w-full gap-2 overflow-y-auto py-1'
+          >
+            <AddChronoanalysisEmployee
+              employeeList={employeeList}
+              setEmployeeList={setEmployeeList}
+            />
+            <Card text='Informações do setor' className='flex mt-5'>
+              <div className=' flex gap-4 justify-center w-full items-center'>
+                <Label title='Centro de custo' className='  relative h-25'>
+                  <CheckRequestStatus
+                    data={sectorData}
+                    status={isStatusSector}
+                    loading={isLoadingSector}
+                  />
+                  <Input
+                    {...register('sectorCostCenter')}
+                    maxLength={4}
+                    inputMode='numeric'
+                    placeholder='ex: 7051'
+                  />
+                  {errors.sectorCostCenter && (
+                    <span className='text-red-500 text-sm absolute left-0 bottom-0 '>
+                      {errors.sectorCostCenter.message}
+                    </span>
+                  )}
+                </Label>
+                <Label
+                  title='Setor de execução'
+                  className=' w-4/5 relative h-25'
+                >
+                  <Input {...register('sectorName')} disabled />
+                </Label>
+              </div>
+            </Card>
+            <Card
+              text='Informações do componente'
+              className='flex my-5 relative'
+            >
+              <div className=' flex flex-col gap-4 w-full '>
+                <div className=' flex gap-4 w-full'>
+                  <Label title='Código interno' className='relative'>
+                    <CheckRequestStatus
+                      data={partData}
+                      status={isStatusPart}
+                      loading={isLoadingPart}
+                    />
+                    <Input
+                      {...register('internalCode')}
+                      maxLength={10}
+                      inputMode='numeric'
+                    />
+                    {errors.internalCode && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.internalCode.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='Part number'>
+                    <Input {...register('partNumber')} disabled />
+                  </Label>
+                </div>
+                <div className=' flex gap-4 w-full'>
+                  <Label title='Revisão'>
+                    <Input {...register('revision')} />
+                    {errors.revision && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.revision.message}
+                      </span>
+                    )}
+                  </Label>
+                  <CounterParts
+                    numberOfParts={numberOfParts}
+                    setNumberOfParts={setNumberOfParts}
+                  />
+                </div>
+              </div>
+            </Card>
+            <Card text='Informações extras' className='flex'>
+              <div className=' flex gap-4 w-full flex-col '>
+                <div className=' flex items-center gap-4'>
+                  <Label title='Ordem de fabricação (OF)' className='relative'>
+                    <CheckRequestStatus
+                      data={ofData}
+                      status={isStatusOf}
+                      loading={isLoadingOf}
+                    />
+                    <Input {...register('of')} />
+                    {errors.of && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.of.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='Operação (OP)'>
+                    <Input {...register('op')} />
+                    {errors.op && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.op.message}
+                      </span>
+                    )}
+                  </Label>
+                </div>
+
+                <div className=' flex items-center gap-4'>
+                  <Label title='Existe procedimento operacional padrão (SOP)?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${sop ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('sop', true)}
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!sop ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('sop', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.sop && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.sop.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='Cliente'>
+                    <Select
+                      listOptions={clients}
+                      disabled={false}
+                      {...register('clientId')}
+                    />
+                    {errors.clientId && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.clientId.message}
+                      </span>
+                    )}
+                  </Label>
+                </div>
+                <div className=' flex items-center gap-4'>
+                  <Label title='É uma cronoanálise para Kaizen?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${isKaizen ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isKaizen', true)}
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!isKaizen ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isKaizen', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.isKaizen && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.isKaizen.message}
+                      </span>
+                    )}
+                  </Label>
+                  {isKaizen && (
+                    <Label title='Número do Kaizen'>
+                      <Input {...register('numberKaizen')} />
+                      {errors.op && (
+                        <span className='text-red-500 text-sm'>
+                          {errors.op.message}
+                        </span>
+                      )}
+                    </Label>
+                  )}
+                </div>
+                <div className=' flex items-center gap-4'>
+                  <Label title='É uma requisição?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${isRequest ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isRequest', true)}
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!isRequest ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('isRequest', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.isRequest && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.isRequest.message}
+                      </span>
+                    )}
+                  </Label>
+                  <Label title='É a primeira cronoanálise dessa peça?'>
+                    <div className=' flex items-center gap-1 w-full'>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${firstCron ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('firstCron', true)}
+                      >
+                        sim
+                      </Button>
+                      <Button
+                        size={' md-desk'}
+                        className=' py-2.5 w-full'
+                        type='button'
+                        variant={`${!firstCron ? 'select-blue' : 'default'}`}
+                        onClick={() => setValue('firstCron', false)}
+                      >
+                        não
+                      </Button>
+                    </div>
+                    {errors.firstCron && (
+                      <span className='text-red-500 text-sm'>
+                        {errors.firstCron.message}
+                      </span>
+                    )}
+                  </Label>
+                </div>
+              </div>
+            </Card>
+
+            <Card text='Avaliação de ritimo de trabalho' className=' mt-5'>
+              <WorkPaceAssessment
+                numberOfParts={numberOfParts}
+                activites={finalRegisterActivities}
+                workPaceAssessmentDatas={workPaceAssessment}
+                setWorkPaceAssessmentDatas={setWorkPaceAssessment}
+              />
+            </Card>
+
+            <Card text='Melhorias e observações' className=' my-5'>
+              <textarea
+                rows={8}
+                {...register('enhancement')}
+                className=' p-2 border border-border rounded-xl text-secondary resize-none'
+              />
+            </Card>
+
+            <div className=' flex gap-4 w-full justify-end items-center mt-5'>
+              <Button
+                variant={'red'}
+                size={'md'}
+                type='button'
+                onClick={() => {
+                  setIdChrono(null);
+                  setOpen(false);
+                }}
+              >
+                cancelar
+              </Button>
+              <Button
+                disabled={!isValid || employeeList.length < 1}
+                variant={`${
+                  !isValid || employeeList.length < 1 ? 'default' : 'green'
+                }`}
+                size={'md'}
+                type='button'
+                onClick={() => setOpenModal(true)}
+              >
+                finalizar
+              </Button>
+            </div>
+            {openModal && (
+              <Modal
+                title='Enviar informações'
+                description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
+                setOpenModal={setOpenModal}
+                isLoading={isLoading}
+                setConfirmModal={() => {}}
+              />
+            )}
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
+};
+
+export default ModalEditChronoanalysis;

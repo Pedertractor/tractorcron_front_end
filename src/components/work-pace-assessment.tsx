@@ -34,6 +34,22 @@ const WorkPaceAssessment = ({
   const [effort, setEffort] = useState<seedEffortProps | null>(null);
 
   useEffect(() => {
+    if (workPaceAssessmentDatas) {
+      const findHability = seedHability.find(
+        (item) => item.name === workPaceAssessmentDatas.hability
+      );
+
+      const findEffort = seedEffort.find(
+        (item) => item.name === workPaceAssessmentDatas.effort
+      );
+      if (findHability && findEffort) {
+        setHability(findHability);
+        setEffort(findEffort);
+      }
+    }
+  }, [workPaceAssessmentDatas]);
+
+  useEffect(() => {
     if (hability && effort) {
       const calculateTimeActivites = activites.map((activite) => {
         if (activite.startTime && activite.endTime) {

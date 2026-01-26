@@ -19,11 +19,10 @@ import {
 } from './ui/pagination';
 import {
   changeSendStatus,
-  exportPDFReport,
   listChronoanalysisProps,
 } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Copy, CopyCheck, Download, EyeIcon, Users } from 'lucide-react';
+import { Copy, CopyCheck, Edit, EyeIcon, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -31,22 +30,30 @@ const url = import.meta.env.VITE_URL_FRONT_END_URL;
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
+  role: string | null;
   PagesLength?: number;
   currentPage?: number;
   handlePageChange?: (value: number) => void;
   totalPages?: number;
   setIsChronoanalysis?: (item: listChronoanalysisProps | undefined) => void;
   setIsOpenModal?: (props: boolean) => void;
+  setIsOpenModalEdit?: (props: boolean) => void;
+  setIsIdChrono?: (props: string | null) => void;
+  setIsOpenModalDelete?: (props: boolean) => void;
 }
 
 const TableChronoanalysis = ({
   data,
+  role,
   PagesLength,
   currentPage,
   handlePageChange,
   totalPages,
   setIsChronoanalysis,
   setIsOpenModal,
+  setIsOpenModalEdit,
+  setIsIdChrono,
+  setIsOpenModalDelete,
 }: TableChronoanalysisProps) => {
   const [copied, setCopied] = useState('');
 
@@ -61,28 +68,19 @@ const TableChronoanalysis = ({
 
     toast.error(message);
   }
-  async function handleDownloadReport(uuid: string) {
-    const { blob, status } = await exportPDFReport(uuid);
-
-    if (status === 200) {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cronoanalise_${uuid}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      return;
-    }
-
-    toast.error('Erro ao baixar relatório');
-  }
 
   async function handleCopy(uuid: string) {
     await navigator.clipboard.writeText(`${url}/${uuid}`);
     setCopied(uuid);
   }
 
-  if (setIsChronoanalysis && setIsOpenModal)
+  if (
+    setIsChronoanalysis &&
+    setIsOpenModal &&
+    setIsIdChrono &&
+    setIsOpenModalEdit &&
+    setIsOpenModalDelete
+  )
     return (
       <Card>
         <div className=' overflow-y-auto rounded-md'>
@@ -102,7 +100,13 @@ const TableChronoanalysis = ({
                 <TableHead>Data</TableHead>
                 <TableHead></TableHead>
                 <TableHead></TableHead>
-                <TableHead></TableHead>
+                {role && role === 'ADMIN' && (
+                  <>
+                    <TableHead></TableHead>
+                    <TableHead></TableHead>
+                  </>
+                )}
+
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -110,7 +114,7 @@ const TableChronoanalysis = ({
               {data.map((item) => (
                 <TableRow
                   key={item.id}
-                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 '
+                  className=' border-border text-sm text-initial '
                 >
                   <TableCell>{item.partNumber}</TableCell>
                   <TableCell>{item.internalCode}</TableCell>
@@ -121,7 +125,7 @@ const TableChronoanalysis = ({
                   <TableCell className=''>
                     {item.chronoanalysisEmployee.length}
                   </TableCell>
-                  <TableCell>{item.client.name.toLowerCase()}</TableCell>
+                  <TableCell>{item.client.name?.toLowerCase()}</TableCell>
                   <TableCell>
                     {item.workPaceAssessment.standardTimeDecimal}
                   </TableCell>
@@ -138,12 +142,6 @@ const TableChronoanalysis = ({
                   </TableCell>
                   <TableCell
                     className=' cursor-pointer '
-                    onClick={() => handleDownloadReport(item.id)}
-                  >
-                    <Download size={18} className=' text-zinc-800' />
-                  </TableCell>
-                  <TableCell
-                    className=' cursor-pointer '
                     onClick={() => {
                       setIsChronoanalysis(item);
                       setIsOpenModal(true);
@@ -151,6 +149,34 @@ const TableChronoanalysis = ({
                   >
                     <EyeIcon size={18} className=' text-zinc-800' />
                   </TableCell>
+                  {role && role === 'ADMIN' && (
+                    <>
+                      <TableCell
+                        className=' cursor-pointer '
+                        onClick={() => {
+                          setIsIdChrono(item.id);
+                          setIsOpenModalEdit(true);
+                          setIsOpenModal(false);
+                        }}
+                      >
+                        <Edit size={18} className=' text-zinc-800' />
+                      </TableCell>
+                      <TableCell
+                        className=' cursor-pointer '
+                        onClick={() => {
+                          setIsIdChrono(item.id);
+                          setIsOpenModalDelete(true);
+                          setIsOpenModal(false);
+                        }}
+                      >
+                        <Trash2
+                          size={18}
+                          className=' text-red-800  rounded-sm'
+                        />
+                      </TableCell>
+                    </>
+                  )}
+
                   <TableCell
                     className=' cursor-pointer '
                     onClick={() => {
@@ -191,7 +217,7 @@ const TableChronoanalysis = ({
 
                   {Array.from(
                     { length: totalPages > 10 ? totalPages / 2 : totalPages },
-                    (_, i) => i + 1
+                    (_, i) => i + 1,
                   ).map((page) => (
                     <PaginationItem key={page}>
                       <PaginationLink

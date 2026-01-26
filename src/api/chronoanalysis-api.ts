@@ -5,6 +5,38 @@ import type { PropsWorkPaceAssessment } from '../types/work-pace-assessment-type
 
 const url = import.meta.env.VITE_BASE_URL_API;
 
+export interface updatedChronoanalysisProps {
+  id: string;
+  partNumber: string;
+  internalCode: string;
+  revision: string;
+  of: string;
+  op: string;
+  sop: boolean;
+  sectorName: string;
+  sectorId?: number;
+  isRequest: boolean;
+  firstCron: boolean;
+  numberKaizen?: string | null;
+  sectorCostCenter: string;
+  isKaizen: boolean;
+  howManyParts: number;
+  enhancement?: string | null;
+  chronoanalysisEmployee: EmployeeProps[];
+  clientId: number;
+  workPaceAssessment: {
+    hability: string;
+    habilityPorcent: number;
+    effort: string;
+    effortPorcent: number;
+    efficiency: number;
+    timeCalculate: string;
+    standardTime: string;
+    standardTimeDecimal: number;
+    standardTimeDecimalByNumberOfParts: number;
+  };
+}
+
 export interface listChronoanalysisProps {
   id: string;
   partNumber: string;
@@ -14,6 +46,10 @@ export interface listChronoanalysisProps {
   op: string;
   sop: boolean;
   sectorName: string;
+  sectorId: number;
+  isRequest: boolean;
+  firstCron: boolean;
+  numberKaizen?: string;
   sectorCostCenter: string;
   isKaizen: boolean;
   isSend: boolean;
@@ -24,7 +60,7 @@ export interface listChronoanalysisProps {
   chronoanalysisEmployee: EmployeeProps[];
   client: {
     id: number;
-    name: string;
+    name?: string;
   };
   user: {
     employeeName: string;
@@ -66,24 +102,24 @@ export interface PropsFinalData {
   workPaceAssessment: PropsWorkPaceAssessment;
 }
 
-export async function exportPDFReport(uuid: string) {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${url}/chronoanalysis/report/${uuid}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+// export async function exportPDFReport(uuid: string) {
+//   const token = localStorage.getItem('token');
+//   const response = await fetch(`${url}/chronoanalysis/report/${uuid}`, {
+//     method: 'GET',
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       'Content-Type': 'application/json',
+//     },
+//   });
 
-  const blob = await response.blob();
+//   const blob = await response.blob();
 
-  return { blob, status: response.status };
-}
+//   return { blob, status: response.status };
+// }
 
 export async function listDatasInformationsForDashBoard(
   firstDate: Date,
-  secondDate: Date
+  secondDate: Date,
 ) {
   const token = localStorage.getItem('token');
 
@@ -95,7 +131,7 @@ export async function listDatasInformationsForDashBoard(
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-    }
+    },
   );
 
   const data = await response.json();
@@ -193,10 +229,79 @@ export async function changeSendStatus(idChronoanalysis: string) {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   );
 
   const data = await response.json();
 
   return { status: response.status, message: data.message };
+}
+
+export async function deleteChrono(idChronoanalysis: string) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${url}/chronoanalysis/${idChronoanalysis}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return { status: response.status };
+}
+
+export async function updateChrono(
+  updateData: updatedChronoanalysisProps,
+  idChrono: string,
+) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${url}/chronoanalysis/${idChrono}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ updateData }),
+  });
+
+  const data = await response.json();
+
+  if (response.status !== 201)
+    return {
+      status: false,
+      error: data.error,
+      data: null,
+    };
+
+  return {
+    status: true,
+    error: null,
+    data: data.message,
+  };
+}
+
+export async function getUnique(idChrono: string) {
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(`${url}/chronoanalysis/${idChrono}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const data = await response.json();
+
+  if (response.status !== 200)
+    return {
+      status: false,
+      error: data.error,
+      data: null,
+    };
+
+  return {
+    status: true,
+    error: null,
+    data: data.chronoanalysis,
+  };
 }
