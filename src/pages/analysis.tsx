@@ -29,9 +29,11 @@ import ModalDetail from '@/components/modal-detail';
 import TableChronoanalysis from '@/components/table-chronoanalysis';
 import { Switch } from '@/components/ui/switch';
 import ModalEditChronoanalysis from '@/components/modal-edit';
+import ModalDelete from '@/components/modal-delete';
 
 const Analysis = () => {
   const [isOpenModalEdit, setIsOpenModalEdit] = useState(false);
+  const [isOpenModalDelete, setIsOpenModalDelete] = useState(false);
   const [role] = useState(window.localStorage.getItem('role'));
 
   const [isRefetch, setIsRefetch] = useState(false);
@@ -386,8 +388,18 @@ const Analysis = () => {
           setIsOpenModal={setIsOpenModal}
           setIsIdChrono={setIsIdChrono}
           setIsOpenModalEdit={setIsOpenModalEdit}
+          setIsOpenModalDelete={setIsOpenModalDelete}
         />
       </div>
+      {isOpenModalDelete && isIdChrono && (
+        <ModalDelete
+          idChronoanalysis={isIdChrono}
+          setIdChrono={setIsIdChrono}
+          open={isOpenModalDelete}
+          setOpen={setIsOpenModalDelete}
+          setIsRefetch={setIsRefetch}
+        />
+      )}
       {isOpenModalEdit && isIdChrono && (
         <ModalEditChronoanalysis
           open={isOpenModalEdit}

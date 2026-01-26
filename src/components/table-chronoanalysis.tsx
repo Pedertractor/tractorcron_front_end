@@ -22,7 +22,7 @@ import {
   listChronoanalysisProps,
 } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Copy, CopyCheck, Edit, EyeIcon, Users } from 'lucide-react';
+import { Copy, CopyCheck, Edit, EyeIcon, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -39,6 +39,7 @@ export interface TableChronoanalysisProps {
   setIsOpenModal?: (props: boolean) => void;
   setIsOpenModalEdit?: (props: boolean) => void;
   setIsIdChrono?: (props: string | null) => void;
+  setIsOpenModalDelete?: (props: boolean) => void;
 }
 
 const TableChronoanalysis = ({
@@ -52,6 +53,7 @@ const TableChronoanalysis = ({
   setIsOpenModal,
   setIsOpenModalEdit,
   setIsIdChrono,
+  setIsOpenModalDelete,
 }: TableChronoanalysisProps) => {
   const [copied, setCopied] = useState('');
 
@@ -76,7 +78,8 @@ const TableChronoanalysis = ({
     setIsChronoanalysis &&
     setIsOpenModal &&
     setIsIdChrono &&
-    setIsOpenModalEdit
+    setIsOpenModalEdit &&
+    setIsOpenModalDelete
   )
     return (
       <Card>
@@ -97,7 +100,12 @@ const TableChronoanalysis = ({
                 <TableHead>Data</TableHead>
                 <TableHead></TableHead>
                 <TableHead></TableHead>
-                {role && role === 'ADMIN' && <TableHead></TableHead>}
+                {role && role === 'ADMIN' && (
+                  <>
+                    <TableHead></TableHead>
+                    <TableHead></TableHead>
+                  </>
+                )}
 
                 <TableHead></TableHead>
               </TableRow>
@@ -106,7 +114,7 @@ const TableChronoanalysis = ({
               {data.map((item) => (
                 <TableRow
                   key={item.id}
-                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 '
+                  className=' border-border text-sm text-initial '
                 >
                   <TableCell>{item.partNumber}</TableCell>
                   <TableCell>{item.internalCode}</TableCell>
@@ -142,16 +150,31 @@ const TableChronoanalysis = ({
                     <EyeIcon size={18} className=' text-zinc-800' />
                   </TableCell>
                   {role && role === 'ADMIN' && (
-                    <TableCell
-                      className=' cursor-pointer '
-                      onClick={() => {
-                        setIsIdChrono(item.id);
-                        setIsOpenModalEdit(true);
-                        setIsOpenModal(false);
-                      }}
-                    >
-                      <Edit size={18} className=' text-zinc-800' />
-                    </TableCell>
+                    <>
+                      <TableCell
+                        className=' cursor-pointer '
+                        onClick={() => {
+                          setIsIdChrono(item.id);
+                          setIsOpenModalEdit(true);
+                          setIsOpenModal(false);
+                        }}
+                      >
+                        <Edit size={18} className=' text-zinc-800' />
+                      </TableCell>
+                      <TableCell
+                        className=' cursor-pointer '
+                        onClick={() => {
+                          setIsIdChrono(item.id);
+                          setIsOpenModalDelete(true);
+                          setIsOpenModal(false);
+                        }}
+                      >
+                        <Trash2
+                          size={18}
+                          className=' text-red-800  rounded-sm'
+                        />
+                      </TableCell>
+                    </>
                   )}
 
                   <TableCell

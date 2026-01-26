@@ -237,6 +237,18 @@ export async function changeSendStatus(idChronoanalysis: string) {
   return { status: response.status, message: data.message };
 }
 
+export async function deleteChrono(idChronoanalysis: string) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${url}/chronoanalysis/${idChronoanalysis}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return { status: response.status };
+}
+
 export async function updateChrono(
   updateData: updatedChronoanalysisProps,
   idChrono: string,
