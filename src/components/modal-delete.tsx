@@ -48,7 +48,7 @@ const ModalDelete = ({
           <DialogDescription className=' flex justify-between items-center'></DialogDescription>
         </DialogHeader>
         <p>Você realmente deseja apagar esta cronoanálise?</p>
-        <p>Essa ação não poderá ser desfeita.</p>
+        <p>Essa ação não poderá ser desfeita!</p>
         <div className=' flex gap-4 w-full justify-end items-center mt-5'>
           <Button
             variant={'red'}
