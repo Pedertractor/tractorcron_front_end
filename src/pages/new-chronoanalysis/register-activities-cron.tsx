@@ -19,10 +19,10 @@ import Button from '@/components/ui/button/button';
 
 const RegisterActivitiesCronPage = () => {
   const [idRegister] = useState<string | null>(() =>
-    localStorage.getItem('idRegister')
+    localStorage.getItem('idRegister'),
   );
   const [startTime, setStartTime] = useState<string | null>(() =>
-    localStorage.getItem('startTime')
+    localStorage.getItem('startTime'),
   );
   const [attTable, setAttTable] = useState(false);
 

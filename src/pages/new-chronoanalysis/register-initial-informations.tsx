@@ -112,7 +112,9 @@ const RegisterInitialInformationsPage = () => {
       setPinedActivities([]);
       if (typeOfChron === 'welding') {
         const filterWelding = seedActivities.filter(
-          (activity) => activity.activityType !== 'MONTAGEM'
+          (activity) =>
+            activity.activityType === 'SOLDAGEM' ||
+            activity.activityType === 'GERAL',
         );
         setPinedActivities(filterWelding);
         await changePresetActivities(filterWelding);
@@ -120,10 +122,27 @@ const RegisterInitialInformationsPage = () => {
 
       if (typeOfChron === 'montage') {
         const filterMontage = seedActivities.filter(
-          (activity) => activity.activityType !== 'SOLDAGEM'
+          (activity) =>
+            activity.activityType === 'MONTAGEM' ||
+            activity.activityType === 'GERAL',
         );
         setPinedActivities(filterMontage);
         await changePresetActivities(filterMontage);
+      }
+      if (typeOfChron === 'bend') {
+        const filterBeld = seedActivities.filter(
+          (act) => act.activityType === 'DOBRA' || act.activityType === 'GERAL',
+        );
+        setPinedActivities(filterBeld);
+        await changePresetActivities(filterBeld);
+      }
+      if (typeOfChron === 'machining') {
+        const filterMachining = seedActivities.filter(
+          (act) =>
+            act.activityType === 'USINAGEM' || act.activityType === 'GERAL',
+        );
+        setPinedActivities(filterMachining);
+        await changePresetActivities(filterMachining);
       }
     };
 
@@ -131,7 +150,7 @@ const RegisterInitialInformationsPage = () => {
   }, [typeOfChron]);
 
   const handleAddInitialInformations = async (
-    data: TypeInitialInformationsData
+    data: TypeInitialInformationsData,
   ) => {
     let uuIdRegisterChronoanalysis = uuidv4();
 
@@ -435,7 +454,7 @@ const RegisterInitialInformationsPage = () => {
             </Card>
             <Card text='Preset das atividades' className='flex flex-col mt-5'>
               <Label title='Tipo de cronoanálise' className=' flex w-full'>
-                <div className=' flex gap-1'>
+                <div className=' flex gap-2 mb-3'>
                   <Button
                     size={' md-desk'}
                     className=' py-2.5 w-full'
@@ -457,6 +476,30 @@ const RegisterInitialInformationsPage = () => {
                     onClick={() => setValue('typeOfChronoanalysis', 'montage')}
                   >
                     montagem
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'bend' ? 'select-blue' : 'default'
+                    }`}
+                    onClick={() => setValue('typeOfChronoanalysis', 'bend')}
+                  >
+                    dobra
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'machining' ? 'select-blue' : 'default'
+                    }`}
+                    onClick={() =>
+                      setValue('typeOfChronoanalysis', 'machining')
+                    }
+                  >
+                    usinagem
                   </Button>
                 </div>
               </Label>

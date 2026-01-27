@@ -17,9 +17,10 @@ const StrikeZoneComponent = ({
     <Button
       type='button'
       key={`${item.id}-${index}`}
-      variant={
-        item.id === activitieStrikeZoneId ? 'select-yellow' : 'base-yellow'
-      }
+      className={`
+        ${item.id === activitieStrikeZoneId ? 'opacity-100 text-white' : ' opacity-30'}
+        ${item.name === 'A' ? 'bg-green-600' : item.name === 'B' ? 'bg-yellow-600' : 'bg-red-600'}
+        `}
       onClick={() => editStrikeZone(activitieId, item.id, setAttTable)}
     >
       {item.name}
