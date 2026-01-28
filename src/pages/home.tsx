@@ -38,9 +38,9 @@ const HomePage = () => {
           data: ReportProps | null;
         } = await listDatasInformationsForDashBoard(
           dateRange.from,
-          dateRange.to
+          dateRange.to,
         );
-
+        console.log(data);
         if (status && data) {
           setDashBoardData(data);
           return;

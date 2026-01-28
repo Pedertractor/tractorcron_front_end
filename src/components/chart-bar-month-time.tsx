@@ -1,4 +1,12 @@
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from 'recharts';
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  LabelList,
+  Line,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import {
   Card,
@@ -18,13 +26,17 @@ const chartConfig = {
   totalTimeSeconds: {
     label: 'segundos',
   },
+  goalSeconds: {
+    label: 'meta em seg.',
+  },
 } satisfies ChartConfig;
 
 const ChartBarMonthTime = ({
   chartData,
 }: {
-  chartData: { month: string; totalTimeSeconds: number }[];
+  chartData: { month: string; totalTimeSeconds: number; goalSeconds: number }[];
 }) => {
+  console.log(chartData);
   return (
     <Card className='w-full h-[22rem] border-border'>
       <CardHeader className=''>
@@ -33,7 +45,7 @@ const ChartBarMonthTime = ({
       </CardHeader>
       <CardContent className=' h-[15rem]'>
         <ChartContainer config={chartConfig} className=' h-full w-full'>
-          <BarChart
+          <ComposedChart
             accessibilityLayer
             data={chartData}
             margin={{
@@ -49,10 +61,35 @@ const ChartBarMonthTime = ({
               axisLine={false}
               tickFormatter={(value: string) => value.slice(0, 3).toUpperCase()}
             />
+            <YAxis
+              tickFormatter={(value) => `${Math.floor(value / 3600)}h`}
+              tickLine={false}
+              axisLine={false}
+            />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent className='bg-white' />}
             />
+            <Line
+              type='bump'
+              dataKey='goalSeconds'
+              stroke='#ef8644'
+              strokeWidth={1}
+              dot={{ r: 2 }}
+            >
+              <LabelList
+                dataKey='goalSeconds'
+                position='top'
+                offset={12}
+                className='fill-foreground'
+                fontSize={12}
+                formatter={(value: number) => {
+                  if (value === 0) return '';
+                  const hours = Math.floor(value / 3600);
+                  return `${String(hours).padStart(2, '0')}h`;
+                }}
+              />
+            </Line>
             <Bar
               dataKey='totalTimeSeconds'
               className=' fill-background-base-blue-select'
@@ -66,16 +103,18 @@ const ChartBarMonthTime = ({
                 className='fill-foreground'
                 fontSize={12}
                 formatter={(value: number) => {
+                  if (value === 0) return '';
+
                   const hours = Math.floor(value / 3600);
                   const minutes = Math.floor((value % 3600) / 60);
                   const seconds = value % 60;
                   return `${String(hours).padStart(2, '0')}:${String(
-                    minutes
+                    minutes,
                   ).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 }}
               />
             </Bar>
-          </BarChart>
+          </ComposedChart>
         </ChartContainer>
       </CardContent>
     </Card>
