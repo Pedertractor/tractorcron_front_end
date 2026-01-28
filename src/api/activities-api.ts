@@ -19,6 +19,14 @@ export interface activitiesDataChartsProps {
     time: string;
     percent: number;
   }[];
+  totalGoldenZone: {
+    name: string;
+    total: number;
+  }[];
+  totalStrikeZone: {
+    name: string;
+    total: number;
+  }[];
 }
 
 export async function getActivitiesDataCharts(
@@ -40,7 +48,6 @@ export async function getActivitiesDataCharts(
   );
 
   const data = await response.json();
-
   setIsloading(false);
 
   if (response.status !== 200)

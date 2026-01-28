@@ -1,165 +1,115 @@
-import { type listChronoanalysisProps } from '@/api/chronoanalysis-api';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import TableActivities from './table-activities';
-import LabelActivitieInfo from './label-activities-info';
+  getInformationsForMagicLink,
+  MagicLinkResponse,
+} from '@/api/magic-link-api';
+import { ChartBarDefault } from '@/components/chart-bar';
+import { CharPieDefault } from '@/components/chart-pie';
+import GoldenZoneClassification from '@/components/golden-zone-classification';
+import LabelActivitieInfo from '@/components/label-activities-info';
+import StrikeZoneClassification from '@/components/strike-zone-classification';
+import TableActivities from '@/components/table-activities';
+import { Label } from '@/components/ui/label';
+import Text from '@/components/ui/text';
+import { Cog, IdCardLanyard, User, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import {
-  activitiesDataChartsProps,
-  getActivitiesDataCharts,
-} from '@/api/activities-api';
+import { useParams } from 'react-router';
 import { toast } from 'sonner';
-import { ChartBarDefault } from './chart-bar';
-import Loading from './loading';
-import { CharPieDefault } from './chart-pie';
-import { useParts } from '@/hooks/use-parts';
-import { Button } from './ui/button';
-import { Cog, IdCardLanyard, Image, User, Users } from 'lucide-react';
-import ModalImage from './modal-image';
-import { Label } from './ui/label';
-import StrikeZoneClassification from './strike-zone-classification';
-import GoldenZoneClassification from './golden-zone-classification';
 
-export interface ModalDetailProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  chronoanalysis: listChronoanalysisProps;
-}
+const MagickLinkPage = () => {
+  const [report, setReport] = useState<null | MagicLinkResponse>(null);
 
-const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
-  const [isLoading, setIsloading] = useState(false);
-  const [dataGraph, setDataGraph] = useState<
-    activitiesDataChartsProps | undefined
-  >(undefined);
-  const [isOpenImage, setIsOpenImage] = useState(false);
-  const {
-    isLoading: isLoadingPart,
-    isStatus: isStatusPart,
-    partData,
-  } = useParts(chronoanalysis.internalCode);
+  const { uuid } = useParams();
 
   useEffect(() => {
-    const supportGetDatasForGraph = async () => {
-      const { data, error, status } = await getActivitiesDataCharts(
-        chronoanalysis.id,
-        setIsloading,
-      );
+    if (!uuid) return;
+    const supportGetInformationsForMagickLink = async () => {
+      const { data, error, status } = await getInformationsForMagicLink(uuid);
 
       if (!status) {
         toast.info(error);
+        return;
       }
 
-      if (status) {
-        setDataGraph(data);
-      }
+      setReport(data);
     };
 
-    supportGetDatasForGraph();
-  }, [chronoanalysis.id]);
+    supportGetInformationsForMagickLink();
+  }, [uuid]);
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={() => {
-        setOpen(!open);
-      }}
-    >
-      <DialogContent className=' bg-white border-none flex flex-col'>
-        {isOpenImage && (
-          <ModalImage
-            openModal={isOpenImage}
-            setOpenModal={setIsOpenImage}
-            partData={partData}
-          />
-        )}
-        <DialogHeader className=' h-fit'>
-          <DialogTitle>Revisão da cronoanálise</DialogTitle>
-          <DialogDescription className=' flex justify-between items-center'>
-            <LabelActivitieInfo text='ID' textInfo={chronoanalysis.id} />
+  if (report)
+    return (
+      <section className=' w-full p-5  h-full'>
+        <Text variant={'title'}>Revisão da cronoanálise</Text>
+        <div className=' border-border p-5 h-full'>
+          <div className=' flex items-center justify-between  h-full'>
+            <LabelActivitieInfo text='ID' textInfo={report.chronoanalysis.id} />
             <span className=' flex items-center gap-4'>
               <LabelActivitieInfo
                 text='Iniciado'
                 textInfo={new Date(
-                  chronoanalysis.startDate,
+                  report.chronoanalysis.startDate,
                 ).toLocaleTimeString()}
                 secondTextInfo={new Date(
-                  chronoanalysis.startDate,
+                  report.chronoanalysis.startDate,
                 ).toLocaleDateString()}
               />
               <LabelActivitieInfo
                 text='Finalizado'
-                textInfo={new Date(chronoanalysis.endDate).toLocaleTimeString()}
+                textInfo={new Date(
+                  report.chronoanalysis.endDate,
+                ).toLocaleTimeString()}
                 secondTextInfo={new Date(
-                  chronoanalysis.endDate,
+                  report.chronoanalysis.endDate,
                 ).toLocaleDateString()}
               />
               <LabelActivitieInfo
                 text='Tempo decimal'
-                textInfo={chronoanalysis.workPaceAssessment.standardTimeDecimal.toString()}
+                textInfo={report.chronoanalysis.workPaceAssessment.standardTimeDecimal.toString()}
               />
             </span>
-          </DialogDescription>
-        </DialogHeader>
-        <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  relative px-4 py-5'>
-            <div className=' absolute top-2 right-2 flex items-center justify-center gap-5'>
-              <div className=' flex items-center justify-center border border-border py-1 px-3 rounded-lg gap-2'>
-                <Cog size={22} className=' text-background-base-blue-select' />
-                <p>{chronoanalysis.howManyParts}</p>
+          </div>
+          <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
+            <div className=' flex flex-col  gap-3 border border-border rounded-lg mt-5  relative px-4 py-5'>
+              <div className=' absolute top-2 right-2 flex items-center justify-center gap-5'>
+                <div className=' flex items-center justify-center border border-border py-1 px-3 rounded-lg gap-2'>
+                  <Cog
+                    size={22}
+                    className=' text-background-base-blue-select'
+                  />
+                  <p>{report.chronoanalysis.howManyParts}</p>
+                </div>
               </div>
-              <Button
-                onClick={() => setIsOpenImage(!isOpenImage)}
-                type='button'
-                size={'icon'}
-                disabled={
-                  !isStatusPart || isLoadingPart || !partData ? true : false
-                }
-                className={`
-                ${
-                  !isStatusPart || isLoadingPart || (!partData ? true : false)
-                    ? 'border border-dashed border-border bg-white opacity-30'
-                    : 'bg-background-blue transition hover:bg-background-base-blue cursor-pointer'
-                }`}
-              >
-                <Image />
-              </Button>
-            </div>
 
-            <h3 className=' text-initial font-semibold'>
-              Informações das peças
-            </h3>
-            <div className=' flex items-center gap-5 justify-between w-full'>
-              <div className=' flex flex-col text-sm gap-1  text-initial w-full'>
-                <p className='font-semibold'>Part number</p>
-                <span className='rounded-lg border border-border py-1 px-2 '>
-                  {chronoanalysis.partNumber}
-                </span>
-              </div>
-              <div className=' flex gap-2 w-full '>
-                <div className=' flex flex-col text-sm gap-1 text-initial'>
-                  <p className='font-semibold'>Revisão</p>
-                  <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                    {chronoanalysis.revision}
+              <h3 className=' text-initial font-semibold'>
+                Informações das peças
+              </h3>
+              <div className=' flex items-center justify-between gap-5'>
+                <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
+                  <p className='font-semibold'>Part number</p>
+                  <span className='  rounded-lg border border-border py-1 px-2'>
+                    {report.chronoanalysis.partNumber}
                   </span>
                 </div>
-                <div className=' flex flex-col text-sm gap-1  w-full text-initial'>
-                  <p className='font-semibold'>Código interno</p>
-                  <span className=' rounded-lg border border-border py-1 px-2 '>
-                    {chronoanalysis.internalCode}
-                  </span>
+                <div className=' flex gap-1 w-full'>
+                  <div className=' flex flex-col text-sm gap-1  text-initial'>
+                    <p className='font-semibold'>Revisão</p>
+                    <span className=' text-center rounded-lg border border-border py-1 px-2 '>
+                      {report.chronoanalysis.revision}
+                    </span>
+                  </div>
+                  <div className=' flex flex-col text-sm gap-1  text-initial w-full'>
+                    <p className='font-semibold'>Código interno</p>
+                    <span className='  rounded-lg border border-border py-1 px-2 '>
+                      {report.chronoanalysis.internalCode}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative mt-5'>
             <div className=' absolute top-2 right-2 flex items-center justify-center gap-3 py-1 px-3  border border-border rounded-lg'>
-              {chronoanalysis.chronoanalysisEmployee.length > 1 ? (
+              {report.chronoanalysis.chronoanalysisEmployee.length > 1 ? (
                 <Users
                   size={22}
                   className=' text-background-base-blue-select'
@@ -168,7 +118,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 <User size={22} className=' text-background-base-blue-select' />
               )}
               <span className=' font-medium'>
-                {chronoanalysis.chronoanalysisEmployee.length}
+                {report.chronoanalysis.chronoanalysisEmployee.length}
               </span>
             </div>
             <h3 className=' text-initial font-semibold'>
@@ -179,7 +129,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
                   <p className='font-semibold'>Cronoanalista</p>
                   <span className=' rounded-lg border border-border py-1 px-2 '>
-                    {chronoanalysis.user.employeeName}
+                    {report.chronoanalysis.user.employeeName}
                   </span>
                 </div>
                 <div className=' flex flex-col gap-1 w-full'>
@@ -187,12 +137,12 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   <div className=' flex items-center gap-1'>
                     <div className=' flex items-center text-sm gap-1  text-initial'>
                       <span className=' rounded-lg border border-border py-1 px-2 '>
-                        {chronoanalysis.sectorCostCenter}
+                        {report.chronoanalysis.sectorCostCenter}
                       </span>
                     </div>
                     <div className=' flex items-center text-sm gap-1  text-initial w-full'>
                       <span className=' rounded-lg border border-border py-1 px-2 w-full'>
-                        {chronoanalysis.sectorName}
+                        {report.chronoanalysis.sectorName}
                       </span>
                     </div>
                   </div>
@@ -201,94 +151,81 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
 
               <div className=' flex flex-col gap-1 w-full '>
                 <p className='font-semibold text-sm'>
-                  {chronoanalysis.chronoanalysisEmployee.length > 1
+                  {report.chronoanalysis.chronoanalysisEmployee.length > 1
                     ? 'Colaboradores cronometrados'
                     : 'Colaborador cronometrado'}
                 </p>
                 <div className='grid grid-cols-3 w-full gap-3'>
-                  {chronoanalysis.chronoanalysisEmployee.map((employee) => (
-                    <div
-                      key={employee.employeeId}
-                      className=' border border-border rounded-xl p-3 px-5 flex items-center justify-between gap-5 w-full'
-                    >
-                      <IdCardLanyard
-                        size={30}
-                        className=' text-background-base-blue-select'
-                      />
-                      <div className=' justify-center gap-1 flex-col flex w-full'>
-                        <p className=' text-sm'>
-                          {employee.employeeName &&
-                          employee.employeeName.length > 20
-                            ? `${employee.employeeName}`
-                            : employee.employeeName}
-                        </p>
-                        <div className='flex items-center justify-between text-sm  w-4/5'>
-                          <p className=' font-semibold'>
-                            {employee.employeeCardNumber}
+                  {report.chronoanalysis.chronoanalysisEmployee.map(
+                    (employee) => (
+                      <div
+                        key={employee.employeeId}
+                        className=' border border-border rounded-xl p-3 px-5 flex items-center justify-between gap-5 w-full'
+                      >
+                        <IdCardLanyard
+                          size={30}
+                          className=' text-background-base-blue-select'
+                        />
+                        <div className=' justify-center gap-1 flex-col flex w-full'>
+                          <p className=' text-sm'>
+                            {employee.employeeName &&
+                            employee.employeeName.length > 20
+                              ? `${employee.employeeName}`
+                              : employee.employeeName}
                           </p>
-                          <p>{employee.employeeUnit}</p>
+                          <div className='flex items-center justify-between text-sm  w-4/5'>
+                            <p className=' font-semibold'>
+                              {employee.employeeCardNumber}
+                            </p>
+                            <p>{employee.employeeUnit}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               </div>
             </div>
           </div>
-
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4 w-full relative'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg mt-5  p-4 w-full relative'>
             <h3 className=' text-initial font-semibold'>Informações extras</h3>
             <div className=' flex items-center justify-center gap-3 w-full'>
               <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
                 <p className='font-semibold'>Cronoanálise para Kaizen</p>
                 <div className='w-full flex gap-1'>
                   <div
-                    className={` ${chronoanalysis.isKaizen ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
+                    className={` ${report.chronoanalysis.isKaizen ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
                   >
                     Sim
                   </div>
                   <div
-                    className={` ${chronoanalysis.isKaizen ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                    className={` ${report.chronoanalysis.isKaizen ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
                   >
                     Não
                   </div>
                 </div>
               </div>
-              {chronoanalysis.isKaizen && chronoanalysis.numberKaizen && (
-                <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
-                  <p className='font-semibold'>Nº do KAIZEN</p>
-                  <span className=' rounded-lg border border-border py-1 px-2 '>
-                    {chronoanalysis.numberKaizen}
-                  </span>
-                </div>
-              )}
+              {report.chronoanalysis.isKaizen &&
+                report.chronoanalysis.numberKaizen && (
+                  <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
+                    <p className='font-semibold'>Nº do KAIZEN</p>
+                    <span className=' rounded-lg border border-border py-1 px-2 '>
+                      {report.chronoanalysis.numberKaizen}
+                    </span>
+                  </div>
+                )}
             </div>
             <div className=' flex items-center justify-center gap-20 w-full mt-2'>
-              <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
-                <p className='font-semibold'>Registrado no sistema EEPROM</p>
-                <div className='w-full flex gap-1'>
-                  <div
-                    className={` ${chronoanalysis.isSend ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg  w-full py-1 flex items-center justify-center`}
-                  >
-                    Sim
-                  </div>
-                  <div
-                    className={` ${chronoanalysis.isSend ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
-                  >
-                    Não
-                  </div>
-                </div>
-              </div>
               <div className=' flex flex-col text-sm gap-1 text-initial  w-full'>
                 <p className='font-semibold'>Requisição</p>
                 <div className='w-full flex gap-1'>
                   <div
-                    className={` ${chronoanalysis.isRequest ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg  w-full py-1 flex items-center justify-center`}
+                    className={` ${report.chronoanalysis.isRequest ? 'bg-background-base-blue-select text-white font-bold' : ' border border-border'} rounded-lg  w-full py-1 flex items-center justify-center`}
                   >
                     Sim
                   </div>
                   <div
-                    className={` ${chronoanalysis.isRequest ? ' border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                    className={` ${report.chronoanalysis.isRequest ? ' border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
                   >
                     Não
                   </div>
@@ -298,12 +235,12 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 <p className='font-semibold'>Primeira cronoanálise</p>
                 <div className='w-full flex gap-1'>
                   <div
-                    className={` ${chronoanalysis.firstCron ? 'bg-background-base-blue-select text-white font-bold' : 'border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
+                    className={` ${report.chronoanalysis.firstCron ? 'bg-background-base-blue-select text-white font-bold' : 'border border-border'} rounded-lg w-full py-1 flex items-center justify-center`}
                   >
                     Sim
                   </div>
                   <div
-                    className={` ${chronoanalysis.firstCron ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
+                    className={` ${report.chronoanalysis.firstCron ? 'border border-border' : 'bg-background-base-blue-select text-white font-bold'} rounded-lg w-full py-1 flex items-center justify-center`}
                   >
                     Não
                   </div>
@@ -314,39 +251,37 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
               <div className=' flex flex-col text-sm gap-1 w-full text-initial'>
                 <p className='font-semibold'>OP</p>
                 <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                  {chronoanalysis.op}
+                  {report.chronoanalysis.op}
                 </span>
               </div>
               <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
                 <p className='font-semibold'>SOP</p>
                 <span className=' rounded-lg text-center border border-border py-1 px-2 '>
-                  {chronoanalysis.sop ? 'existe' : 'não existe'}
+                  {report.chronoanalysis.sop ? 'existe' : 'não existe'}
                 </span>
               </div>
               <div className=' flex flex-col text-sm gap-1 w-full  text-initial'>
                 <p className='font-semibold'>Cliente</p>
                 <span className=' text-center rounded-lg border border-border py-1 px-2 '>
-                  {chronoanalysis.client.name}
+                  {report.chronoanalysis.client.name}
                 </span>
               </div>
               <div className=' flex flex-col text-sm gap-1 w-full text-initial'>
                 <p className='font-semibold'>Ordem de fabricação (OF)</p>
                 <span className=' rounded-lg border border-border py-1 px-2  text-center'>
-                  {chronoanalysis.of}
+                  {report.chronoanalysis.of}
                 </span>
               </div>
             </div>
           </div>
-
-          <div className=' flex flex-col  gap-2  p-4'>
+          <div className=' flex flex-col w-full gap-2 my-4'>
             <h3 className=' text-initial font-semibold'>Atividades</h3>
             <TableActivities
               authFunc={false}
-              allActivities={chronoanalysis.activities}
+              allActivities={report.chronoanalysis.activities}
             />
           </div>
-
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4'>
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg my-4 p-4'>
             <h3 className=' text-initial font-semibold'>
               Avaliação de ritimo de trabalho
             </h3>
@@ -357,12 +292,16 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   <div className=' flex items-center gap-1'>
                     <div className=' flex items-center text-sm gap-1  text-initial'>
                       <span className=' rounded-lg border border-border py-1 px-2 '>
-                        {chronoanalysis.workPaceAssessment.hability}
+                        {report.chronoanalysis.workPaceAssessment.hability}
                       </span>
                     </div>
                     <div className=' flex items-center text-sm gap-1  text-initial'>
                       <span className=' rounded-lg border border-border py-1 px-2 '>
-                        {chronoanalysis.workPaceAssessment.habilityPorcent}%
+                        {
+                          report.chronoanalysis.workPaceAssessment
+                            .habilityPorcent
+                        }
+                        %
                       </span>
                     </div>
                   </div>
@@ -372,12 +311,13 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   <div className=' flex items-center gap-1'>
                     <div className=' flex items-center text-sm gap-1  text-initial'>
                       <span className=' rounded-lg border border-border py-1 px-2 '>
-                        {chronoanalysis.workPaceAssessment.effort}
+                        {report.chronoanalysis.workPaceAssessment.effort}
                       </span>
                     </div>
                     <div className=' flex items-center text-sm gap-1  text-initial'>
                       <span className=' rounded-lg border border-border py-1 px-2 '>
-                        {chronoanalysis.workPaceAssessment.effortPorcent}%
+                        {report.chronoanalysis.workPaceAssessment.effortPorcent}
+                        %
                       </span>
                     </div>
                   </div>
@@ -387,7 +327,11 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   <div className=' flex items-center gap-1'>
                     <div className=' flex items-center text-sm gap-1  text-initial'>
                       <span className=' rounded-lg border border-border py-1 px-2 '>
-                        {chronoanalysis.workPaceAssessment.efficiencyPorcent}%
+                        {
+                          report.chronoanalysis.workPaceAssessment
+                            .efficiencyPorcent
+                        }
+                        %
                       </span>
                     </div>
                   </div>
@@ -399,7 +343,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                 <div className=' flex items-center gap-1'>
                   <div className=' flex items-center text-sm gap-1  text-initial'>
                     <span className=' rounded-lg border border-border py-1 px-2 '>
-                      {chronoanalysis.workPaceAssessment.timeCalculate}
+                      {report.chronoanalysis.workPaceAssessment.timeCalculate}
                     </span>
                   </div>
                 </div>
@@ -412,7 +356,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   <div className=' flex items-center gap-1'>
                     <div className=' flex items-center text-sm gap-1  text-green-700 w-full'>
                       <span className=' rounded-lg border border-green-50 py-1 px-2 bg-green-100 w-full text-center'>
-                        {chronoanalysis.workPaceAssessment.standardTime}
+                        {report.chronoanalysis.workPaceAssessment.standardTime}
                       </span>
                     </div>
                   </div>
@@ -424,7 +368,10 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                   <div className=' flex items-center gap-1'>
                     <div className=' flex items-center text-sm gap-1  text-green-700 w-full'>
                       <span className=' rounded-lg border border-green-50 py-1 px-2 bg-green-100 w-full text-center'>
-                        {chronoanalysis.workPaceAssessment.standardTimeDecimal}
+                        {
+                          report.chronoanalysis.workPaceAssessment
+                            .standardTimeDecimal
+                        }
                       </span>
                     </div>
                   </div>
@@ -437,7 +384,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
                     <div className=' flex items-center text-sm gap-1  text-green-700 w-full'>
                       <span className=' rounded-lg border border-green-50 py-1 px-2 bg-green-100 w-full text-center'>
                         {
-                          chronoanalysis.workPaceAssessment
+                          report.chronoanalysis.workPaceAssessment
                             .standardTimeDecimalByNumberOfParts
                         }
                       </span>
@@ -447,82 +394,68 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
               </div>
             </div>
           </div>
-          <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-4'>
+
+          <div className=' flex flex-col  gap-3 border border-border rounded-lg  h-full p-4'>
             <h3 className=' text-initial font-semibold'>
               Levantamento gráfico
             </h3>
             <div className=' h-fullflex flex-col items-center justify-center gap-2 w-full'>
               <div className='w-full h-[300px] p-2 border border-border rounded-lg mb-2'>
                 <h4 className=' text-sm font-medium'>Descrição do movimento</h4>
-                {isLoading && <Loading />}
-                {dataGraph && (
-                  <ChartBarDefault
-                    chartData={dataGraph.activityNameChartData}
-                    fill='var(--chart-2)'
-                  />
-                )}
+                <ChartBarDefault
+                  chartData={report.activitiesReport.activityNameChartData}
+                  fill='var(--chart-2)'
+                />
               </div>
               <div className=' flex items-center justify-center gap-2 w-full'>
                 <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
                   <h4 className=' text-sm font-medium'>
                     Classificação do movimento
                   </h4>
-                  {isLoading && <Loading />}
-                  {dataGraph && !isLoading && (
-                    <CharPieDefault
-                      chartData={dataGraph.classificationChartData}
-                    />
-                  )}
+                  <CharPieDefault
+                    chartData={report.activitiesReport.classificationChartData}
+                  />
                 </div>
 
                 <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
                   <h4 className=' text-sm font-medium'>Tipo do movimento</h4>
-                  {isLoading && <Loading />}
 
-                  {dataGraph && !isLoading && (
-                    <ChartBarDefault
-                      chartData={dataGraph.typeMovementChartData}
-                      fill='var(--chart-3)'
-                    />
-                  )}
+                  <ChartBarDefault
+                    chartData={report.activitiesReport.typeMovementChartData}
+                    fill='var(--chart-3)'
+                  />
                 </div>
               </div>
             </div>
-            <div className=' flex items-center justify-center gap-2 w-full'>
-              <div className=' w-1/2 h-full  p-2 border border-border rounded-lg'>
+            <div className=' flex items-center justify-center gap-2 w-full h-[340px]'>
+              <div className=' w-full h-full p-2 border border-border rounded-lg '>
                 <h4 className=' text-sm font-medium'>
                   Classificação Ergonomia do Movimento - ST
                 </h4>
-                {isLoading && <Loading />}
-                {dataGraph && !isLoading && (
-                  <StrikeZoneClassification
-                    totalStrikeZone={dataGraph.totalStrikeZone}
-                  />
-                )}
+                <StrikeZoneClassification
+                  totalStrikeZone={report.activitiesReport.totalStrikeZone}
+                />
               </div>
 
-              <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
-                <h4 className=' text-sm font-medium'>
+              <div className=' w-full h-full p-2 border border-border rounded-lg'>
+                <h4 className=' text-sm font-medium mb-5'>
                   Classificação Ergonomia do Movimento - GZ
                 </h4>
-                {isLoading && <Loading />}
 
-                {dataGraph && !isLoading && (
-                  <GoldenZoneClassification
-                    totalGoldenZone={dataGraph.totalGoldenZone}
-                  />
-                )}
+                <GoldenZoneClassification
+                  totalGoldenZone={report.activitiesReport.totalGoldenZone}
+                />
               </div>
             </div>
           </div>
-          {chronoanalysis.enhancement && (
+          {report.chronoanalysis.enhancement && (
             <div className=' flex flex-col  gap-3 border border-border rounded-lg  p-3 w-full'>
               <h3 className=' text-initial font-semibold'>
                 Melhorias e observações
               </h3>
               <Label title=''>
                 <textarea
-                  defaultValue={chronoanalysis.enhancement ?? ''}
+                  defaultValue={report.chronoanalysis.enhancement ?? ''}
                   rows={8}
                   disabled
                   className=' p-3 border border-border rounded-xl text-secondary resize-none w-full max-h-35 overflow-y-auto '
@@ -531,9 +464,8 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
-  );
+      </section>
+    );
 };
 
-export default ModalDetail;
+export default MagickLinkPage;

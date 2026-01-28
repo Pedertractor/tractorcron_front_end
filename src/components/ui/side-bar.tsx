@@ -22,13 +22,13 @@ const linksAndIcons = [
   {
     name: 'Nova Cronoanálise',
     icon: addClockIcon,
-    to: '/chronoanalysis',
+    to: '/cronoanalise',
     rolePermition: ['ADMIN', 'CHRONOANALIST'],
   },
   {
     name: 'Analisar Cronoanálise',
     icon: dashBoardIcon,
-    to: '/analysis',
+    to: '/relatorio',
     rolePermition: ['ADMIN', 'CHRONOANALIST'],
   },
 ];

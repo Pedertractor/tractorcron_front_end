@@ -6,11 +6,13 @@ import LoginPage from './pages/login';
 import ProtectRoute from './routers/protect-route';
 import SideBar from './components/ui/side-bar';
 import Analysis from './pages/analysis';
+import MagickLinkPage from './pages/magic-link';
 
 const App = () => {
   return (
     <Routes>
       <Route path='/login' element={<LoginPage />} />
+      <Route path='/info/:uuid' element={<MagickLinkPage />} />
       <Route
         element={
           <ProtectRoute allowedRoles={['ADMIN', 'USER', 'CHRONOANALIST']} />
@@ -25,14 +27,14 @@ const App = () => {
         element={<ProtectRoute allowedRoles={['ADMIN', 'CHRONOANALIST']} />}
       >
         <Route element={<SideBar />}>
-          <Route path='/chronoanalysis/*' element={<RouterChronoanalysis />} />
+          <Route path='/cronoanalise/*' element={<RouterChronoanalysis />} />
         </Route>
       </Route>
       <Route
         element={<ProtectRoute allowedRoles={['ADMIN', 'CHRONOANALIST']} />}
       >
         <Route element={<SideBar />}>
-          <Route path='/analysis' element={<Analysis />} />
+          <Route path='/relatorio' element={<Analysis />} />
         </Route>
       </Route>
     </Routes>

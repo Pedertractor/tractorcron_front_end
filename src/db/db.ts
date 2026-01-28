@@ -15,7 +15,10 @@ export interface RegisterChronoanalysis {
   partNumber: string;
   revision: string;
   typeOfChronoanalysis: string;
+  isRequest: boolean;
+  firstCron: boolean;
   isKaizen: boolean;
+  numberKaizen?: string;
   howManyParts: number;
 }
 

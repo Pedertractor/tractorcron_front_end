@@ -1,5 +1,44 @@
 import { z } from 'zod';
 
+export const editInformationsSchema = z
+  .object({
+    id: z.string(),
+    sectorId: z.number(),
+    sectorName: z.string().min(4),
+    sectorCostCenter: z
+      .string()
+      .min(4, 'Centro de custo obrigatório')
+      .max(4, 'Precisamos apenas dos 4 dígitos')
+      .regex(/^\d{4}$/, 'O c.c precisar ser em numeros!'),
+    clientId: z.string().min(1, 'Cliente é obrigatório'),
+    of: z.string().min(1, 'OF obrigatório'),
+    op: z.string().min(1, 'OP obrigatório'),
+    sop: z.boolean(),
+    revision: z.string().min(1, 'Revisão obrigatória'),
+    internalCode: z
+      .string()
+      .min(1, 'Código interno obrigatório')
+      .max(10, 'O código interno está com muitas informações'),
+    partNumber: z.string().min(4, 'Part Number obrigatório'),
+    isRequest: z.boolean(),
+    firstCron: z.boolean(),
+    isKaizen: z.boolean(),
+    numberKaizen: z.string().nullable().optional(),
+    enhancement: z.string().nullable().optional(),
+    howManyParts: z.number(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.isKaizen && !data.numberKaizen?.trim()) {
+      ctx.addIssue({
+        path: ['numberKaizen'],
+        message: 'Número do Kaizen é obrigatório quando Kaizen está ativo',
+        code: z.ZodIssueCode.custom,
+      });
+    }
+  });
+
+export type TypeEditInformations = z.infer<typeof editInformationsSchema>;
+
 export const initialInformationsSchema = z.object({
   id: z.string().optional(),
   sectorId: z.number().optional(),
@@ -20,7 +59,10 @@ export const initialInformationsSchema = z.object({
     .max(10, 'O código interno está com muitas informações'),
   partNumber: z.string().min(4, 'Part Number obrigatório'),
   typeOfChronoanalysis: z.string().min(1, 'Tipo de cronoanálise obrigatório'),
+  isRequest: z.boolean(),
+  firstCron: z.boolean(),
   isKaizen: z.boolean(),
+  numberKaizen: z.string().optional(),
   enhancement: z.string().optional(),
 });
 

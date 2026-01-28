@@ -7,8 +7,8 @@ const RouterChronoanalysis = () => {
   return (
     <Routes>
       <Route path='' element={<RegisterInitialInformationsPage />} />
-      <Route path='activities' element={<RegisterActivitiesCronPage />} />
-      <Route path='review' element={<RegisterFinishInformationsPage />} />
+      <Route path='atividades' element={<RegisterActivitiesCronPage />} />
+      <Route path='revisao' element={<RegisterFinishInformationsPage />} />
     </Routes>
   );
 };

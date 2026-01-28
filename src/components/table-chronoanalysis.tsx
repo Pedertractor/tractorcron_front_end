@@ -18,49 +18,69 @@ import {
   PaginationPrevious,
 } from './ui/pagination';
 import {
-  exportPDFReport,
+  changeSendStatus,
   listChronoanalysisProps,
 } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Download, Send, Users } from 'lucide-react';
+import { Copy, CopyCheck, Edit, EyeIcon, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { useState } from 'react';
+
+const url = import.meta.env.VITE_URL_FRONT_END_URL;
 
 export interface TableChronoanalysisProps {
   data: listChronoanalysisProps[];
+  role: string | null;
   PagesLength?: number;
   currentPage?: number;
   handlePageChange?: (value: number) => void;
   totalPages?: number;
   setIsChronoanalysis?: (item: listChronoanalysisProps | undefined) => void;
   setIsOpenModal?: (props: boolean) => void;
+  setIsOpenModalEdit?: (props: boolean) => void;
+  setIsIdChrono?: (props: string | null) => void;
+  setIsOpenModalDelete?: (props: boolean) => void;
 }
 
 const TableChronoanalysis = ({
   data,
+  role,
   PagesLength,
   currentPage,
   handlePageChange,
   totalPages,
   setIsChronoanalysis,
   setIsOpenModal,
+  setIsOpenModalEdit,
+  setIsIdChrono,
+  setIsOpenModalDelete,
 }: TableChronoanalysisProps) => {
-  async function handleDownloadReport(uuid: string) {
-    const { blob, status } = await exportPDFReport(uuid);
+  const [copied, setCopied] = useState('');
+
+  async function onChangeChangeSendStatus(id: string) {
+    const { status, message } = await changeSendStatus(id);
 
     if (status === 200) {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cronoanalise_${uuid}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      toast.success(message);
+      window.location.reload();
       return;
     }
 
-    toast.error('Erro ao baixar relatório');
+    toast.error(message);
   }
 
-  if (setIsChronoanalysis && setIsOpenModal)
+  async function handleCopy(uuid: string) {
+    await navigator.clipboard.writeText(`${url}/${uuid}`);
+    setCopied(uuid);
+  }
+
+  if (
+    setIsChronoanalysis &&
+    setIsOpenModal &&
+    setIsIdChrono &&
+    setIsOpenModalEdit &&
+    setIsOpenModalDelete
+  )
     return (
       <Card>
         <div className=' overflow-y-auto rounded-md'>
@@ -70,16 +90,23 @@ const TableChronoanalysis = ({
               <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
                 <TableHead>Part number</TableHead>
                 <TableHead>Código interno</TableHead>
+                <TableHead>OP</TableHead>
                 <TableHead>Cronoanalista</TableHead>
                 <TableHead>
                   <Users size={18} />
                 </TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Decimal</TableHead>
+                <TableHead>Tempo Padrão</TableHead>
                 <TableHead>Data</TableHead>
-                <TableHead>
-                  <Send size={15} className=' text-zinc-800' />
-                </TableHead>
+                <TableHead></TableHead>
+                <TableHead></TableHead>
+                {role && role === 'ADMIN' && (
+                  <>
+                    <TableHead></TableHead>
+                    <TableHead></TableHead>
+                  </>
+                )}
+
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -87,21 +114,18 @@ const TableChronoanalysis = ({
               {data.map((item) => (
                 <TableRow
                   key={item.id}
-                  className=' border-border text-sm text-initial transition hover:bg-zinc-100 hover:cursor-pointer '
-                  onClick={() => {
-                    setIsChronoanalysis(item);
-                    setIsOpenModal(true);
-                  }}
+                  className=' border-border text-sm text-initial '
                 >
                   <TableCell>{item.partNumber}</TableCell>
                   <TableCell>{item.internalCode}</TableCell>
+                  <TableCell>{item.op}</TableCell>
                   <TableCell>
                     {item.user.employeeName.toLowerCase().slice(0, 15)}...
                   </TableCell>
                   <TableCell className=''>
                     {item.chronoanalysisEmployee.length}
                   </TableCell>
-                  <TableCell>{item.client.name.toLowerCase()}</TableCell>
+                  <TableCell>{item.client.name?.toLowerCase()}</TableCell>
                   <TableCell>
                     {item.workPaceAssessment.standardTimeDecimal}
                   </TableCell>
@@ -109,11 +133,61 @@ const TableChronoanalysis = ({
                   <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
-                    <Checkbox checked={item.isSend} />
+                  <TableCell className=' z-10'>
+                    <Checkbox
+                      className=' cursor-pointer'
+                      checked={item.isSend}
+                      onCheckedChange={() => onChangeChangeSendStatus(item.id)}
+                    />
                   </TableCell>
-                  <TableCell onClick={() => handleDownloadReport(item.id)}>
-                    <Download size={18} className=' text-zinc-800' />
+                  <TableCell
+                    className=' cursor-pointer '
+                    onClick={() => {
+                      setIsChronoanalysis(item);
+                      setIsOpenModal(true);
+                    }}
+                  >
+                    <EyeIcon size={18} className=' text-zinc-800' />
+                  </TableCell>
+                  {role && role === 'ADMIN' && (
+                    <>
+                      <TableCell
+                        className=' cursor-pointer '
+                        onClick={() => {
+                          setIsIdChrono(item.id);
+                          setIsOpenModalEdit(true);
+                          setIsOpenModal(false);
+                        }}
+                      >
+                        <Edit size={18} className=' text-zinc-800' />
+                      </TableCell>
+                      <TableCell
+                        className=' cursor-pointer '
+                        onClick={() => {
+                          setIsIdChrono(item.id);
+                          setIsOpenModalDelete(true);
+                          setIsOpenModal(false);
+                        }}
+                      >
+                        <Trash2
+                          size={18}
+                          className=' text-red-800  rounded-sm'
+                        />
+                      </TableCell>
+                    </>
+                  )}
+
+                  <TableCell
+                    className=' cursor-pointer '
+                    onClick={() => {
+                      handleCopy(item.id);
+                    }}
+                  >
+                    {copied === item.id ? (
+                      <CopyCheck size={18} className=' text-zinc-800' />
+                    ) : (
+                      <Copy size={18} className=' text-zinc-800' />
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -143,7 +217,7 @@ const TableChronoanalysis = ({
 
                   {Array.from(
                     { length: totalPages > 10 ? totalPages / 2 : totalPages },
-                    (_, i) => i + 1
+                    (_, i) => i + 1,
                   ).map((page) => (
                     <PaginationItem key={page}>
                       <PaginationLink

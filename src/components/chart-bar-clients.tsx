@@ -22,8 +22,6 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 
-export const description = 'A bar chart with a custom label';
-
 const chartConfig = {
   value: {
     label: 'quantidade',

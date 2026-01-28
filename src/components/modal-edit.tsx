@@ -1,79 +1,147 @@
-import Text from '../../components/ui/text';
-import Card from '../../components/ui/card/card';
-import Input from '../../components/ui/input';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import PlayIconComponent from '../assets/icons/play-icon.svg?react';
+import EndIconComponent from '../assets/icons/check-icon.svg?react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  initialInformationsSchema,
-  type TypeInitialInformationsData,
-} from '../../zod/schema-chronoanalysis';
-import { v4 as uuidv4 } from 'uuid';
-import {
-  dbRegisterChronoanalysis,
-  type RegisterPresetActivities,
-} from '../../db/db';
-import Select from '../../components/ui/select';
-import { clients } from '../../seed/seed-client';
-import { useNavigate } from 'react-router';
-import ListActivities from '../../components/list-activities';
-import { changePresetActivities } from '../../db/db-functions-preset-activities';
-import { seedActivities } from '../../seed/seed-activities';
-import { verifyUuidRegister } from '@/api/chronoanalysis-api';
-import Button from '@/components/ui/button/button';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import Label from '@/components/ui/label/label';
+import Button from '@/components/ui/button/button';
 import { useParts } from '@/hooks/use-parts';
 import CheckRequestStatus from '@/components/check-request-status';
 import { useSector } from '@/hooks/use-sectors';
-import ModalImage from '@/components/modal-image';
-import { Images } from 'lucide-react';
 import { useOf } from '@/hooks/use-of';
 import AddChronoanalysisEmployee, {
   EmployeeProps,
 } from '@/components/add-chronoanalysis-employees';
 import CounterParts from '@/components/counter-parts';
+import { useEffect, useState } from 'react';
+import WorkPaceAssessment, { DataWorkPaceProps } from './work-pace-assessment';
+import { RegisterActivities } from '@/db/db';
+import {
+  editInformationsSchema,
+  TypeEditInformations,
+} from '@/zod/schema-chronoanalysis';
+import {
+  getUnique,
+  listChronoanalysisProps,
+  updateChrono,
+  updatedChronoanalysisProps,
+} from '@/api/chronoanalysis-api';
+import Card from './ui/card/card';
+import LabelActivitieInfo from './label-activities-info';
+import Input from './ui/input';
+import Select from './ui/select';
+import { clients } from '@/seed/seed-client';
+import Modal from './ui/modal';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 
-const RegisterInitialInformationsPage = () => {
-  const [pinedActivities, setPinedActivities] = useState<
-    RegisterPresetActivities[]
+export interface ModalEditProps {
+  idChrono: string;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  setIsRefetch: (props: boolean) => void;
+  setIdChrono: (props: string | null) => void;
+}
+
+const ModalEditChronoanalysis = ({
+  open,
+  setOpen,
+  idChrono,
+  setIsRefetch,
+  setIdChrono,
+}: ModalEditProps) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [chronoanalysis, setChronoanalysis] =
+    useState<null | listChronoanalysisProps>(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [workPaceAssessment, setWorkPaceAssessment] =
+    useState<DataWorkPaceProps | null>(null);
+  const [finalRegisterActivities, setFinalRegisterActivities] = useState<
+    RegisterActivities[]
   >([]);
-  const [isOpenImage, setIsOpenImage] = useState(false);
   const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
   const [numberOfParts, setNumberOfParts] = useState<number>(1);
-
-  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isValid },
-  } = useForm<TypeInitialInformationsData>({
-    resolver: zodResolver(initialInformationsSchema),
+  } = useForm<TypeEditInformations>({
+    resolver: zodResolver(editInformationsSchema),
     mode: 'onChange',
-    defaultValues: {
-      sectorName: '',
-      clientId: '',
-      sop: false,
-      typeOfChronoanalysis: 'welding',
-      isKaizen: false,
-      isRequest: false,
-      firstCron: true,
-    },
   });
+
+  useEffect(() => {
+    const getInformationsToEdit = async () => {
+      const {
+        status,
+        error,
+        data,
+      }: {
+        status: boolean;
+        error: string | null;
+        data: listChronoanalysisProps | null;
+      } = await getUnique(idChrono);
+
+      if (!status) {
+        return toast.info(error);
+      }
+
+      if (data) {
+        setWorkPaceAssessment({
+          ...data.workPaceAssessment,
+          efficiency: data.workPaceAssessment.efficiencyPorcent,
+        });
+        setFinalRegisterActivities(data.activities);
+        setChronoanalysis(data);
+        setEmployeeList(data.chronoanalysisEmployee);
+        setNumberOfParts(data.howManyParts);
+
+        reset({
+          id: data.id,
+          clientId: String(data.client.id),
+          sectorId: +data.sectorId,
+          sectorName: data.sectorName,
+          sectorCostCenter: data.sectorCostCenter,
+          sop: data.sop,
+          internalCode: data.internalCode,
+          of: data.of,
+          op: data.op,
+          partNumber: data.partNumber,
+          revision: data.revision,
+          isRequest: data.isRequest,
+          firstCron: data.firstCron,
+          isKaizen: data.isKaizen,
+          howManyParts: data.howManyParts,
+          numberKaizen: data.numberKaizen,
+          enhancement: data.enhancement,
+        });
+      }
+    };
+    getInformationsToEdit();
+  }, [idChrono, reset]);
 
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
   const sop = watch('sop');
-  const typeOfChron = watch('typeOfChronoanalysis');
   const isKaizen = watch('isKaizen');
-  const numberKaizen = watch('numberKaizen');
   const isRequest = watch('isRequest');
   const firstCron = watch('firstCron');
 
-  const { partData, isLoading, isStatus } = useParts(partCode);
+  const {
+    partData,
+    isLoading: isLoadingPart,
+    isStatus: isStatusPart,
+  } = useParts(partCode);
 
   const {
     sectorData,
@@ -88,18 +156,18 @@ const RegisterInitialInformationsPage = () => {
   } = useOf(manufacturingOrder);
 
   useEffect(() => {
-    if (isStatus && partData && !isLoading)
+    if (isStatusPart && partData && !isLoadingPart)
       return setValue('partNumber', partData.partNumber, {
         shouldValidate: true,
       });
 
     setValue('partNumber', '', { shouldValidate: true });
-  }, [isLoading, isStatus, partData, setValue]);
+  }, [isLoadingPart, isStatusPart, partData, setValue]);
 
   useEffect(() => {
     if (!isStatusSector) {
       setValue('sectorName', '', { shouldValidate: true });
-      setValue('sectorId', undefined, { shouldValidate: true });
+      setValue('sectorId', 0, { shouldValidate: true });
     }
     if (!isLoadingSector && isStatusSector && sectorData) {
       setValue('sectorId', +sectorData.id, { shouldValidate: true });
@@ -107,109 +175,121 @@ const RegisterInitialInformationsPage = () => {
     }
   }, [isLoadingSector, isStatusSector, sectorData, setValue]);
 
-  useEffect(() => {
-    const syncAndListActivities = async () => {
-      setPinedActivities([]);
-      if (typeOfChron === 'welding') {
-        const filterWelding = seedActivities.filter(
-          (activity) =>
-            activity.activityType === 'SOLDAGEM' ||
-            activity.activityType === 'GERAL',
+  async function handleSubmitInformations(data: TypeEditInformations) {
+    setIsLoading(true);
+
+    if (workPaceAssessment) {
+      const chronoanalysis: updatedChronoanalysisProps = {
+        id: data.id,
+        partNumber: data.partNumber,
+        internalCode: data.internalCode,
+        revision: data.revision,
+        of: data.of,
+        op: data.op,
+        sop: data.sop,
+        sectorName: data.sectorName,
+        sectorId: data.sectorId,
+        isRequest: data.isRequest,
+        firstCron: data.firstCron,
+        numberKaizen: data.numberKaizen,
+        sectorCostCenter: data.sectorCostCenter,
+        isKaizen: data.isKaizen,
+        howManyParts: data.howManyParts,
+        enhancement: data.enhancement,
+        clientId: +data.clientId,
+        chronoanalysisEmployee: employeeList,
+        workPaceAssessment: {
+          hability: workPaceAssessment.hability,
+          habilityPorcent: workPaceAssessment.habilityPorcent,
+          effort: workPaceAssessment.effort,
+          effortPorcent: workPaceAssessment.effortPorcent,
+          efficiency: workPaceAssessment.efficiency,
+          timeCalculate: workPaceAssessment.timeCalculate,
+          standardTime: workPaceAssessment.standardTime,
+          standardTimeDecimal: workPaceAssessment.standardTimeDecimal,
+          standardTimeDecimalByNumberOfParts:
+            workPaceAssessment.standardTimeDecimalByNumberOfParts,
+        },
+      };
+
+      const isOnline = navigator.onLine;
+
+      if (!isOnline) {
+        setIsLoading(false);
+        return toast.warning(
+          'Sem conexão com a internet, porfavor verifique antes de enviar.',
         );
-        setPinedActivities(filterWelding);
-        await changePresetActivities(filterWelding);
       }
 
-      if (typeOfChron === 'montage') {
-        const filterMontage = seedActivities.filter(
-          (activity) =>
-            activity.activityType === 'MONTAGEM' ||
-            activity.activityType === 'GERAL',
-        );
-        setPinedActivities(filterMontage);
-        await changePresetActivities(filterMontage);
+      const {
+        data: message,
+        error,
+        status,
+      } = await updateChrono(chronoanalysis, idChrono);
+
+      if (!status) {
+        setIsLoading(false);
+        toast.error(error);
+        return;
       }
-      if (typeOfChron === 'bend') {
-        const filterBeld = seedActivities.filter(
-          (act) => act.activityType === 'DOBRA' || act.activityType === 'GERAL',
-        );
-        setPinedActivities(filterBeld);
-        await changePresetActivities(filterBeld);
+
+      if (status) {
+        setIsLoading(false);
+        setOpenModal(false);
+        setChronoanalysis(null);
+        setWorkPaceAssessment(null);
+        setFinalRegisterActivities([]);
+        setEmployeeList([]);
+        setIdChrono(null);
+        toast.success(message);
+        setIsRefetch(true);
       }
-      if (typeOfChron === 'machining') {
-        const filterMachining = seedActivities.filter(
-          (act) =>
-            act.activityType === 'USINAGEM' || act.activityType === 'GERAL',
-        );
-        setPinedActivities(filterMachining);
-        await changePresetActivities(filterMachining);
-      }
-    };
-
-    syncAndListActivities();
-  }, [typeOfChron]);
-
-  const handleAddInitialInformations = async (
-    data: TypeInitialInformationsData,
-  ) => {
-    let uuIdRegisterChronoanalysis = uuidv4();
-
-    let isUuidValid = await verifyUuidRegister(uuIdRegisterChronoanalysis);
-
-    while (!isUuidValid) {
-      uuIdRegisterChronoanalysis = uuidv4();
-      isUuidValid = await verifyUuidRegister(uuIdRegisterChronoanalysis);
     }
+  }
 
-    localStorage.setItem('idRegister', uuIdRegisterChronoanalysis);
-
-    const testInitialInformations = {
-      id: uuIdRegisterChronoanalysis,
-      employees: employeeList,
-      howManyParts: numberOfParts,
-      sectorId: data.sectorId ? data.sectorId : 0,
-      sectorName: data.sectorName ? data.sectorName : '',
-      sectorCostCenter: data.sectorCostCenter ? data.sectorCostCenter : '',
-      clientId: +data.clientId,
-      of: data.of,
-      op: data.op,
-      sop: data.sop,
-      revision: data.revision,
-      internalCode: data.internalCode,
-      partNumber: data.partNumber,
-      typeOfChronoanalysis: data.typeOfChronoanalysis,
-      isRequest: data.isRequest,
-      firstCron: data.firstCron,
-      isKaizen: data.isKaizen,
-      numberKaizen: data.numberKaizen,
-    };
-
-    await dbRegisterChronoanalysis.register.add(testInitialInformations);
-
-    navigate('/cronoanalise/atividades', {
-      replace: true,
-    });
-  };
-
-  return (
-    <section className=''>
-      {isOpenImage ? (
-        <ModalImage
-          openModal={isOpenImage}
-          setOpenModal={setIsOpenImage}
-          partData={partData}
-        />
-      ) : (
-        <>
-          <Text variant={'title'}>Nova cronoanálise</Text>
-          <form onSubmit={handleSubmit(handleAddInitialInformations)}>
+  if (chronoanalysis)
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className=' bg-white border-none flex flex-col'>
+          <DialogHeader className=' h-fit'>
+            <DialogTitle>Editar cronoanálise</DialogTitle>
+            <DialogDescription className=' flex justify-between items-center'>
+              <LabelActivitieInfo text='ID' textInfo={chronoanalysis.id} />
+              <LabelActivitieInfo
+                svg={PlayIconComponent}
+                textInfo={
+                  chronoanalysis.startDate &&
+                  new Date(chronoanalysis.startDate).toLocaleDateString()
+                }
+                secondTextInfo={
+                  chronoanalysis.startDate &&
+                  new Date(chronoanalysis.startDate).toLocaleTimeString()
+                }
+              />
+              <LabelActivitieInfo
+                svg={EndIconComponent}
+                textInfo={
+                  chronoanalysis.endDate &&
+                  new Date(chronoanalysis.endDate).toLocaleDateString()
+                }
+                secondTextInfo={
+                  chronoanalysis.endDate &&
+                  new Date(chronoanalysis.endDate).toLocaleTimeString()
+                }
+              />
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={handleSubmit(handleSubmitInformations)}
+            className=' flex flex-col w-full gap-2 overflow-y-auto py-1'
+          >
             <AddChronoanalysisEmployee
               employeeList={employeeList}
               setEmployeeList={setEmployeeList}
             />
             <Card text='Informações do setor' className='flex mt-5'>
               <div className=' flex gap-4 justify-center w-full items-center'>
-                <Label title='Centro de custo' className='relative h-25'>
+                <Label title='Centro de custo' className='  relative h-25'>
                   <CheckRequestStatus
                     data={sectorData}
                     status={isStatusSector}
@@ -239,23 +319,13 @@ const RegisterInitialInformationsPage = () => {
               text='Informações do componente'
               className='flex my-5 relative'
             >
-              <Button
-                onClick={() => setIsOpenImage(!isOpenImage)}
-                type='button'
-                disabled={!isStatus || isLoading || !partData ? true : false}
-                variant={`${
-                  isStatus && !isLoading && partData ? 'blue' : 'default'
-                }`}
-                svg={Images}
-                className='absolute top-3 right-3 '
-              />
               <div className=' flex flex-col gap-4 w-full '>
                 <div className=' flex gap-4 w-full'>
-                  <Label title='Código interno' className=' relative '>
+                  <Label title='Código interno' className='relative'>
                     <CheckRequestStatus
                       data={partData}
-                      status={isStatus}
-                      loading={isLoading}
+                      status={isStatusPart}
+                      loading={isLoadingPart}
                     />
                     <Input
                       {...register('internalCode')}
@@ -291,7 +361,7 @@ const RegisterInitialInformationsPage = () => {
             <Card text='Informações extras' className='flex'>
               <div className=' flex gap-4 w-full flex-col '>
                 <div className=' flex items-center gap-4'>
-                  <Label title='Ordem de fabricação (OF)' className=' relative'>
+                  <Label title='Ordem de fabricação (OF)' className='relative'>
                     <CheckRequestStatus
                       data={ofData}
                       status={isStatusOf}
@@ -452,79 +522,61 @@ const RegisterInitialInformationsPage = () => {
                 </div>
               </div>
             </Card>
-            <Card text='Preset das atividades' className='flex flex-col mt-5'>
-              <Label title='Tipo de cronoanálise' className=' flex w-full'>
-                <div className=' flex gap-2 mb-3'>
-                  <Button
-                    size={' md-desk'}
-                    className=' py-2.5 w-full'
-                    type='button'
-                    variant={`${
-                      typeOfChron === 'welding' ? 'select-blue' : 'default'
-                    }`}
-                    onClick={() => setValue('typeOfChronoanalysis', 'welding')}
-                  >
-                    soldagem
-                  </Button>
-                  <Button
-                    size={' md-desk'}
-                    className=' py-2.5 w-full'
-                    type='button'
-                    variant={`${
-                      typeOfChron === 'montage' ? 'select-blue' : 'default'
-                    }`}
-                    onClick={() => setValue('typeOfChronoanalysis', 'montage')}
-                  >
-                    montagem
-                  </Button>
-                  <Button
-                    size={' md-desk'}
-                    className=' py-2.5 w-full'
-                    type='button'
-                    variant={`${
-                      typeOfChron === 'bend' ? 'select-blue' : 'default'
-                    }`}
-                    onClick={() => setValue('typeOfChronoanalysis', 'bend')}
-                  >
-                    dobra
-                  </Button>
-                  <Button
-                    size={' md-desk'}
-                    className=' py-2.5 w-full'
-                    type='button'
-                    variant={`${
-                      typeOfChron === 'machining' ? 'select-blue' : 'default'
-                    }`}
-                    onClick={() =>
-                      setValue('typeOfChronoanalysis', 'machining')
-                    }
-                  >
-                    usinagem
-                  </Button>
-                </div>
-              </Label>
-              <ListActivities activities={pinedActivities} />
+
+            <Card text='Avaliação de ritimo de trabalho' className=' mt-5'>
+              <WorkPaceAssessment
+                numberOfParts={numberOfParts}
+                activites={finalRegisterActivities}
+                workPaceAssessmentDatas={workPaceAssessment}
+                setWorkPaceAssessmentDatas={setWorkPaceAssessment}
+              />
             </Card>
+
+            <Card text='Melhorias e observações' className=' my-5'>
+              <textarea
+                rows={8}
+                {...register('enhancement')}
+                className=' p-2 border border-border rounded-xl text-secondary resize-none'
+              />
+            </Card>
+
             <div className=' flex gap-4 w-full justify-end items-center mt-5'>
-              <Button variant={'red'} size={'md'} type='button'>
+              <Button
+                variant={'red'}
+                size={'md'}
+                type='button'
+                onClick={() => {
+                  setIdChrono(null);
+                  setOpen(false);
+                }}
+              >
                 cancelar
               </Button>
               <Button
-                disabled={!isValid || (isKaizen && !numberKaizen)}
+                disabled={!isValid || employeeList.length < 1}
                 variant={`${
-                  !isValid || (isKaizen && !numberKaizen) ? 'default' : 'blue'
+                  !isValid || employeeList.length < 1 ? 'default' : 'green'
                 }`}
                 size={'md'}
-                type='submit'
+                type='button'
+                onClick={() => setOpenModal(true)}
               >
-                iniciar
+                finalizar
               </Button>
             </div>
+            {openModal && (
+              <Modal
+                title='Enviar informações'
+                description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
+                setOpenModal={setOpenModal}
+                isLoading={isLoading}
+                setConfirmModal={() => {}}
+              />
+            )}
           </form>
-        </>
-      )}
-    </section>
-  );
+        </DialogContent>
+      </Dialog>
+    );
 };
 
-export default RegisterInitialInformationsPage;
+export default ModalEditChronoanalysis;
