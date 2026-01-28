@@ -27,14 +27,14 @@ const App = () => {
         element={<ProtectRoute allowedRoles={['ADMIN', 'CHRONOANALIST']} />}
       >
         <Route element={<SideBar />}>
-          <Route path='/chronoanalysis/*' element={<RouterChronoanalysis />} />
+          <Route path='/cronoanalise/*' element={<RouterChronoanalysis />} />
         </Route>
       </Route>
       <Route
         element={<ProtectRoute allowedRoles={['ADMIN', 'CHRONOANALIST']} />}
       >
         <Route element={<SideBar />}>
-          <Route path='/analysis' element={<Analysis />} />
+          <Route path='/relatorio' element={<Analysis />} />
         </Route>
       </Route>
     </Routes>

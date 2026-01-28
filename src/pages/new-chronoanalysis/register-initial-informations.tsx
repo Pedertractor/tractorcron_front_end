@@ -186,7 +186,7 @@ const RegisterInitialInformationsPage = () => {
 
     await dbRegisterChronoanalysis.register.add(testInitialInformations);
 
-    navigate('/chronoanalysis/activities', {
+    navigate('/cronoanalise/atividades', {
       replace: true,
     });
   };

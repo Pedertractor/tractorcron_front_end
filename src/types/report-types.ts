@@ -6,6 +6,8 @@ export interface ReportProps {
     totalTimeSeconds: number;
     goalSeconds: number;
   }[];
+  totalTimeGoals: string;
   totalTime: string;
   totalProcess: number;
+  porcent: string;
 }

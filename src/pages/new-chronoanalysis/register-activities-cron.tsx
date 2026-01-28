@@ -106,7 +106,7 @@ const RegisterActivitiesCronPage = () => {
           variant={allActivities.length <= 0 ? 'default' : 'green'}
           onClick={() => {
             handleStopActivitie();
-            navigate('/chronoanalysis/review');
+            navigate('/cronoanalise/revisao');
           }}
         >
           finalizar

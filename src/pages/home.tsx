@@ -40,7 +40,6 @@ const HomePage = () => {
           dateRange.from,
           dateRange.to,
         );
-        console.log(data);
         if (status && data) {
           setDashBoardData(data);
           return;
@@ -61,21 +60,44 @@ const HomePage = () => {
       <Text variant={'title'}>Dashboard</Text>
       {dashBoardData && (
         <>
-          <div className=' flex flex-col gap-2 py-2 mt-15'>
+          <div className=' flex flex-col gap-2 py-2 mt-2'>
             <div className=' flex gap-2 w-full'>
-              <Card className='w-full border-border '>
-                <CardHeader>
-                  <CardTitle>Informações gerais</CardTitle>
-                  <CardDescription>Total de horas realizadas</CardDescription>
-                </CardHeader>
-                <CardContent className='flex items-center gap-3'>
-                  <Timer size={40} className='stroke-background-blue-active' />
-                  <span className=' font-semibold text-2xl text-initial'>
-                    {dashBoardData.totalTime}
-                  </span>
-                </CardContent>
-              </Card>
-              <Card className='w-full border-border'>
+              <div className='w-full border-border flex p-2 gap-2 shadow-sm border rounded-xl'>
+                <Card className='w-full border-border '>
+                  <CardHeader>
+                    <CardTitle>Cronoanálise realizada</CardTitle>
+                    <CardDescription>Total de horas realizadas</CardDescription>
+                  </CardHeader>
+                  <CardContent className='flex items-center gap-3'>
+                    <Timer
+                      size={40}
+                      className='stroke-background-blue-active'
+                    />
+                    <span className=' font-semibold text-2xl text-initial'>
+                      {dashBoardData.totalTime}
+                    </span>
+                    <span className=' text-zinc-500 font-semibold '>
+                      {dashBoardData.porcent}%
+                    </span>
+                  </CardContent>
+                </Card>
+                <Card className='w-full border-border '>
+                  <CardHeader>
+                    <CardTitle>Meta Cronoanálise</CardTitle>
+                    <CardDescription>
+                      Meta em total de horas / ano
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className='flex items-center gap-3'>
+                    <Timer size={40} className='stroke-[#ef8644]' />
+                    <span className=' font-semibold text-2xl text-initial'>
+                      {dashBoardData.totalTimeGoals}
+                    </span>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className='w-4/7 border-border'>
                 <CardHeader>
                   <CardTitle>Cronoanálises</CardTitle>
                   <CardDescription>
