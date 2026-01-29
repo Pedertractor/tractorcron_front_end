@@ -70,8 +70,16 @@ const TableChronoanalysis = ({
   }
 
   async function handleCopy(uuid: string) {
-    await navigator.clipboard.writeText(`${url}/${uuid}`);
-    setCopied(uuid);
+     const text = `${url}/${uuid}`;
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
   }
 
   if (
@@ -181,6 +189,7 @@ const TableChronoanalysis = ({
                     className=' cursor-pointer '
                     onClick={() => {
                       handleCopy(item.id);
+                      setCopied(item.id)
                     }}
                   >
                     {copied === item.id ? (
