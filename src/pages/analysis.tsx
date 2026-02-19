@@ -156,9 +156,9 @@ const Analysis = () => {
     }
 
     if (userChronoanalistId) {
-      filtered = filtered.filter(
-        (item) => item.user.employeeId === +userChronoanalistId,
-      );
+      filtered = filtered.filter((item) => {
+        return item.user.employeeId === +userChronoanalistId;
+      });
     }
 
     if (costCenter) {

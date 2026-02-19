@@ -19,8 +19,7 @@ export const variantsSelect = cva('border rounded-lg h-[48px] py-0.5 px-3', {
 });
 
 export interface PropsSelect
-  extends React.ComponentProps<'select'>,
-    VariantProps<typeof variantsSelect> {
+  extends React.ComponentProps<'select'>, VariantProps<typeof variantsSelect> {
   listOptions?: [] | PropsClients[];
   listOptionsChronoanalist?: [] | listChronoanalistProps[];
   listTypeChronoanalist?: [] | string[];
@@ -54,7 +53,7 @@ const Select = ({
 
       {listOptionsChronoanalist &&
         listOptionsChronoanalist.map((option, index) => (
-          <option key={index} value={option.id}>
+          <option key={index} value={option.employeeId}>
             {option.employeeName}
           </option>
         ))}

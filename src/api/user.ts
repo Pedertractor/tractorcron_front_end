@@ -13,7 +13,6 @@ export async function listChronoanalist() {
     });
 
     const data = await response.json();
-
     if (response.status !== 200) {
       return {
         status: false,

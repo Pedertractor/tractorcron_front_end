@@ -70,7 +70,7 @@ const TableChronoanalysis = ({
   }
 
   async function handleCopy(uuid: string) {
-     const text = `${url}/${uuid}`;
+    const text = `${url}/${uuid}`;
     const textarea = document.createElement('textarea');
     textarea.value = text;
 
@@ -104,7 +104,9 @@ const TableChronoanalysis = ({
                   <Users size={18} />
                 </TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Tempo Padrão</TableHead>
+                <TableHead>Tempo Decimal</TableHead>
+                <TableHead>Tempo D./Nº Peças</TableHead>
+
                 <TableHead>Data</TableHead>
                 <TableHead></TableHead>
                 <TableHead></TableHead>
@@ -134,10 +136,12 @@ const TableChronoanalysis = ({
                     {item.chronoanalysisEmployee.length}
                   </TableCell>
                   <TableCell>{item.client.name?.toLowerCase()}</TableCell>
-                  <TableCell>
+                  <TableCell className=' px-12'>
                     {item.workPaceAssessment.standardTimeDecimal}
                   </TableCell>
-
+                  <TableCell className=' px-12'>
+                    {item.workPaceAssessment.standardTimeDecimalByNumberOfParts}
+                  </TableCell>
                   <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
                   </TableCell>
@@ -189,7 +193,7 @@ const TableChronoanalysis = ({
                     className=' cursor-pointer '
                     onClick={() => {
                       handleCopy(item.id);
-                      setCopied(item.id)
+                      setCopied(item.id);
                     }}
                   >
                     {copied === item.id ? (
