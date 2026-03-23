@@ -144,6 +144,24 @@ const RegisterInitialInformationsPage = () => {
         setPinedActivities(filterMachining);
         await changePresetActivities(filterMachining);
       }
+      if (typeOfChron === 'prepPainting') {
+        const filterPrepPainting = seedActivities.filter(
+          (act) =>
+            act.activityType === 'PREP_PINTURA' ||
+            act.activityType === 'GERAL',
+        );
+        setPinedActivities(filterPrepPainting);
+        await changePresetActivities(filterPrepPainting);
+      }
+      if (typeOfChron === 'repasseRosca') {
+        const filterRepasseRosca = seedActivities.filter(
+          (act) =>
+            act.activityType === 'REPASSE_DE_ROSCA' ||
+            act.activityType === 'GERAL',
+        );
+        setPinedActivities(filterRepasseRosca);
+        await changePresetActivities(filterRepasseRosca);
+      }
     };
 
     syncAndListActivities();
@@ -454,10 +472,10 @@ const RegisterInitialInformationsPage = () => {
             </Card>
             <Card text='Preset das atividades' className='flex flex-col mt-5'>
               <Label title='Tipo de cronoanálise' className=' flex w-full'>
-                <div className=' flex gap-2 mb-3'>
+                <div className=' flex flex-wrap gap-2 mb-3'>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className=' py-2.5 w-full min-w-[8rem] flex-1'
                     type='button'
                     variant={`${
                       typeOfChron === 'welding' ? 'select-blue' : 'default'
@@ -468,7 +486,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className=' py-2.5 w-full min-w-[8rem] flex-1'
                     type='button'
                     variant={`${
                       typeOfChron === 'montage' ? 'select-blue' : 'default'
@@ -479,7 +497,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className=' py-2.5 w-full min-w-[8rem] flex-1'
                     type='button'
                     variant={`${
                       typeOfChron === 'bend' ? 'select-blue' : 'default'
@@ -490,7 +508,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className=' py-2.5 w-full min-w-[8rem] flex-1'
                     type='button'
                     variant={`${
                       typeOfChron === 'machining' ? 'select-blue' : 'default'
@@ -500,6 +518,36 @@ const RegisterInitialInformationsPage = () => {
                     }
                   >
                     usinagem
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'prepPainting'
+                        ? 'select-blue'
+                        : 'default'
+                    }`}
+                    onClick={() =>
+                      setValue('typeOfChronoanalysis', 'prepPainting')
+                    }
+                  >
+                    prep. pintura
+                  </Button>
+                  <Button
+                    size={' md-desk'}
+                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                    type='button'
+                    variant={`${
+                      typeOfChron === 'repasseRosca'
+                        ? 'select-blue'
+                        : 'default'
+                    }`}
+                    onClick={() =>
+                      setValue('typeOfChronoanalysis', 'repasseRosca')
+                    }
+                  >
+                    repasse de rosca
                   </Button>
                 </div>
               </Label>

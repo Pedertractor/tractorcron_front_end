@@ -258,7 +258,7 @@ export const seedActivities = [
     name: 'Limpar respingo',
     classification: 'NVAA',
     typeMovimation: 'LIMPAR',
-    activityType: 'SOLDAGEM',
+    activityType: 'GERAL',
   },
   {
     id: 10,
@@ -272,7 +272,7 @@ export const seedActivities = [
     name: 'Ajustar ferramenta/dispositivo',
     classification: 'NVAA',
     typeMovimation: 'AJUSTAR',
-    activityType: 'SOLDAGEM',
+    activityType: 'GERAL',
   },
   {
     id: 12,
@@ -314,7 +314,7 @@ export const seedActivities = [
     name: 'Controle de qualidade',
     classification: 'NVAA',
     typeMovimation: 'INSPECIONAR',
-    activityType: 'SOLDAGEM',
+    activityType: 'GERAL',
   },
   {
     id: 18,
@@ -360,10 +360,10 @@ export const seedActivities = [
   },
   {
     id: 25,
-    name: 'Aplicar unichem',
+    name: 'Aplicar Unichem',
     classification: 'NVAA',
-    typeMovimation: 'AJUSTAR',
-    activityType: 'MONTAGEM',
+    typeMovimation: 'LIMPAR',
+    activityType: 'GERAL',
   },
   {
     id: 26,
@@ -462,5 +462,40 @@ export const seedActivities = [
     classification: 'NVAA',
     typeMovimation: 'AJUSTAR',
     activityType: 'DOBRA',
+  },
+  {
+    id: 40,
+    name: 'Mascaramento',
+    classification: 'NVAA',
+    typeMovimation: 'MASCARAR',
+    activityType: 'PREP_PINTURA',
+  },
+  {
+    id: 41,
+    name: 'Calafetagem',
+    classification: 'NVAA',
+    typeMovimation: 'CALAFETAR',
+    activityType: 'PREP_PINTURA',
+  },
+  {
+    id: 42,
+    name: 'Caminhar talha/içamento',
+    classification: 'NVAA',
+    typeMovimation: 'CAMINHAR',
+    activityType: 'PREP_PINTURA',
+  },
+  {
+    id: 43,
+    name: 'Repassar',
+    classification: 'NVAA',
+    typeMovimation: 'REPASAR',
+    activityType: 'REPASSE_DE_ROSCA',
+  },
+  {
+    id: 44,
+    name: 'Calibrar',
+    classification: 'NVAA',
+    typeMovimation: 'CALIBRAR',
+    activityType: 'REPASSE_DE_ROSCA',
   },
 ];
