@@ -16,7 +16,7 @@ import {
   listActivities,
 } from '../../db/db-functions';
 import type { RegisterActivities } from '../../db/db';
-import Select from '../../components/ui/select';
+import Select from '../../components/ui/select-native';
 import Input from '../../components/ui/input';
 import { clients } from '../../seed/seed-client';
 import TableActivities from '../../components/table-activities';

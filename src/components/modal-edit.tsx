@@ -29,7 +29,7 @@ import {
 import Card from './ui/card/card';
 import LabelActivitieInfo from './label-activities-info';
 import Input from './ui/input';
-import Select from './ui/select';
+import Select from './ui/select-native';
 import { clients } from '@/seed/seed-client';
 import Modal from './ui/modal';
 import {

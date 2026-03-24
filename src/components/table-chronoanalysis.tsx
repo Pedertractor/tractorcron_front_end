@@ -130,7 +130,9 @@ const TableChronoanalysis = ({
                   <TableCell>{item.internalCode}</TableCell>
                   <TableCell>{item.op}</TableCell>
                   <TableCell>
-                    {item.user.employeeName.toLowerCase().slice(0, 15)}...
+                    {item.user.employeeName.length > 15
+                      ? `${item.user.employeeName.toLowerCase().slice(0, 15)}...`
+                      : item.user.employeeName.toLowerCase()}
                   </TableCell>
                   <TableCell className=''>
                     {item.chronoanalysisEmployee.length}

@@ -16,7 +16,7 @@ export interface PropsEmployee {
 export async function findEmployee({ cardNumber, unit }: PropsFindEmployee) {
   try {
     const response = await fetch(
-      `${URL_API_BASE}/employee/get/${cardNumber}/${unit}`,
+      `${URL_API_BASE}/employee/get/${encodeURIComponent(cardNumber)}/${encodeURIComponent(unit)}`,
       {
         method: 'GET',
         headers: {

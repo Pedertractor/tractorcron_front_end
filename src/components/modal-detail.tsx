@@ -14,9 +14,8 @@ import {
   getActivitiesDataCharts,
 } from '@/api/activities-api';
 import { toast } from 'sonner';
-import { ChartBarDefault } from './chart-bar';
+import { GraphicSurveyMovementCharts } from './graphic-survey-movement-charts';
 import Loading from './loading';
-import { CharPieDefault } from './chart-pie';
 import { useParts } from '@/hooks/use-parts';
 import { Button } from './ui/button';
 import { Cog, IdCardLanyard, Image, User, Users } from 'lucide-react';
@@ -451,43 +450,10 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             <h3 className=' text-initial font-semibold'>
               Levantamento gráfico
             </h3>
-            <div className=' h-fullflex flex-col items-center justify-center gap-2 w-full'>
-              <div className='w-full h-[300px] p-2 border border-border rounded-lg mb-2'>
-                <h4 className=' text-sm font-medium'>Descrição do movimento</h4>
-                {isLoading && <Loading />}
-                {dataGraph && (
-                  <ChartBarDefault
-                    chartData={dataGraph.activityNameChartData}
-                    fill='var(--chart-2)'
-                  />
-                )}
-              </div>
-              <div className=' flex items-center justify-center gap-2 w-full'>
-                <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
-                  <h4 className=' text-sm font-medium'>
-                    Classificação do movimento
-                  </h4>
-                  {isLoading && <Loading />}
-                  {dataGraph && !isLoading && (
-                    <CharPieDefault
-                      chartData={dataGraph.classificationChartData}
-                    />
-                  )}
-                </div>
-
-                <div className=' w-1/2 h-full p-2 border border-border rounded-lg'>
-                  <h4 className=' text-sm font-medium'>Tipo do movimento</h4>
-                  {isLoading && <Loading />}
-
-                  {dataGraph && !isLoading && (
-                    <ChartBarDefault
-                      chartData={dataGraph.typeMovementChartData}
-                      fill='var(--chart-3)'
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
+            <GraphicSurveyMovementCharts
+              data={dataGraph}
+              isLoading={isLoading}
+            />
             <div className=' flex items-center justify-center gap-2 w-full'>
               <div className=' w-1/2 h-full  p-2 border border-border rounded-lg'>
                 <h4 className=' text-sm font-medium'>
