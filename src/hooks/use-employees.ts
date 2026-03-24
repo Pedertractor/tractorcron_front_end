@@ -55,46 +55,43 @@ export function useEmployee(unit?: string, cardNumber?: string) {
   useEffect(() => {
     setIsDisabled(false);
 
-    if (
-      !unit ||
-      !cardNumber ||
-      (cardNumber && cardNumber.length < 4) ||
-      !/^\d{4}$/.test(cardNumber)
-    ) {
+    const digitsOnly = (cardNumber ?? '').replace(/\D/g, '');
+
+    if (!unit || !digitsOnly || !/^\d{4}$/.test(digitsOnly)) {
       setIsStatus(true);
       setEmployeeData(null);
       return;
     }
 
-    if (cardNumber && unit) {
-      setIsStatus(true);
-      setIsLoading(true);
-      const supportFindUniqueEmployee = async () => {
-        const { status, message, data } = await findEmployee({
-          cardNumber,
-          unit,
-        });
+    const cardForApi = digitsOnly.replace(/^0+/, '') || '0';
 
-        if (!status) {
-          setIsLoading(false);
-          setIsStatus(false);
-          setEmployeeData(null);
-          return toast.error(message);
-        }
+    setIsStatus(true);
+    setIsLoading(true);
+    const supportFindUniqueEmployee = async () => {
+      const { status, message, data } = await findEmployee({
+        cardNumber: cardForApi,
+        unit,
+      });
 
-        if (!data.status) {
-          setIsLoading(false);
-          setIsDisabled(true);
-          return toast.info('Colaborador encontrado, porém desativado.');
-        }
-
-        setIsDisabled(false);
+      if (!status) {
         setIsLoading(false);
-        setEmployeeData(data);
-      };
+        setIsStatus(false);
+        setEmployeeData(null);
+        return toast.error(message);
+      }
 
-      supportFindUniqueEmployee();
-    }
+      if (!data.status) {
+        setIsLoading(false);
+        setIsDisabled(true);
+        return toast.info('Colaborador encontrado, porém desativado.');
+      }
+
+      setIsDisabled(false);
+      setIsLoading(false);
+      setEmployeeData(data);
+    };
+
+    supportFindUniqueEmployee();
   }, [cardNumber, unit]);
 
   return {

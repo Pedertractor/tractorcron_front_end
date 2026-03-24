@@ -63,6 +63,7 @@ export interface listChronoanalysisProps {
     name?: string;
   };
   user: {
+    id?: number;
     employeeName: string;
     employeeId: number;
   };
@@ -120,11 +121,19 @@ export interface PropsFinalData {
 export async function listDatasInformationsForDashBoard(
   firstDate: Date,
   secondDate: Date,
+  userId?: number | null,
 ) {
   const token = localStorage.getItem('token');
 
+  const searchParams = new URLSearchParams();
+  if (userId != null && userId > 0) {
+    searchParams.set('userId', String(userId));
+  }
+  const query = searchParams.toString();
+  const suffix = query ? `?${query}` : '';
+
   const response = await fetch(
-    `${url}/chronoanalysis/dashboard/${firstDate.toISOString()}/${secondDate.toISOString()}`,
+    `${url}/chronoanalysis/dashboard/${firstDate.toISOString()}/${secondDate.toISOString()}${suffix}`,
     {
       method: 'GET',
       headers: {

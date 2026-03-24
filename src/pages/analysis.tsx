@@ -5,7 +5,7 @@ import { Button as ShadButton } from '@/components/ui/button';
 import Card from '@/components/ui/card/card';
 import Input from '@/components/ui/input';
 import Label from '@/components/ui/label/label';
-import Select from '@/components/ui/select';
+import Select from '@/components/ui/select-native';
 import Text from '@/components/ui/text';
 import { clients } from '@/seed/seed-client';
 import type { listChronoanalistProps } from '@/types/user-types';
@@ -15,7 +15,7 @@ import {
 } from '@/zod/schema-chronoanalysis';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { parseISO } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -58,6 +58,28 @@ const Analysis = () => {
   const paginatedData = filterListChronoanalysis
     .sort((a, b) => Date.parse(b.startDate) - Date.parse(a.startDate))
     .slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  /** Inclui cronoanalistas da API e autores presentes nas cronoanálises (ex.: papel alterado ou legado). */
+  const chronoanalistsForFilter = useMemo(() => {
+    const byEmployeeId = new Map<number, listChronoanalistProps>();
+    for (const u of isListChronoanalist) {
+      byEmployeeId.set(u.employeeId, u);
+    }
+    for (const row of isListChronoanalysis) {
+      const u = row.user;
+      if (byEmployeeId.has(u.employeeId)) continue;
+      byEmployeeId.set(u.employeeId, {
+        id: u.id ?? u.employeeId,
+        employeeName: u.employeeName,
+        employeeId: u.employeeId,
+      });
+    }
+    return Array.from(byEmployeeId.values()).sort((a, b) =>
+      a.employeeName.localeCompare(b.employeeName, 'pt-BR', {
+        sensitivity: 'base',
+      }),
+    );
+  }, [isListChronoanalist, isListChronoanalysis]);
 
   const { register, watch, setValue, control, reset } =
     useForm<TypeFilterChronoanalysis>({
@@ -279,49 +301,51 @@ const Analysis = () => {
                 />
               </Label>
             </div>
-            <div className=' flex gap-4 w-full'>
-              <Controller
-                control={control}
-                name='dataRange'
-                render={({ field }) => {
-                  const value = field.value
-                    ? {
-                        from: field.value.from
-                          ? parseISO(field.value.from)
-                          : undefined,
-                        to: field.value.to
-                          ? parseISO(field.value.to)
-                          : undefined,
-                      }
-                    : undefined;
-
-                  return (
-                    <DatePicker
-                      value={value}
-                      onChange={(val) => {
-                        field.onChange(
-                          val
-                            ? {
-                                from: val.from?.toISOString(),
-                                to: val.to?.toISOString(),
-                              }
+            <div className='flex w-full flex-wrap gap-4 md:flex-nowrap'>
+              <Label title='Período' className='min-w-0 flex-1'>
+                <Controller
+                  control={control}
+                  name='dataRange'
+                  render={({ field }) => {
+                    const value = field.value
+                      ? {
+                          from: field.value.from
+                            ? parseISO(field.value.from)
                             : undefined,
-                        );
-                      }}
-                    />
-                  );
-                }}
-              />
-              <Label title='Cronoanálista'>
+                          to: field.value.to
+                            ? parseISO(field.value.to)
+                            : undefined,
+                        }
+                      : undefined;
+
+                    return (
+                      <DatePicker
+                        value={value}
+                        onChange={(val) => {
+                          field.onChange(
+                            val
+                              ? {
+                                  from: val.from?.toISOString(),
+                                  to: val.to?.toISOString(),
+                                }
+                              : undefined,
+                          );
+                        }}
+                      />
+                    );
+                  }}
+                />
+              </Label>
+              <Label title='Cronoanálista' className='min-w-0 flex-1'>
                 <Select
-                  className='w-full h-fit py-2'
-                  listOptionsChronoanalist={isListChronoanalist}
+                  className='w-full min-w-0 h-fit py-2'
+                  listOptionsChronoanalist={chronoanalistsForFilter}
                   {...register('userChronoanalistId')}
                 />
               </Label>
-              <Label title='Cliente'>
+              <Label title='Cliente' className='min-w-0 flex-1'>
                 <Select
-                  className='w-full h-fit py-2'
+                  className='w-full min-w-0 h-fit py-2'
                   listOptions={clients}
                   {...register('clientId')}
                 />

@@ -29,6 +29,11 @@ export interface activitiesDataChartsProps {
   }[];
 }
 
+export type MovementChartsData = Pick<
+  activitiesDataChartsProps,
+  'activityNameChartData' | 'classificationChartData' | 'typeMovementChartData'
+>;
+
 export async function getActivitiesDataCharts(
   registerChronoanalysisId: string,
   setIsloading: (loading: boolean) => void
@@ -61,5 +66,47 @@ export async function getActivitiesDataCharts(
     status: true,
     error: null,
     data,
+  };
+}
+
+export async function getActivitiesChartsForDashboard(
+  firstDate: Date,
+  secondDate: Date,
+  userId?: number | null,
+) {
+  const token = localStorage.getItem('token');
+
+  const searchParams = new URLSearchParams();
+  if (userId != null && userId > 0) {
+    searchParams.set('userId', String(userId));
+  }
+  const query = searchParams.toString();
+  const suffix = query ? `?${query}` : '';
+
+  const response = await fetch(
+    `${url}/activities/graph/dashboard/${firstDate.toISOString()}/${secondDate.toISOString()}${suffix}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    return {
+      status: false,
+      error: (data.message ?? data.error ?? 'Erro ao carregar gráficos') as string,
+      data: null as MovementChartsData | null,
+    };
+  }
+
+  return {
+    status: true,
+    error: null,
+    data: data as MovementChartsData,
   };
 }

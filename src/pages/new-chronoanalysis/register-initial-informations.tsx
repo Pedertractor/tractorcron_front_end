@@ -13,7 +13,7 @@ import {
   dbRegisterChronoanalysis,
   type RegisterPresetActivities,
 } from '../../db/db';
-import Select from '../../components/ui/select';
+import Select from '../../components/ui/select-native';
 import { clients } from '../../seed/seed-client';
 import { useNavigate } from 'react-router';
 import ListActivities from '../../components/list-activities';
