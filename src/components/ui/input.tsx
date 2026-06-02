@@ -1,44 +1,22 @@
-import { cva, type VariantProps } from 'class-variance-authority';
-import React from 'react';
+import * as React from "react"
 
-export const variantsInputs = cva('border rounded-lg h-[48px] py-0.5 px-3', {
-  variants: {
-    variant: {
-      default: ' text-secondary border-border',
-    },
-    disabled: {
-      true: 'border-dashed text-disabled border-disabled pointer-events-none',
-    },
-  },
-  defaultVariants: {
-    variant: 'default',
-    disabled: false,
-  },
-});
+import { cn } from "@/lib/utils"
 
-export interface PropsInput
-  extends Omit<React.ComponentProps<'input'>, 'disabled'>,
-    VariantProps<typeof variantsInputs> {
-  className?: string;
-  placeholder?: string;
-  disabled?: boolean;
-}
-
-const Input = ({
-  className,
-  placeholder,
-  variant,
-  disabled,
-  ...props
-}: PropsInput) => {
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input
-      placeholder={placeholder}
-      disabled={disabled}
-      className={variantsInputs({ variant, disabled, className })}
+      type={type}
+      data-slot="input"
+      className={cn(
+        "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base text-foreground shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:border-dashed disabled:bg-muted/50 disabled:opacity-50 disabled:focus-visible:ring-0 md:text-sm dark:bg-input/30",
+        "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
       {...props}
     />
-  );
-};
+  )
+}
 
-export default Input;
+export { Input }
+export default Input
