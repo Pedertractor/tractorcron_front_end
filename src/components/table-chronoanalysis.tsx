@@ -19,24 +19,33 @@ import {
 } from './ui/pagination';
 import {
   changeSendStatus,
-  listChronoanalysisProps,
+  type ChronoanalysisListItem,
 } from '@/api/chronoanalysis-api';
 import { Checkbox } from './ui/checkbox';
-import { Copy, CopyCheck, Edit, EyeIcon, Trash2, Users } from 'lucide-react';
+import {
+  Copy,
+  CopyCheck,
+  Edit,
+  EyeIcon,
+  LoaderCircle,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
 const url = import.meta.env.VITE_URL_FRONT_END_URL;
 
 export interface TableChronoanalysisProps {
-  data: listChronoanalysisProps[];
+  data: ChronoanalysisListItem[];
   role: string | null;
+  loading?: boolean;
   PagesLength?: number;
   currentPage?: number;
   handlePageChange?: (value: number) => void;
   totalPages?: number;
-  setIsChronoanalysis?: (item: listChronoanalysisProps | undefined) => void;
-  setIsOpenModal?: (props: boolean) => void;
+  onOpenDetail?: (id: string) => void;
+  onSendStatusChange?: () => void;
   setIsOpenModalEdit?: (props: boolean) => void;
   setIsIdChrono?: (props: string | null) => void;
   setIsOpenModalDelete?: (props: boolean) => void;
@@ -45,12 +54,13 @@ export interface TableChronoanalysisProps {
 const TableChronoanalysis = ({
   data,
   role,
+  loading,
   PagesLength,
   currentPage,
   handlePageChange,
   totalPages,
-  setIsChronoanalysis,
-  setIsOpenModal,
+  onOpenDetail,
+  onSendStatusChange,
   setIsOpenModalEdit,
   setIsIdChrono,
   setIsOpenModalDelete,
@@ -62,7 +72,7 @@ const TableChronoanalysis = ({
 
     if (status === 200) {
       toast.success(message);
-      window.location.reload();
+      onSendStatusChange?.();
       return;
     }
 
@@ -82,18 +92,34 @@ const TableChronoanalysis = ({
     document.body.removeChild(textarea);
   }
 
-  if (
-    setIsChronoanalysis &&
-    setIsOpenModal &&
-    setIsIdChrono &&
-    setIsOpenModalEdit &&
-    setIsOpenModalDelete
-  )
+  if (onOpenDetail && setIsIdChrono && setIsOpenModalEdit && setIsOpenModalDelete)
     return (
-      <Card>
-        <div className=' overflow-y-auto rounded-md'>
-          <Table>
-            <TableCaption>lista das cronoanálises</TableCaption>
+      <Card className='gap-2'>
+        <div
+          className={`relative overflow-x-auto rounded-md ${
+            loading ? 'min-h-[120px]' : ''
+          }`}
+        >
+          {loading && (
+            <div
+              className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-white/75'
+              aria-busy='true'
+              aria-live='polite'
+            >
+              <div className='flex items-center gap-2'>
+                <div className='animate-spin text-secondary rounded-full'>
+                  <LoaderCircle size={15} />
+                </div>
+                <span className='text-secondary text-xs font-medium'>
+                  Carregando cronoanálises...
+                </span>
+              </div>
+            </div>
+          )}
+          <Table className={loading ? 'pointer-events-none opacity-50' : undefined}>
+            <TableCaption className='sr-only'>
+              lista das cronoanálises
+            </TableCaption>
             <TableHeader>
               <TableRow className=' border-zinc-50 bg-zinc-200 rounded-lg'>
                 <TableHead>Part number</TableHead>
@@ -139,10 +165,11 @@ const TableChronoanalysis = ({
                   </TableCell>
                   <TableCell>{item.client.name?.toLowerCase()}</TableCell>
                   <TableCell className=' px-12'>
-                    {item.workPaceAssessment.standardTimeDecimal}
+                    {item.workPaceAssessment?.standardTimeDecimal ?? '-'}
                   </TableCell>
                   <TableCell className=' px-12'>
-                    {item.workPaceAssessment.standardTimeDecimalByNumberOfParts}
+                    {item.workPaceAssessment
+                      ?.standardTimeDecimalByNumberOfParts ?? '-'}
                   </TableCell>
                   <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
@@ -156,10 +183,7 @@ const TableChronoanalysis = ({
                   </TableCell>
                   <TableCell
                     className=' cursor-pointer '
-                    onClick={() => {
-                      setIsChronoanalysis(item);
-                      setIsOpenModal(true);
-                    }}
+                    onClick={() => onOpenDetail(item.id)}
                   >
                     <EyeIcon size={18} className=' text-zinc-800' />
                   </TableCell>
@@ -170,7 +194,6 @@ const TableChronoanalysis = ({
                         onClick={() => {
                           setIsIdChrono(item.id);
                           setIsOpenModalEdit(true);
-                          setIsOpenModal(false);
                         }}
                       >
                         <Edit size={18} className=' text-zinc-800' />
@@ -180,7 +203,6 @@ const TableChronoanalysis = ({
                         onClick={() => {
                           setIsIdChrono(item.id);
                           setIsOpenModalDelete(true);
-                          setIsOpenModal(false);
                         }}
                       >
                         <Trash2
@@ -209,7 +231,11 @@ const TableChronoanalysis = ({
             </TableBody>
           </Table>
           {currentPage && handlePageChange && totalPages ? (
-            <div className=' mt-5 px-2 flex items-center justify-center'>
+            <div
+              className={`mt-3 px-2 flex items-center justify-center ${
+                loading ? 'pointer-events-none opacity-50' : ''
+              }`}
+            >
               <span className=' p-1.5 px-3 flex items-center text-xs justify-center w-15 border border-border rounded-lg text-secondary font-medium'>
                 {PagesLength}
               </span>

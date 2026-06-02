@@ -9,6 +9,7 @@ export type MagicLinkResponse = {
 const url = import.meta.env.VITE_BASE_URL_API;
 
 export async function getInformationsForMagicLink(uuid: string) {
+  console.log(url);
   const response = await fetch(`${url}/chronoanalysis/magiclink/${uuid}`, {
     method: 'GET',
     headers: {

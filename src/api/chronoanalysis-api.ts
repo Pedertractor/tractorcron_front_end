@@ -37,6 +37,59 @@ export interface updatedChronoanalysisProps {
   };
 }
 
+export interface ChronoanalysisListItem {
+  id: string;
+  partNumber: string;
+  internalCode: string;
+  op: string;
+  startDate: string;
+  isSend: boolean;
+  chronoanalysisEmployee: EmployeeProps[];
+  client: {
+    id: number;
+    name?: string | null;
+  };
+  user: {
+    id?: number;
+    employeeName: string;
+    employeeId: number;
+  };
+  workPaceAssessment: {
+    standardTimeDecimal: number;
+    standardTimeDecimalByNumberOfParts: number;
+  } | null;
+}
+
+export interface ListChronoanalysisParams {
+  page?: number;
+  pageSize?: number;
+  partNumber?: string;
+  internalCode?: string;
+  costCenter?: string;
+  unit?: string;
+  cardNumber?: string;
+  userChronoanalistId?: string;
+  clientId?: string;
+  isKaizen?: boolean;
+  isSend?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface ListChronoanalysisResponse {
+  items: ChronoanalysisListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface ChronoanalistFromRecordsProps {
+  id: number;
+  employeeName: string;
+  employeeId: number;
+}
+
 export interface listChronoanalysisProps {
   id: string;
   partNumber: string;
@@ -159,10 +212,10 @@ export async function listDatasInformationsForDashBoard(
   };
 }
 
-export async function listChronoanalysis() {
+export async function listChronoanalistsFromRecords() {
   const token = localStorage.getItem('token');
 
-  const response = await fetch(`${url}/chronoanalysis/list`, {
+  const response = await fetch(`${url}/chronoanalysis/list/chronoanalists`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -172,18 +225,85 @@ export async function listChronoanalysis() {
 
   const data = await response.json();
 
-  if (response.status !== 200)
+  if (response.status !== 200) {
     return {
-      status: false,
-      error: data.error,
+      status: false as const,
+      error: data.error ?? data.message ?? 'Erro ao listar cronoanalistas',
       data: null,
     };
+  }
 
   return {
-    status: true,
+    status: true as const,
     error: null,
-    data,
+    data: data as ChronoanalistFromRecordsProps[],
   };
+}
+
+export async function listChronoanalysis(
+  params: ListChronoanalysisParams = {},
+  signal?: AbortSignal,
+) {
+  const token = localStorage.getItem('token');
+
+  const searchParams = new URLSearchParams();
+  if (params.page != null) searchParams.set('page', String(params.page));
+  if (params.pageSize != null)
+    searchParams.set('pageSize', String(params.pageSize));
+  if (params.partNumber) searchParams.set('partNumber', params.partNumber);
+  if (params.internalCode)
+    searchParams.set('internalCode', params.internalCode);
+  if (params.costCenter) searchParams.set('costCenter', params.costCenter);
+  if (params.unit) searchParams.set('unit', params.unit);
+  if (params.cardNumber) searchParams.set('cardNumber', params.cardNumber);
+  if (params.userChronoanalistId)
+    searchParams.set('userChronoanalistId', params.userChronoanalistId);
+  if (params.clientId) searchParams.set('clientId', params.clientId);
+  if (params.isKaizen === true) searchParams.set('isKaizen', 'true');
+  if (params.isSend === true) searchParams.set('isSend', 'true');
+  if (params.dateFrom) searchParams.set('dateFrom', params.dateFrom);
+  if (params.dateTo) searchParams.set('dateTo', params.dateTo);
+
+  const query = searchParams.toString();
+  const suffix = query ? `?${query}` : '';
+
+  try {
+    const response = await fetch(`${url}/chronoanalysis/list${suffix}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal,
+    });
+
+    const data = await response.json();
+
+    if (response.status !== 200)
+      return {
+        status: false as const,
+        error: data.error ?? data.message ?? 'Erro ao listar cronoanálises',
+        data: null,
+        aborted: false as const,
+      };
+
+    return {
+      status: true as const,
+      error: null,
+      data: data as ListChronoanalysisResponse,
+      aborted: false as const,
+    };
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return {
+        status: false as const,
+        error: null,
+        data: null,
+        aborted: true as const,
+      };
+    }
+    throw error;
+  }
 }
 
 export async function registerNewChronoanalysis(finalData: PropsFinalData) {

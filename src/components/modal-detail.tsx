@@ -1,4 +1,7 @@
-import { type listChronoanalysisProps } from '@/api/chronoanalysis-api';
+import {
+  getUnique,
+  type listChronoanalysisProps,
+} from '@/api/chronoanalysis-api';
 import {
   Dialog,
   DialogContent,
@@ -27,10 +30,13 @@ import GoldenZoneClassification from './golden-zone-classification';
 export interface ModalDetailProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  chronoanalysis: listChronoanalysisProps;
+  chronoanalysisId: string;
 }
 
-const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
+const ModalDetail = ({ open, setOpen, chronoanalysisId }: ModalDetailProps) => {
+  const [chronoanalysis, setChronoanalysis] =
+    useState<listChronoanalysisProps | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [isLoading, setIsloading] = useState(false);
   const [dataGraph, setDataGraph] = useState<
     activitiesDataChartsProps | undefined
@@ -40,9 +46,37 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
     isLoading: isLoadingPart,
     isStatus: isStatusPart,
     partData,
-  } = useParts(chronoanalysis.internalCode);
+  } = useParts(chronoanalysis?.internalCode ?? '');
 
   useEffect(() => {
+    if (!open) {
+      setChronoanalysis(null);
+      setDataGraph(undefined);
+      return;
+    }
+
+    const loadDetail = async () => {
+      setIsLoadingDetail(true);
+      const { data, error, status } = await getUnique(chronoanalysisId);
+      setIsLoadingDetail(false);
+
+      if (!status) {
+        toast.info(error);
+        setOpen(false);
+        return;
+      }
+
+      if (data) {
+        setChronoanalysis(data);
+      }
+    };
+
+    void loadDetail();
+  }, [open, chronoanalysisId, setOpen]);
+
+  useEffect(() => {
+    if (!chronoanalysis) return;
+
     const supportGetDatasForGraph = async () => {
       const { data, error, status } = await getActivitiesDataCharts(
         chronoanalysis.id,
@@ -59,7 +93,7 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
     };
 
     supportGetDatasForGraph();
-  }, [chronoanalysis.id]);
+  }, [chronoanalysis?.id]);
 
   return (
     <Dialog
@@ -69,6 +103,48 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
       }}
     >
       <DialogContent className=' bg-white border-none flex flex-col'>
+        <DialogHeader className=' h-fit'>
+          <DialogTitle>Revisão da cronoanálise</DialogTitle>
+          {chronoanalysis ? (
+            <DialogDescription className=' flex justify-between items-center'>
+              <LabelActivitieInfo text='ID' textInfo={chronoanalysis.id} />
+              <span className=' flex items-center gap-4'>
+                <LabelActivitieInfo
+                  text='Iniciado'
+                  textInfo={new Date(
+                    chronoanalysis.startDate,
+                  ).toLocaleTimeString()}
+                  secondTextInfo={new Date(
+                    chronoanalysis.startDate,
+                  ).toLocaleDateString()}
+                />
+                <LabelActivitieInfo
+                  text='Finalizado'
+                  textInfo={new Date(
+                    chronoanalysis.endDate,
+                  ).toLocaleTimeString()}
+                  secondTextInfo={new Date(
+                    chronoanalysis.endDate,
+                  ).toLocaleDateString()}
+                />
+                <LabelActivitieInfo
+                  text='Tempo decimal'
+                  textInfo={chronoanalysis.workPaceAssessment.standardTimeDecimal.toString()}
+                />
+              </span>
+            </DialogDescription>
+          ) : (
+            <DialogDescription className='sr-only'>
+              Carregando detalhes da cronoanálise
+            </DialogDescription>
+          )}
+        </DialogHeader>
+        {isLoadingDetail || !chronoanalysis ? (
+          <div className='flex min-h-[200px] items-center justify-center'>
+            <Loading />
+          </div>
+        ) : (
+          <>
         {isOpenImage && (
           <ModalImage
             openModal={isOpenImage}
@@ -76,34 +152,6 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             partData={partData}
           />
         )}
-        <DialogHeader className=' h-fit'>
-          <DialogTitle>Revisão da cronoanálise</DialogTitle>
-          <DialogDescription className=' flex justify-between items-center'>
-            <LabelActivitieInfo text='ID' textInfo={chronoanalysis.id} />
-            <span className=' flex items-center gap-4'>
-              <LabelActivitieInfo
-                text='Iniciado'
-                textInfo={new Date(
-                  chronoanalysis.startDate,
-                ).toLocaleTimeString()}
-                secondTextInfo={new Date(
-                  chronoanalysis.startDate,
-                ).toLocaleDateString()}
-              />
-              <LabelActivitieInfo
-                text='Finalizado'
-                textInfo={new Date(chronoanalysis.endDate).toLocaleTimeString()}
-                secondTextInfo={new Date(
-                  chronoanalysis.endDate,
-                ).toLocaleDateString()}
-              />
-              <LabelActivitieInfo
-                text='Tempo decimal'
-                textInfo={chronoanalysis.workPaceAssessment.standardTimeDecimal.toString()}
-              />
-            </span>
-          </DialogDescription>
-        </DialogHeader>
         <div className=' flex flex-col w-full gap-2 overflow-y-auto py-1'>
           <div className=' flex flex-col  gap-3 border border-border rounded-lg  relative px-4 py-5'>
             <div className=' absolute top-2 right-2 flex items-center justify-center gap-5'>
@@ -497,6 +545,8 @@ const ModalDetail = ({ open, setOpen, chronoanalysis }: ModalDetailProps) => {
             </div>
           )}
         </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
