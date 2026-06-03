@@ -18,7 +18,7 @@ const LabelActivitieInfo = ({
   className,
 }: PropsLabelActivitieInfo) => {
   return (
-    <span className={` flex items-center gap-3 ${className} `}>
+    <span className={`flex flex-wrap items-center gap-2 sm:gap-3 ${className}`}>
       <Text variant={'information'} as='span'>
         {text && !svg && (
           <Text as='span' variant={'information'}>
@@ -27,7 +27,7 @@ const LabelActivitieInfo = ({
         )}
         {!text && svg && <Icon svg={svg} className=' stroke-initial ' />}
       </Text>
-      <span className=' px-1.5 py-0.5 border border-border rounded-lg '>
+      <span className='max-w-full truncate px-1.5 py-0.5 border border-border rounded-lg'>
         <Text as='span' variant={'little-text'}>
           {textInfo}
           {secondTextInfo && ` - ${secondTextInfo}`}

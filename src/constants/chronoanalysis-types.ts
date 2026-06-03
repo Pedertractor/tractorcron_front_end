@@ -1,0 +1,59 @@
+export type ChronoanalysisTypeValue =
+  | 'SOLDAGEM'
+  | 'MONTAGEM'
+  | 'DOBRA'
+  | 'USINAGEM'
+  | 'PREP_PINTURA'
+  | 'REPASSE_DE_ROSCA'
+  | 'OUTROS';
+
+export type TypeOfChronoanalysisFrontend =
+  | 'welding'
+  | 'montage'
+  | 'bend'
+  | 'machining'
+  | 'prepPainting'
+  | 'repasseRosca';
+
+export const CHRONOANALYSIS_TYPE_OPTIONS: {
+  value: ChronoanalysisTypeValue;
+  label: string;
+}[] = [
+  { value: 'SOLDAGEM', label: 'Soldagem' },
+  { value: 'MONTAGEM', label: 'Montagem' },
+  { value: 'DOBRA', label: 'Dobra' },
+  { value: 'USINAGEM', label: 'Usinagem' },
+  { value: 'PREP_PINTURA', label: 'Prep. pintura' },
+  { value: 'REPASSE_DE_ROSCA', label: 'Repasse de rosca' },
+  { value: 'OUTROS', label: 'Outros' },
+];
+
+const FRONTEND_TO_DB: Record<
+  TypeOfChronoanalysisFrontend,
+  ChronoanalysisTypeValue
+> = {
+  welding: 'SOLDAGEM',
+  montage: 'MONTAGEM',
+  bend: 'DOBRA',
+  machining: 'USINAGEM',
+  prepPainting: 'PREP_PINTURA',
+  repasseRosca: 'REPASSE_DE_ROSCA',
+};
+
+export function mapTypeOfChronoanalysisToDb(
+  typeOfChronoanalysis: string,
+): ChronoanalysisTypeValue {
+  return (
+    FRONTEND_TO_DB[typeOfChronoanalysis as TypeOfChronoanalysisFrontend] ??
+    'OUTROS'
+  );
+}
+
+export function getChronoanalysisTypeLabel(
+  value: ChronoanalysisTypeValue,
+): string {
+  return (
+    CHRONOANALYSIS_TYPE_OPTIONS.find((option) => option.value === value)
+      ?.label ?? value
+  );
+}

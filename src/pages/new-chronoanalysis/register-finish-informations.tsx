@@ -20,12 +20,14 @@ import Select from '../../components/ui/select-native';
 import Input from '../../components/ui/input';
 import { clients } from '../../seed/seed-client';
 import TableActivities from '../../components/table-activities';
+import TableActivitiesMobile from '../../components/table-activities-mobile';
 import LabelActivitieInfo from '../../components/label-activities-info';
 import Modal from '../../components/ui/modal';
 import WorkPaceAssessment, {
   type DataWorkPaceProps,
 } from '../../components/work-pace-assessment';
 import type { PropsChronoanalysis } from '../../types/chronoanalysis-types';
+import { mapTypeOfChronoanalysisToDb } from '@/constants/chronoanalysis-types';
 import type { PropsActivities } from '../../types/activities-types';
 import { registerNewChronoanalysis } from '../../api/chronoanalysis-api';
 import { toast } from 'sonner';
@@ -71,6 +73,7 @@ const RegisterFinishInformationsPage = () => {
     watch,
     setValue,
     reset,
+    control,
     formState: { errors, isValid },
   } = useForm<TypeInitialInformationsData>({
     resolver: zodResolver(initialInformationsSchema),
@@ -173,8 +176,10 @@ const RegisterFinishInformationsPage = () => {
   async function handleSubmitInformations(data: TypeInitialInformationsData) {
     setIsLoading(true);
     if (startTime && endTime && workPaceAssessment) {
+      const { typeOfChronoanalysis, ...rest } = data;
       const chronoanalysis: PropsChronoanalysis = {
-        ...data,
+        ...rest,
+        chronoanalysisType: mapTypeOfChronoanalysisToDb(typeOfChronoanalysis),
         clientId: +data.clientId,
         employees: employeeList,
         howManyParts: numberOfParts,
@@ -245,9 +250,39 @@ const RegisterFinishInformationsPage = () => {
 
   return (
     <section className=''>
-      <Text variant={'title'}>Revisão da Cronoanálise</Text>
-      <Card text='Identificação e tempo de cronoanálise' className=' my-5 flex'>
-        <div className=' flex items-center gap-5'>
+      <Text variant={'title'} className='mb-3 sm:mb-4'>
+        Revisão da Cronoanálise
+      </Text>
+      <Card text='Identificação e tempo de cronoanálise' className='my-3 flex sm:my-5'>
+        <div className='grid grid-cols-2 gap-2 md:hidden'>
+          <div className='flex flex-col gap-1'>
+            <Text variant='text-label'>Identificação</Text>
+            <span className='truncate rounded-lg border border-border px-2 py-1.5'>
+              <Text variant='little-text'>{idRegister ?? '-'}</Text>
+            </span>
+          </div>
+          <div className='flex flex-col gap-1'>
+            <Text variant='text-label'>Início</Text>
+            <span className='truncate rounded-lg border border-border px-2 py-1.5'>
+              <Text variant='little-text'>
+                {startTime
+                  ? `${new Date(startTime).toLocaleDateString()} - ${new Date(startTime).toLocaleTimeString()}`
+                  : '-'}
+              </Text>
+            </span>
+          </div>
+          <div className='col-span-2 flex flex-col gap-1'>
+            <Text variant='text-label'>Fim</Text>
+            <span className='truncate rounded-lg border border-border px-2 py-1.5'>
+              <Text variant='little-text'>
+                {endTime
+                  ? `${new Date(endTime).toLocaleDateString()} - ${new Date(endTime).toLocaleTimeString()}`
+                  : '-'}
+              </Text>
+            </span>
+          </div>
+        </div>
+        <div className='hidden flex-wrap items-center gap-3 sm:gap-5 md:flex'>
           <LabelActivitieInfo text='ID' textInfo={idRegister} />
           <LabelActivitieInfo
             svg={PlayIconComponent}
@@ -268,47 +303,49 @@ const RegisterFinishInformationsPage = () => {
           employeeList={employeeList}
           setEmployeeList={setEmployeeList}
         />
-        <Card text='Informações do setor' className='flex mt-5'>
-          <div className=' flex gap-4 justify-center w-full items-center'>
-            <Label title='Centro de custo' className='  relative h-25'>
+        <Card text='Informações do setor' className='mt-3 flex sm:mt-5'>
+          <div className='flex w-full flex-col items-stretch justify-center gap-2 sm:flex-row sm:items-center sm:gap-4'>
+            <Label title='Centro de custo' className='relative sm:h-25 sm:max-w-[8rem]'>
               <CheckRequestStatus
                 data={sectorData}
                 status={isStatusSector}
                 loading={isLoadingSector}
-              />
-              <Input
-                {...register('sectorCostCenter')}
-                maxLength={4}
-                inputMode='numeric'
-                placeholder='ex: 7051'
-              />
+              >
+                <Input
+                  {...register('sectorCostCenter')}
+                  maxLength={4}
+                  inputMode='numeric'
+                  placeholder='ex: 7051'
+                />
+              </CheckRequestStatus>
               {errors.sectorCostCenter && (
-                <span className='text-red-500 text-sm absolute left-0 bottom-0 '>
+                <span className='text-red-500 text-xs sm:absolute sm:bottom-0 sm:left-0 sm:text-sm'>
                   {errors.sectorCostCenter.message}
                 </span>
               )}
             </Label>
-            <Label title='Setor de execução' className=' w-4/5 relative h-25'>
+            <Label title='Setor de execução' className='relative w-full sm:h-25 sm:w-4/5'>
               <Input {...register('sectorName')} disabled />
             </Label>
           </div>
         </Card>
-        <Card text='Informações do componente' className='flex my-5 relative'>
-          <div className=' flex flex-col gap-4 w-full '>
-            <div className=' flex gap-4 w-full'>
+        <Card text='Informações do componente' className='relative my-3 flex sm:my-5'>
+          <div className='flex w-full flex-col gap-2 sm:gap-4'>
+            <div className='flex w-full flex-col gap-2 sm:flex-row sm:gap-4'>
               <Label title='Código interno' className='relative'>
                 <CheckRequestStatus
                   data={partData}
                   status={isStatusPart}
                   loading={isLoadingPart}
-                />
-                <Input
-                  {...register('internalCode')}
-                  maxLength={10}
-                  inputMode='numeric'
-                />
+                >
+                  <Input
+                    {...register('internalCode')}
+                    maxLength={10}
+                    inputMode='numeric'
+                  />
+                </CheckRequestStatus>
                 {errors.internalCode && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.internalCode.message}
                   </span>
                 )}
@@ -317,11 +354,11 @@ const RegisterFinishInformationsPage = () => {
                 <Input {...register('partNumber')} disabled />
               </Label>
             </div>
-            <div className=' flex gap-4 w-full'>
+            <div className='flex w-full flex-col gap-2 sm:flex-row sm:gap-4'>
               <Label title='Revisão'>
                 <Input {...register('revision')} />
                 {errors.revision && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.revision.message}
                   </span>
                 )}
@@ -334,17 +371,18 @@ const RegisterFinishInformationsPage = () => {
           </div>
         </Card>
         <Card text='Informações extras' className='flex'>
-          <div className=' flex gap-4 w-full flex-col '>
-            <div className=' flex items-center gap-4'>
+          <div className='flex flex-col gap-4 w-full'>
+            <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
               <Label title='Ordem de fabricação (OF)' className='relative'>
                 <CheckRequestStatus
                   data={ofData}
                   status={isStatusOf}
                   loading={isLoadingOf}
-                />
-                <Input {...register('of')} />
+                >
+                  <Input {...register('of')} />
+                </CheckRequestStatus>
                 {errors.of && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.of.message}
                   </span>
                 )}
@@ -352,19 +390,19 @@ const RegisterFinishInformationsPage = () => {
               <Label title='Operação (OP)'>
                 <Input {...register('op')} />
                 {errors.op && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.op.message}
                   </span>
                 )}
               </Label>
             </div>
 
-            <div className=' flex items-center gap-4'>
+            <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
               <Label title='Existe procedimento operacional padrão (SOP)?'>
                 <div className=' flex items-center gap-1 w-full'>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${sop ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('sop', true)}
@@ -373,7 +411,7 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${!sop ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('sop', false)}
@@ -382,30 +420,30 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                 </div>
                 {errors.sop && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.sop.message}
                   </span>
                 )}
               </Label>
               <Label title='Cliente'>
                 <Select
+                  name='clientId'
+                  control={control}
                   listOptions={clients}
-                  disabled={false} //i can put loading fetch of clients
-                  {...register('clientId')}
                 />
                 {errors.clientId && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.clientId.message}
                   </span>
                 )}
               </Label>
             </div>
-            <div className=' flex items-center gap-4'>
+            <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
               <Label title='É uma cronoanálise para Kaizen?'>
                 <div className=' flex items-center gap-1 w-full'>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${isKaizen ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('isKaizen', true)}
@@ -414,7 +452,7 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${!isKaizen ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('isKaizen', false)}
@@ -423,7 +461,7 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                 </div>
                 {errors.isKaizen && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.isKaizen.message}
                   </span>
                 )}
@@ -432,19 +470,19 @@ const RegisterFinishInformationsPage = () => {
                 <Label title='Número do Kaizen'>
                   <Input {...register('numberKaizen')} />
                   {errors.op && (
-                    <span className='text-red-500 text-sm'>
+                    <span className='text-red-500 text-xs sm:text-sm'>
                       {errors.op.message}
                     </span>
                   )}
                 </Label>
               )}
             </div>
-            <div className=' flex items-center gap-4'>
+            <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
               <Label title='É uma requisição?'>
                 <div className=' flex items-center gap-1 w-full'>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${isRequest ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('isRequest', true)}
@@ -453,7 +491,7 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${!isRequest ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('isRequest', false)}
@@ -462,7 +500,7 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                 </div>
                 {errors.isRequest && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.isRequest.message}
                   </span>
                 )}
@@ -471,7 +509,7 @@ const RegisterFinishInformationsPage = () => {
                 <div className=' flex items-center gap-1 w-full'>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${firstCron ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('firstCron', true)}
@@ -480,7 +518,7 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full'
+                    className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${!firstCron ? 'select-blue' : 'default'}`}
                     onClick={() => setValue('firstCron', false)}
@@ -489,7 +527,7 @@ const RegisterFinishInformationsPage = () => {
                   </Button>
                 </div>
                 {errors.firstCron && (
-                  <span className='text-red-500 text-sm'>
+                  <span className='text-red-500 text-xs sm:text-sm'>
                     {errors.firstCron.message}
                   </span>
                 )}
@@ -497,12 +535,21 @@ const RegisterFinishInformationsPage = () => {
             </div>
           </div>
         </Card>
-        <Card text='Revisar atividades' className=' my-5'>
-          <TableActivities
-            allActivities={finalRegisterActivities}
-            setAttTable={setAttTable}
-            authFunc={false}
-          />
+        <Card text='Revisar atividades' className='my-3 sm:my-5'>
+          <div className='hidden md:block'>
+            <TableActivities
+              allActivities={finalRegisterActivities}
+              setAttTable={setAttTable}
+              authFunc={false}
+            />
+          </div>
+          <div className='md:hidden'>
+            <TableActivitiesMobile
+              allActivities={finalRegisterActivities}
+              setAttTable={setAttTable}
+              allowDelete={false}
+            />
+          </div>
         </Card>
 
         <Card text='Avaliação de ritimo de trabalho'>
@@ -514,17 +561,22 @@ const RegisterFinishInformationsPage = () => {
           />
         </Card>
 
-        <Card text='Melhorias e observações' className=' my-5'>
+        <Card text='Melhorias e observações' className='my-3 sm:my-5'>
           <textarea
             {...register('enhancement')}
             rows={8}
             placeholder='Digite aqui suas observações ou melhorias...'
-            className=' p-2 border border-border rounded-xl text-secondary resize-none'
+            className='resize-none rounded-xl border border-border p-2 text-xs text-secondary sm:text-sm md:text-base'
           />
         </Card>
 
-        <div className=' flex gap-4 w-full justify-end items-center mt-5'>
-          <Button variant={'red'} size={'md'} type='button'>
+        <div className='flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 w-full sm:justify-end items-stretch sm:items-center mt-5'>
+          <Button
+            variant={'red'}
+            size={'md'}
+            type='button'
+            className='w-full text-sm sm:w-[140px] sm:text-base'
+          >
             cancelar
           </Button>
           <Button
@@ -533,19 +585,19 @@ const RegisterFinishInformationsPage = () => {
             size={'md'}
             type='button'
             onClick={() => setOpenModal(true)}
+            className='w-full text-sm sm:w-[140px] sm:text-base'
           >
             finalizar
           </Button>
         </div>
-        {openModal && (
-          <Modal
-            title='Enviar informações'
-            description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
-            setOpenModal={setOpenModal}
-            isLoading={isLoading}
-            setConfirmModal={() => {}}
-          />
-        )}
+        <Modal
+          open={openModal}
+          title='Enviar informações'
+          description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
+          setOpenModal={setOpenModal}
+          isLoading={isLoading}
+          setConfirmModal={() => handleSubmit(handleSubmitInformations)()}
+        />
       </form>
     </section>
   );

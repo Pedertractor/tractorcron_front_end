@@ -128,17 +128,18 @@ const WorkPaceAssessment = ({
 
   return (
     <div className=' h-full flex flex-col  justify-center '>
-      <div className=' w-full rounded-lg flex flex-col p-4'>
+      <div className='w-full rounded-lg p-2 text-xs sm:p-4 sm:text-sm'>
         <div className=' flex flex-col gap-2'>
           <Text variant={'text-label'}>Habilidade</Text>
-          <div className='flex items-center w-full justify-between'>
+          <div className='grid grid-cols-6 gap-1 sm:gap-2'>
             {seedHability.map((item) => (
               <Button
                 type='button'
                 key={item.id}
                 onClick={() => setHability(item)}
                 variant={`${hability === item ? 'select-blue' : 'default'}`}
-                size={'md'}
+                size={' md-desk'}
+                className='h-9 w-full min-w-0 px-0 text-xs sm:h-10 sm:text-sm'
               >
                 {item.subName}
               </Button>
@@ -147,14 +148,15 @@ const WorkPaceAssessment = ({
         </div>
         <div className=' flex flex-col gap-2 mt-5'>
           <Text variant={'text-label'}>Esforço</Text>
-          <div className='flex items-center w-full justify-between'>
+          <div className='grid grid-cols-6 gap-1 sm:gap-2'>
             {seedEffort.map((item) => (
               <Button
                 type='button'
                 key={item.id}
                 onClick={() => setEffort(item)}
                 variant={`${effort === item ? 'select-blue' : 'default'}`}
-                size={'md'}
+                size={' md-desk'}
+                className='h-9 w-full min-w-0 px-0 text-xs sm:h-10 sm:text-sm'
               >
                 {item.subName}
               </Button>
@@ -163,78 +165,96 @@ const WorkPaceAssessment = ({
         </div>
       </div>
 
-      <div className='w-full border border-dashed border-border rounded-lg gap-5 flex flex-col p-4'>
-        <Text className=' font-semibold'>Calculo tempo padrão</Text>
-        <div className=' flex h-full items-center gap-4 '>
-          <div className=' flex-col flex tems-start justify-center w-full'>
-            <Text variant={'text-label'}>Habilidade</Text>
-            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+      <div className='flex w-full flex-col gap-2 rounded-lg border border-dashed border-border p-2 sm:gap-5 sm:p-4'>
+        <Text className='text-sm font-semibold sm:text-base'>Calculo tempo padrão</Text>
+        <div className='flex flex-nowrap items-end gap-1 sm:flex-wrap sm:items-center sm:gap-4'>
+          <div className='flex min-w-0 flex-1 flex-col items-start justify-center sm:min-w-[5rem] sm:flex-1'>
+            <Text variant={'text-label'} className='truncate'>
+              Habilidade
+            </Text>
+            <div className='flex h-10 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border p-1 sm:h-15 sm:p-2'>
               {hability && (
-                <Text variant={'sub-title'}>{hability.porcentage}%</Text>
+                <Text variant={'sub-title'} className='text-xs sm:text-xl'>
+                  {hability.porcentage}%
+                </Text>
               )}
             </div>
           </div>
-          <div className='  min-h-[50px] flex items-end'>
+          <div className='flex shrink-0 items-end pb-2 sm:min-h-[50px]'>
             <Text variant={'text-label'}>X</Text>
           </div>
-          <div className=' flex-col flex tems-start justify-center w-full'>
-            <Text variant={'text-label'}>Esforço</Text>
-            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+          <div className='flex min-w-0 flex-1 flex-col items-start justify-center sm:min-w-[5rem] sm:flex-1'>
+            <Text variant={'text-label'} className='truncate'>
+              Esforço
+            </Text>
+            <div className='flex h-10 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border p-1 sm:h-15 sm:p-2'>
               {effort && (
-                <Text variant={'sub-title'}>{effort?.porcentage}%</Text>
+                <Text variant={'sub-title'} className='text-xs sm:text-xl'>
+                  {effort?.porcentage}%
+                </Text>
               )}
             </div>
           </div>
-          <div className='  min-h-[50px] flex items-end'>
+          <div className='flex shrink-0 items-end pb-2 sm:min-h-[50px]'>
             <Text variant={'text-label'}>=</Text>
           </div>
-          <div className=' flex-col flex tems-start justify-center w-full'>
-            <Text variant={'text-label'}>Eficiência</Text>
-            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+          <div className='flex min-w-0 flex-1 flex-col items-start justify-center sm:min-w-[5rem] sm:flex-1'>
+            <Text variant={'text-label'} className='truncate'>
+              Eficiência
+            </Text>
+            <div className='flex h-10 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border p-1 sm:h-15 sm:p-2'>
               {workPaceAssessmentDatas && (
-                <Text variant={'sub-title'}>
+                <Text variant={'sub-title'} className='text-xs sm:text-xl'>
                   {workPaceAssessmentDatas?.efficiency}%
                 </Text>
               )}
             </div>
           </div>
         </div>
-        <div className=' flex items-center justify-center gap-4'>
-          <div className=' flex-col flex tems-start justify-center w-full'>
-            <Text variant={'text-label'}>Tempo geral</Text>
-            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+        <div className='grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4'>
+          <div className='flex min-w-0 flex-col items-start justify-center'>
+            <Text variant={'text-label'} className='truncate'>
+              Tempo geral
+            </Text>
+            <div className='flex h-10 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border p-1 sm:h-15 sm:p-2'>
               {workPaceAssessmentDatas && (
-                <Text variant={'sub-title'}>
+                <Text variant={'sub-title'} className='text-xs sm:text-xl'>
                   {workPaceAssessmentDatas?.timeCalculate}
                 </Text>
               )}
             </div>
           </div>
-          <div className=' flex-col flex tems-start justify-center w-full'>
-            <Text variant={'text-label'}>Tempo padrão</Text>
-            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+          <div className='flex min-w-0 flex-col items-start justify-center'>
+            <Text variant={'text-label'} className='truncate'>
+              Tempo padrão
+            </Text>
+            <div className='flex h-10 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border p-1 sm:h-15 sm:p-2'>
               {workPaceAssessmentDatas && (
-                <Text variant={'sub-title'}>
+                <Text variant={'sub-title'} className='text-xs sm:text-xl'>
                   {workPaceAssessmentDatas?.standardTime}
                 </Text>
               )}
             </div>
           </div>
-          <div className=' flex-col flex tems-start justify-center w-full'>
-            <Text variant={'text-label'}>Padrão decimal</Text>
-            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+          <div className='flex min-w-0 flex-col items-start justify-center'>
+            <Text variant={'text-label'} className='truncate'>
+              Padrão decimal
+            </Text>
+            <div className='flex h-10 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border p-1 sm:h-15 sm:p-2'>
               {workPaceAssessmentDatas && (
-                <Text variant={'sub-title'}>
+                <Text variant={'sub-title'} className='text-xs sm:text-xl'>
                   {workPaceAssessmentDatas?.standardTimeDecimal}
                 </Text>
               )}
             </div>
           </div>
-          <div className=' flex-col flex tems-start justify-center w-full'>
-            <Text variant={'text-label'}>Padrão decimal / peça</Text>
-            <div className=' border border-dashed border-border rounded-lg p-2 w-full h-15 flex flex-col items-center justify-center'>
+          <div className='flex min-w-0 flex-col items-start justify-center'>
+            <Text variant={'text-label'} className='truncate'>
+              Padrão decimal / peça
+            </Text>
+            <div className='flex h-10 w-full flex-col items-center justify-center rounded-lg border border-dashed border-border p-1 sm:h-15 sm:p-2'>
               {workPaceAssessmentDatas && (
-                <Text variant={'sub-title'}>
+                <Text variant={'sub-title'} className='text-xs sm:text-xl'>
                   {workPaceAssessmentDatas?.standardTimeDecimalByNumberOfParts}
                 </Text>
               )}

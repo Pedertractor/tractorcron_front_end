@@ -86,6 +86,7 @@ export const filterChronoanalysis = z.object({
   clientId: z.string().optional(),
   isKaizen: z.boolean(),
   isSend: z.boolean(),
+  chronoanalysisType: z.string().optional(),
 });
 
 export type TypeFilterChronoanalysis = z.infer<typeof filterChronoanalysis>;

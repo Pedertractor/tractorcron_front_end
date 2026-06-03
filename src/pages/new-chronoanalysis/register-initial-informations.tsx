@@ -48,6 +48,7 @@ const RegisterInitialInformationsPage = () => {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors, isValid },
   } = useForm<TypeInitialInformationsData>({
     resolver: zodResolver(initialInformationsSchema),
@@ -219,35 +220,38 @@ const RegisterInitialInformationsPage = () => {
         />
       ) : (
         <>
-          <Text variant={'title'}>Nova cronoanálise</Text>
+          <Text variant={'title'} className='mb-3 sm:mb-4'>
+            Nova cronoanálise
+          </Text>
           <form onSubmit={handleSubmit(handleAddInitialInformations)}>
             <AddChronoanalysisEmployee
               employeeList={employeeList}
               setEmployeeList={setEmployeeList}
             />
-            <Card text='Informações do setor' className='flex mt-5'>
-              <div className=' flex gap-4 justify-center w-full items-center'>
-                <Label title='Centro de custo' className='relative h-25'>
+            <Card text='Informações do setor' className='mt-3 flex sm:mt-5'>
+              <div className='flex w-full flex-col items-stretch justify-center gap-2 sm:flex-row sm:items-center sm:gap-4'>
+                <Label title='Centro de custo' className='relative sm:h-25 sm:max-w-[8rem]'>
                   <CheckRequestStatus
                     data={sectorData}
                     status={isStatusSector}
                     loading={isLoadingSector}
-                  />
-                  <Input
-                    {...register('sectorCostCenter')}
-                    maxLength={4}
-                    inputMode='numeric'
-                    placeholder='ex: 7051'
-                  />
+                  >
+                    <Input
+                      {...register('sectorCostCenter')}
+                      maxLength={4}
+                      inputMode='numeric'
+                      placeholder='ex: 7051'
+                    />
+                  </CheckRequestStatus>
                   {errors.sectorCostCenter && (
-                    <span className='text-red-500 text-sm absolute left-0 bottom-0 '>
+                    <span className='text-red-500 text-xs sm:absolute sm:bottom-0 sm:left-0 sm:text-sm'>
                       {errors.sectorCostCenter.message}
                     </span>
                   )}
                 </Label>
                 <Label
                   title='Setor de execução'
-                  className=' w-4/5 relative h-25'
+                  className='relative w-full sm:h-25 sm:w-4/5'
                 >
                   <Input {...register('sectorName')} disabled />
                 </Label>
@@ -255,7 +259,7 @@ const RegisterInitialInformationsPage = () => {
             </Card>
             <Card
               text='Informações do componente'
-              className='flex my-5 relative'
+              className='relative my-3 flex sm:my-5 [&>h2]:pr-11 sm:[&>h2]:pr-0'
             >
               <Button
                 onClick={() => setIsOpenImage(!isOpenImage)}
@@ -265,23 +269,24 @@ const RegisterInitialInformationsPage = () => {
                   isStatus && !isLoading && partData ? 'blue' : 'default'
                 }`}
                 svg={Images}
-                className='absolute top-3 right-3 '
+                className='absolute right-2 top-2 !size-9 rounded-lg p-0 sm:right-3 sm:top-3 sm:!size-11 [&_svg]:!size-4 sm:[&_svg]:!size-5'
               />
-              <div className=' flex flex-col gap-4 w-full '>
-                <div className=' flex gap-4 w-full'>
+              <div className='flex w-full flex-col gap-2 sm:gap-4'>
+                <div className='flex w-full flex-col gap-2 sm:flex-row sm:gap-4'>
                   <Label title='Código interno' className=' relative '>
                     <CheckRequestStatus
                       data={partData}
                       status={isStatus}
                       loading={isLoading}
-                    />
-                    <Input
-                      {...register('internalCode')}
-                      maxLength={10}
-                      inputMode='numeric'
-                    />
+                    >
+                      <Input
+                        {...register('internalCode')}
+                        maxLength={10}
+                        inputMode='numeric'
+                      />
+                    </CheckRequestStatus>
                     {errors.internalCode && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.internalCode.message}
                       </span>
                     )}
@@ -290,11 +295,11 @@ const RegisterInitialInformationsPage = () => {
                     <Input {...register('partNumber')} disabled />
                   </Label>
                 </div>
-                <div className=' flex gap-4 w-full'>
+                <div className='flex w-full flex-col gap-2 sm:flex-row sm:gap-4 sm:[&>label]:w-1/2'>
                   <Label title='Revisão'>
                     <Input {...register('revision')} />
                     {errors.revision && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.revision.message}
                       </span>
                     )}
@@ -307,17 +312,18 @@ const RegisterInitialInformationsPage = () => {
               </div>
             </Card>
             <Card text='Informações extras' className='flex'>
-              <div className=' flex gap-4 w-full flex-col '>
-                <div className=' flex items-center gap-4'>
-                  <Label title='Ordem de fabricação (OF)' className=' relative'>
+              <div className='flex flex-col gap-4 w-full'>
+                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
+                  <Label title='Ordem de fabricação (OF)' className='relative'>
                     <CheckRequestStatus
                       data={ofData}
                       status={isStatusOf}
                       loading={isLoadingOf}
-                    />
-                    <Input {...register('of')} />
+                    >
+                      <Input {...register('of')} />
+                    </CheckRequestStatus>
                     {errors.of && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.of.message}
                       </span>
                     )}
@@ -325,19 +331,19 @@ const RegisterInitialInformationsPage = () => {
                   <Label title='Operação (OP)'>
                     <Input {...register('op')} />
                     {errors.op && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.op.message}
                       </span>
                     )}
                   </Label>
                 </div>
 
-                <div className=' flex items-center gap-4'>
+                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                   <Label title='Existe procedimento operacional padrão (SOP)?'>
                     <div className=' flex items-center gap-1 w-full'>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${sop ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('sop', true)}
@@ -346,7 +352,7 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${!sop ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('sop', false)}
@@ -355,30 +361,30 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                     </div>
                     {errors.sop && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.sop.message}
                       </span>
                     )}
                   </Label>
                   <Label title='Cliente'>
                     <Select
+                      name='clientId'
+                      control={control}
                       listOptions={clients}
-                      disabled={false}
-                      {...register('clientId')}
                     />
                     {errors.clientId && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.clientId.message}
                       </span>
                     )}
                   </Label>
                 </div>
-                <div className=' flex items-center gap-4'>
+                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                   <Label title='É uma cronoanálise para Kaizen?'>
                     <div className=' flex items-center gap-1 w-full'>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${isKaizen ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('isKaizen', true)}
@@ -387,7 +393,7 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${!isKaizen ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('isKaizen', false)}
@@ -396,7 +402,7 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                     </div>
                     {errors.isKaizen && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.isKaizen.message}
                       </span>
                     )}
@@ -405,19 +411,19 @@ const RegisterInitialInformationsPage = () => {
                     <Label title='Número do Kaizen'>
                       <Input {...register('numberKaizen')} />
                       {errors.op && (
-                        <span className='text-red-500 text-sm'>
+                        <span className='text-red-500 text-xs sm:text-sm'>
                           {errors.op.message}
                         </span>
                       )}
                     </Label>
                   )}
                 </div>
-                <div className=' flex items-center gap-4'>
+                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                   <Label title='É uma requisição?'>
                     <div className=' flex items-center gap-1 w-full'>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${isRequest ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('isRequest', true)}
@@ -426,7 +432,7 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${!isRequest ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('isRequest', false)}
@@ -435,7 +441,7 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                     </div>
                     {errors.isRequest && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.isRequest.message}
                       </span>
                     )}
@@ -444,7 +450,7 @@ const RegisterInitialInformationsPage = () => {
                     <div className=' flex items-center gap-1 w-full'>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${firstCron ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('firstCron', true)}
@@ -453,7 +459,7 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                       <Button
                         size={' md-desk'}
-                        className=' py-2.5 w-full'
+                        className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${!firstCron ? 'select-blue' : 'default'}`}
                         onClick={() => setValue('firstCron', false)}
@@ -462,7 +468,7 @@ const RegisterInitialInformationsPage = () => {
                       </Button>
                     </div>
                     {errors.firstCron && (
-                      <span className='text-red-500 text-sm'>
+                      <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.firstCron.message}
                       </span>
                     )}
@@ -470,12 +476,12 @@ const RegisterInitialInformationsPage = () => {
                 </div>
               </div>
             </Card>
-            <Card text='Preset das atividades' className='flex flex-col mt-5'>
+            <Card text='Preset das atividades' className='mt-3 flex flex-col sm:mt-5'>
               <Label title='Tipo de cronoanálise' className=' flex w-full'>
                 <div className=' flex flex-wrap gap-2 mb-3'>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                        className='w-full flex-1 py-2 text-xs min-w-[6rem] sm:min-w-[8rem] sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${
                       typeOfChron === 'welding' ? 'select-blue' : 'default'
@@ -486,7 +492,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                        className='w-full flex-1 py-2 text-xs min-w-[6rem] sm:min-w-[8rem] sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${
                       typeOfChron === 'montage' ? 'select-blue' : 'default'
@@ -497,7 +503,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                        className='w-full flex-1 py-2 text-xs min-w-[6rem] sm:min-w-[8rem] sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${
                       typeOfChron === 'bend' ? 'select-blue' : 'default'
@@ -508,7 +514,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                        className='w-full flex-1 py-2 text-xs min-w-[6rem] sm:min-w-[8rem] sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${
                       typeOfChron === 'machining' ? 'select-blue' : 'default'
@@ -521,7 +527,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                        className='w-full flex-1 py-2 text-xs min-w-[6rem] sm:min-w-[8rem] sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${
                       typeOfChron === 'prepPainting'
@@ -536,7 +542,7 @@ const RegisterInitialInformationsPage = () => {
                   </Button>
                   <Button
                     size={' md-desk'}
-                    className=' py-2.5 w-full min-w-[8rem] flex-1'
+                        className='w-full flex-1 py-2 text-xs min-w-[6rem] sm:min-w-[8rem] sm:py-2.5 sm:text-sm'
                     type='button'
                     variant={`${
                       typeOfChron === 'repasseRosca'
@@ -553,8 +559,8 @@ const RegisterInitialInformationsPage = () => {
               </Label>
               <ListActivities activities={pinedActivities} />
             </Card>
-            <div className=' flex gap-4 w-full justify-end items-center mt-5'>
-              <Button variant={'red'} size={'md'} type='button'>
+            <div className='flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 w-full sm:justify-end items-stretch sm:items-center mt-5'>
+              <Button variant={'red'} size={'md'} type='button' className='w-full sm:w-[140px]'>
                 cancelar
               </Button>
               <Button
@@ -564,6 +570,7 @@ const RegisterInitialInformationsPage = () => {
                 }`}
                 size={'md'}
                 type='submit'
+                className='w-full sm:w-[140px]'
               >
                 iniciar
               </Button>

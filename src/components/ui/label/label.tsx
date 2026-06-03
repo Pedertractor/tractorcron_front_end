@@ -9,7 +9,7 @@ export interface PropsLabel {
 
 const Label = ({ title, children, className }: PropsLabel) => {
   return (
-    <label className={`flex flex-col gap-1 w-full ${className}`}>
+    <label className={`flex w-full flex-col gap-0.5 sm:gap-1 ${className}`}>
       <Text as='p' variant={'text-label'}>
         {title}
       </Text>

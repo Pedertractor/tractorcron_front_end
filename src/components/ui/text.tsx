@@ -1,16 +1,17 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import React from 'react';
 
-export const textVariants = cva(' text-initial text-base leading-6', {
+export const textVariants = cva('text-initial', {
   variants: {
     variant: {
-      'master-title': ' text-[48px] font-extrabold leading-none',
-      title: 'font-bold text-[24px]',
-      'sub-title': 'font-semibold text-xl',
-      information: 'font-semibold text-base',
-      'text-label': 'font-medium text-secondary',
-      'text-input': 'font-normal text-secondary',
-      'little-text': 'font-normal text-secondary text-sm',
+      'master-title':
+        'text-3xl font-extrabold leading-none sm:text-[48px]',
+      title: 'text-lg font-bold leading-tight sm:text-2xl',
+      'sub-title': 'text-base font-semibold leading-snug sm:text-xl',
+      information: 'text-sm font-semibold sm:text-base',
+      'text-label': 'text-xs font-medium text-secondary sm:text-sm',
+      'text-input': 'text-sm font-normal text-secondary sm:text-base',
+      'little-text': 'text-xs font-normal text-secondary sm:text-sm',
     },
   },
   defaultVariants: {

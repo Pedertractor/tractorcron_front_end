@@ -66,10 +66,9 @@ import ModalEditChronoanalysis from '@/components/modal-edit';
 
 import ModalDelete from '@/components/modal-delete';
 
-
+import { CHRONOANALYSIS_TYPE_OPTIONS } from '@/constants/chronoanalysis-types';
 
 const PAGE_SIZE = 15;
-
 const DEBOUNCE_MS = 300;
 
 
@@ -186,6 +185,8 @@ const Analysis = () => {
 
         isSend: false,
 
+        chronoanalysisType: '',
+
       },
 
     });
@@ -212,6 +213,8 @@ const Analysis = () => {
 
   const formIsSend = watch('isSend');
 
+  const chronoanalysisType = watch('chronoanalysisType');
+
 
 
   const hasActiveFilters = Boolean(
@@ -234,7 +237,9 @@ const Analysis = () => {
 
       formIsKaizen ||
 
-      formIsSend,
+      formIsSend ||
+
+      chronoanalysisType,
 
   );
 
@@ -272,6 +277,8 @@ const Analysis = () => {
 
       dateTo: dataRange?.from && dataRange?.to ? dataRange.to : undefined,
 
+      chronoanalysisType: chronoanalysisType || undefined,
+
     }),
 
     [
@@ -297,6 +304,8 @@ const Analysis = () => {
       dataRange?.from,
 
       dataRange?.to,
+
+      chronoanalysisType,
 
     ],
 
@@ -445,6 +454,8 @@ const Analysis = () => {
     formIsKaizen,
 
     formIsSend,
+
+    chronoanalysisType,
 
   ]);
 
@@ -760,11 +771,13 @@ const Analysis = () => {
 
                 <Select
 
-                  className='w-full min-w-0 h-fit py-2'
+                  name='userChronoanalistId'
+
+                  control={control}
+
+                  className='h-fit py-2'
 
                   listOptionsChronoanalist={chronoanalistsForFilter}
-
-                  {...register('userChronoanalistId')}
 
                 />
 
@@ -774,11 +787,29 @@ const Analysis = () => {
 
                 <Select
 
-                  className='w-full min-w-0 h-fit py-2'
+                  name='clientId'
+
+                  control={control}
+
+                  className='h-fit py-2'
 
                   listOptions={clients}
 
-                  {...register('clientId')}
+                />
+
+              </Label>
+
+              <Label title='Tipo de cronoanálise' className='min-w-0 flex-1'>
+
+                <Select
+
+                  name='chronoanalysisType'
+
+                  control={control}
+
+                  className='h-fit py-2'
+
+                  listEnumOptions={CHRONOANALYSIS_TYPE_OPTIONS}
 
                 />
 

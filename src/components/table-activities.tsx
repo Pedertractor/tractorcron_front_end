@@ -1,4 +1,5 @@
 import type { RegisterActivities } from '../db/db';
+import { useLayoutEffect, useRef } from 'react';
 import TrashComponent from '../assets/icons/trash-icon.svg?react';
 import { deleteActivitie } from '../db/db-functions';
 import Icon from './ui/icon';
@@ -17,49 +18,68 @@ const TableActivities = ({
   setAttTable,
   authFunc,
 }: PropsTableActivities) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const previousActivitiesLengthRef = useRef(activities.length);
+
+  useLayoutEffect(() => {
+    const hasNewActivity =
+      activities.length > previousActivitiesLengthRef.current;
+
+    previousActivitiesLengthRef.current = activities.length;
+
+    if (!hasNewActivity || !scrollRef.current) return;
+
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }, [activities]);
+
   return (
-    <div className=' border border-border rounded-lg text-sm'>
-      <nav className=' w-full bg-blue-50 rounded-b-none rounded-lg grid grid-cols-8 py-1 border-b border-border font-semibold text-center'>
+    <div className='rounded-lg border border-border text-sm'>
+      <nav className='grid w-full grid-cols-8 rounded-lg rounded-b-none border-b border-border bg-blue-50 py-1 text-center font-semibold'>
         <span>Nº atividade</span>
         <span>Atividade</span>
         <span>Hora início</span>
         <span>Hora fim</span>
-        <span className=' col-span-2'>golden zone</span>
-        <span className={`${!authFunc ? 'col-span-2' : 'col-span-1 '}`}>
+        <span className='col-span-2'>golden zone</span>
+        <span className={`${!authFunc ? 'col-span-2' : 'col-span-1'}`}>
           strike zone
         </span>
         {!authFunc ? null : <span>Ações</span>}
       </nav>
-      <div className=' flex flex-col bg-white overflow-y-auto max-h-[290px] min-h-[290px] rounded-lg'>
+      <div
+        ref={scrollRef}
+        className='flex max-h-[290px] min-h-[290px] flex-col overflow-y-auto rounded-lg bg-white'
+      >
         {activities.length > 0 &&
           activities.map((activitie, index) => (
             <div
               key={`${activitie.id}-${index}`}
-              className=' w-full grid grid-cols-8 py-1 text-center border-b border-border'
+              className='grid w-full grid-cols-8 border-b border-border py-1 text-center'
             >
               <div className='flex items-center justify-center'>
                 {activitie.activitieId}
               </div>
-              <div className=' flex items-center justify-center'>
+              <div className='flex items-center justify-center'>
                 {activitie.name.length >= 21
                   ? `${activitie.name.slice(0, 21)}...`
                   : activitie.name}
               </div>
-              <div className=' flex items-center justify-center'>
+              <div className='flex items-center justify-center'>
                 {new Date(activitie.startTime).toLocaleTimeString()}
               </div>
-              <div className=' flex items-center justify-center '>
+              <div className='flex items-center justify-center'>
                 {activitie.endTime ? (
                   new Date(activitie.endTime).toLocaleTimeString()
                 ) : (
                   <Icon
-                    className=' size-4'
+                    className='size-4'
                     svg={LoadingIcon2Component}
                     animate
                   />
                 )}
               </div>
-              <div className='w-full flex items-center justify-center gap-2 col-span-2 '>
+              <div className='col-span-2 flex w-full items-center justify-center gap-2'>
                 <GoldenZoneComponent
                   activitieGoldenZoneId={activitie.goldenZoneId}
                   activitieId={activitie.id}
@@ -67,8 +87,8 @@ const TableActivities = ({
                 />
               </div>
               <div
-                className={`w-full flex items-center justify-center gap-2 ${
-                  !authFunc ? 'col-span-2' : 'col-span-1 '
+                className={`flex w-full items-center justify-center gap-2 ${
+                  !authFunc ? 'col-span-2' : 'col-span-1'
                 }`}
               >
                 <StrikeZoneComponent
@@ -78,7 +98,7 @@ const TableActivities = ({
                 />
               </div>
               {!authFunc ? null : (
-                <div className=' flex items-center justify-center'>
+                <div className='flex items-center justify-center'>
                   <Button
                     type='button'
                     svg={TrashComponent}
@@ -91,7 +111,7 @@ const TableActivities = ({
           ))}
 
         {activities.length <= 0 && (
-          <p className=' flex w-full items-center justify-center py-5 text-secondary min-h-[290px] '>
+          <p className='flex min-h-[290px] w-full items-center justify-center py-5 text-secondary'>
             nenhuma atividade registrada 📝
           </p>
         )}

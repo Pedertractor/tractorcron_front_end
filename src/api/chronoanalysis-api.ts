@@ -44,6 +44,7 @@ export interface ChronoanalysisListItem {
   op: string;
   startDate: string;
   isSend: boolean;
+  chronoanalysisType?: string;
   chronoanalysisEmployee: EmployeeProps[];
   client: {
     id: number;
@@ -74,6 +75,7 @@ export interface ListChronoanalysisParams {
   isSend?: boolean;
   dateFrom?: string;
   dateTo?: string;
+  chronoanalysisType?: string;
 }
 
 export interface ListChronoanalysisResponse {
@@ -175,12 +177,16 @@ export async function listDatasInformationsForDashBoard(
   firstDate: Date,
   secondDate: Date,
   userId?: number | null,
+  chronoanalysisType?: string | null,
 ) {
   const token = localStorage.getItem('token');
 
   const searchParams = new URLSearchParams();
   if (userId != null && userId > 0) {
     searchParams.set('userId', String(userId));
+  }
+  if (chronoanalysisType) {
+    searchParams.set('chronoanalysisType', chronoanalysisType);
   }
   const query = searchParams.toString();
   const suffix = query ? `?${query}` : '';
@@ -263,6 +269,8 @@ export async function listChronoanalysis(
   if (params.isSend === true) searchParams.set('isSend', 'true');
   if (params.dateFrom) searchParams.set('dateFrom', params.dateFrom);
   if (params.dateTo) searchParams.set('dateTo', params.dateTo);
+  if (params.chronoanalysisType)
+    searchParams.set('chronoanalysisType', params.chronoanalysisType);
 
   const query = searchParams.toString();
   const suffix = query ? `?${query}` : '';

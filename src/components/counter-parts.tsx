@@ -11,8 +11,8 @@ const CounterParts = ({
   setNumberOfParts,
 }: CounterPartsProps) => {
   return (
-    <Label title='Nº de peças'>
-      <div className=' flex items-center justify-center  h-[48px] rounded-xl '>
+    <Label title='Nº de peças' className='w-full'>
+      <div className='flex h-9 w-full items-stretch overflow-hidden rounded-xl'>
         <button
           onClick={() =>
             setNumberOfParts((prev) => {
@@ -21,19 +21,21 @@ const CounterParts = ({
             })
           }
           type='button'
-          className=' text-white bg-background-base-blue-select w-full h-full rounded-l-xl flex items-center justify-center'
+          aria-label='Diminuir quantidade de peças'
+          className='flex h-full w-11 shrink-0 items-center justify-center rounded-l-xl bg-background-base-blue-select text-white sm:w-12'
         >
-          <Minus />
+          <Minus className='size-4 sm:size-5' strokeWidth={2.5} />
         </button>
-        <div className=' w-full flex items-center justify-center text-zinc-800 font-bold border border-border h-full'>
+        <div className='flex h-full min-w-[2.5rem] flex-1 items-center justify-center border-y border-border bg-white text-sm font-bold text-zinc-800 sm:text-base'>
           {numberOfParts}
         </div>
         <button
           onClick={() => setNumberOfParts((prev) => prev + 1)}
           type='button'
-          className=' text-white bg-background-base-blue-select w-full h-full rounded-r-xl flex items-center justify-center'
+          aria-label='Aumentar quantidade de peças'
+          className='flex h-full w-11 shrink-0 items-center justify-center rounded-r-xl bg-background-base-blue-select text-white sm:w-12'
         >
-          <Plus />
+          <Plus className='size-4 sm:size-5' strokeWidth={2.5} />
         </button>
       </div>
     </Label>

@@ -6,12 +6,14 @@ export interface PropsStrikeZoneComponent {
   activitieStrikeZoneId: number | undefined;
   activitieId: number;
   setAttTable?: (props: boolean) => void;
+  buttonClassName?: string;
 }
 
 const StrikeZoneComponent = ({
   activitieStrikeZoneId,
   activitieId,
   setAttTable,
+  buttonClassName,
 }: PropsStrikeZoneComponent) => {
   return seedStrikeZone.map((item, index) => (
     <Button
@@ -20,6 +22,7 @@ const StrikeZoneComponent = ({
       className={`
         ${item.id === activitieStrikeZoneId ? 'opacity-100 text-white' : ' opacity-30'}
         ${item.name === 'A' ? 'bg-green-600' : item.name === 'B' ? 'bg-yellow-600' : 'bg-red-600'}
+        ${buttonClassName ?? ''}
         `}
       onClick={() => editStrikeZone(activitieId, item.id, setAttTable)}
     >

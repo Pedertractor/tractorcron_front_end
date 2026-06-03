@@ -1,77 +1,150 @@
-import React from 'react';
-import type { PropsClients } from '../../types/clients-types';
-import { cva, type VariantProps } from 'class-variance-authority';
+import {
+  type Control,
+  Controller,
+  type FieldPath,
+  type FieldValues,
+} from 'react-hook-form';
+import type { PropsClients } from '@/types/clients-types';
 import type { listChronoanalistProps } from '@/types/user-types';
+import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-export const variantsSelect = cva('border rounded-lg h-[48px] py-0.5 px-3', {
-  variants: {
-    variant: {
-      default: ' text-secondary border-border',
-    },
-    disabled: {
-      true: 'opacity-40 border-dashed text-disabled border-disabled pointer-events-none',
-    },
-  },
-  defaultVariants: {
-    variant: 'default',
-    disabled: false,
-  },
-});
+const EMPTY_VALUE = '__empty__';
 
-export interface PropsSelect
-  extends React.ComponentProps<'select'>, VariantProps<typeof variantsSelect> {
-  listOptions?: [] | PropsClients[];
-  listOptionsChronoanalist?: [] | listChronoanalistProps[];
-  /** Valor do <option> para cronoanalistas: `employeeId` (padrão, ex. página Análise) ou `id` do usuário (ex. dashboard). */
+type SelectFieldBaseProps = {
+  listOptions?: PropsClients[];
+  listOptionsChronoanalist?: listChronoanalistProps[];
+  listEnumOptions?: { value: string; label: string }[];
   chronoanalistOptionValue?: 'employeeId' | 'id';
-  listTypeChronoanalist?: [] | string[];
+  listTypeChronoanalist?: string[];
   className?: string;
   disabled?: boolean;
-}
+  placeholder?: string;
+  emptyOptionLabel?: string;
+};
 
-const SelectNative = ({
+type SelectFieldControlledProps<T extends FieldValues> = SelectFieldBaseProps & {
+  name: FieldPath<T>;
+  control: Control<T>;
+  value?: never;
+  onValueChange?: never;
+};
+
+type SelectFieldStandaloneProps = SelectFieldBaseProps & {
+  value?: string;
+  onValueChange?: (value: string) => void;
+  name?: never;
+  control?: never;
+};
+
+export type SelectFieldProps<T extends FieldValues = FieldValues> =
+  | SelectFieldControlledProps<T>
+  | SelectFieldStandaloneProps;
+
+function SelectFieldInner({
+  value,
+  onValueChange,
   listOptions,
   listOptionsChronoanalist,
+  listEnumOptions,
   chronoanalistOptionValue = 'employeeId',
   listTypeChronoanalist,
   className,
   disabled,
-  ...props
-}: PropsSelect) => {
-  return (
-    <select
-      disabled={disabled}
-      className={variantsSelect({ disabled, className })}
-      {...props}
-    >
-      <option value='' defaultValue={''}>
-        Todos
-      </option>
-      {listOptions &&
-        listOptions.map((option, index) => (
-          <option key={index} value={option.id}>
-            {option.name}
-          </option>
-        ))}
+  placeholder = 'Todos',
+  emptyOptionLabel = 'Todos',
+}: SelectFieldBaseProps & {
+  value?: string;
+  onValueChange?: (value: string) => void;
+}) {
+  const normalizedValue =
+    value === '' || value === undefined || value === null
+      ? EMPTY_VALUE
+      : String(value);
 
-      {listOptionsChronoanalist &&
-        listOptionsChronoanalist.map((option) => (
-          <option
+  const handleChange = (selected: string) => {
+    onValueChange?.(selected === EMPTY_VALUE ? '' : selected);
+  };
+
+  return (
+    <Select
+      value={normalizedValue}
+      onValueChange={handleChange}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        className={cn(
+          'h-9 w-full font-normal text-secondary sm:h-10',
+          disabled && 'pointer-events-none border-dashed opacity-40',
+          className,
+        )}
+      >
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={EMPTY_VALUE}>{emptyOptionLabel}</SelectItem>
+        {listOptions?.map((option) => (
+          <SelectItem key={option.id} value={String(option.id)}>
+            {option.name}
+          </SelectItem>
+        ))}
+        {listOptionsChronoanalist?.map((option) => (
+          <SelectItem
             key={`${option.id}-${option.employeeId}`}
-            value={option[chronoanalistOptionValue]}
+            value={String(option[chronoanalistOptionValue])}
           >
             {option.employeeName}
-          </option>
+          </SelectItem>
         ))}
-
-      {listTypeChronoanalist &&
-        listTypeChronoanalist.map((option, index) => (
-          <option key={index} value={index}>
+        {listEnumOptions?.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+        {listTypeChronoanalist?.map((option, index) => (
+          <SelectItem key={index} value={String(index)}>
             {option}
-          </option>
+          </SelectItem>
         ))}
-    </select>
+      </SelectContent>
+    </Select>
   );
-};
+}
 
-export default SelectNative;
+function SelectField<T extends FieldValues>(props: SelectFieldProps<T>) {
+  if ('control' in props && props.control && props.name) {
+    const { control, name, ...rest } = props;
+
+    return (
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <SelectFieldInner
+            {...rest}
+            value={field.value}
+            onValueChange={field.onChange}
+          />
+        )}
+      />
+    );
+  }
+
+  const { value, onValueChange, ...rest } = props as SelectFieldStandaloneProps;
+
+  return (
+    <SelectFieldInner
+      {...rest}
+      value={value}
+      onValueChange={onValueChange}
+    />
+  );
+}
+
+export default SelectField;

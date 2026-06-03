@@ -73,12 +73,16 @@ export async function getActivitiesChartsForDashboard(
   firstDate: Date,
   secondDate: Date,
   userId?: number | null,
+  chronoanalysisType?: string | null,
 ) {
   const token = localStorage.getItem('token');
 
   const searchParams = new URLSearchParams();
   if (userId != null && userId > 0) {
     searchParams.set('userId', String(userId));
+  }
+  if (chronoanalysisType) {
+    searchParams.set('chronoanalysisType', chronoanalysisType);
   }
   const query = searchParams.toString();
   const suffix = query ? `?${query}` : '';

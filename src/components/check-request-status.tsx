@@ -1,3 +1,5 @@
+import React from 'react';
+import { cn } from '@/lib/utils';
 import Check from './check';
 import Error from './error';
 import Info from './info';
@@ -8,6 +10,7 @@ interface checkStatus {
   data: Record<string, unknown> | null;
   status: boolean;
   disabled?: boolean;
+  children: React.ReactNode;
 }
 
 const CheckRequestStatus = ({
@@ -15,30 +18,47 @@ const CheckRequestStatus = ({
   data,
   status,
   disabled,
+  children,
 }: checkStatus) => {
-  return (
-    <div
-      className=' absolute top-1 right-0 flex items-center justify-center'
-      title={
-        loading
-          ? 'carregando'
-          : data && !loading && status
-          ? 'sucesso'
-          : !status && !loading
-          ? 'erro'
-          : disabled
+  const title = loading
+    ? 'carregando'
+    : data && !loading && status
+      ? 'sucesso'
+      : !status && !loading
+        ? 'erro'
+        : disabled
           ? 'informação'
-          : undefined
-      }
-    >
-      {loading ? (
-        <Loading />
-      ) : data && !loading && status ? (
-        <Check />
-      ) : !status && !loading ? (
-        <Error />
-      ) : disabled ? (
-        <Info />
+          : undefined;
+
+  const statusIcon = loading ? (
+    <Loading />
+  ) : data && !loading && status ? (
+    <Check />
+  ) : !status && !loading ? (
+    <Error />
+  ) : disabled ? (
+    <Info />
+  ) : null;
+
+  const child = React.isValidElement<{ className?: string }>(children)
+    ? React.cloneElement(children, {
+        className: cn(
+          children.props.className,
+          statusIcon ? 'pr-10 sm:pr-11' : undefined,
+        ),
+      })
+    : children;
+
+  return (
+    <div className='relative w-full'>
+      {child}
+      {statusIcon ? (
+        <div
+          className='pointer-events-none absolute right-2.5 top-1/2 flex -translate-y-1/2 items-center justify-center'
+          title={title}
+        >
+          {statusIcon}
+        </div>
       ) : null}
     </div>
   );

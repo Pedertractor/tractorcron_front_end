@@ -6,11 +6,13 @@ export interface PropsGoldenZoneComponent {
   activitieGoldenZoneId: number | undefined;
   activitieId: number;
   setAttTable?: (props: boolean) => void;
+  buttonClassName?: string;
 }
 const GoldenZoneComponent = ({
   activitieGoldenZoneId,
   activitieId,
   setAttTable,
+  buttonClassName,
 }: PropsGoldenZoneComponent) => {
   return seedGoldenZone.map((item, index) => (
     <Button
@@ -19,6 +21,7 @@ const GoldenZoneComponent = ({
       className={`
         ${item.id === activitieGoldenZoneId ? 'opacity-100 text-white' : ' opacity-30'}
         ${item.name === 'AA' ? 'bg-green-600' : item.name === 'A' ? ' bg-blue-600' : item.name === 'B' ? 'bg-yellow-600' : item.name === 'C' ? 'bg-orange-600' : 'bg-red-600'}
+        ${buttonClassName ?? ''}
         `}
       onClick={() => {
         editGoldenZone(activitieId, item.id, setAttTable);

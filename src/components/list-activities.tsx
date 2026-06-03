@@ -19,28 +19,29 @@ export interface PropsListActivities {
   ) => void;
 }
 
+const sortActivities = (activities: RegisterPresetActivities[]) =>
+  [...activities].sort((a, b) => {
+    if (a.classification === 'VAA' && b.classification !== 'VAA') return -1;
+    if (a.classification !== 'VAA' && b.classification === 'VAA') return 1;
+    return a.id - b.id;
+  });
+
 const ListActivities = ({
   setAttTable,
   activities,
   handleAddActivitie,
 }: PropsListActivities) => {
   const [open, setOpen] = useState(false);
+  const sortedActivities = sortActivities(activities);
 
   if (handleAddActivitie && setAttTable)
     return (
-      <Card className='grid grid-cols-4 w-full gap-5 overflow-y-auto max-h-[280px] min-h-[280px]'>
-        {activities
-          .sort((a, b) => {
-            if (a.classification === 'VAA' && b.classification !== 'VAA')
-              return -1;
-            if (a.classification !== 'VAA' && b.classification === 'VAA')
-              return 1;
-            return a.id - b.id;
-          })
-          .map((item, index) => (
+      <>
+        <Card className='hidden w-full grid-cols-4 gap-5 overflow-y-auto max-h-[280px] min-h-[280px] md:grid'>
+          {sortedActivities.map((item, index) => (
             <Button
               size={'full'}
-              className=' relative '
+              className='relative'
               key={`${item.id}-${index}`}
               onClick={() => {
                 handleAddActivitie(item.name, item.id, setAttTable);
@@ -51,34 +52,44 @@ const ListActivities = ({
                 : item.name}
             </Button>
           ))}
-      </Card>
+        </Card>
+
+        <Card className='grid w-full grid-cols-2 gap-3 overflow-y-auto max-h-[10.5rem] min-h-[10.5rem] md:hidden'>
+          {sortedActivities.map((item, index) => (
+            <Button
+              size={'full'}
+              className='relative text-xs'
+              key={`mobile-${item.id}-${index}`}
+              onClick={() => {
+                handleAddActivitie(item.name, item.id, setAttTable);
+              }}
+            >
+              {item.name.length >= 22
+                ? `${item.name.slice(0, 22)}...`
+                : item.name}
+            </Button>
+          ))}
+        </Card>
+      </>
     );
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className=' w-fit text-start flex items-center gap-1 underline  rounded-md py-2 px-5'>
+      <CollapsibleTrigger className='flex w-fit items-center gap-1 rounded-md px-5 py-2 text-start underline'>
         Atividades
         {open ? <ChevronUpIcon size={20} /> : <ChevronDownIcon size={20} />}
       </CollapsibleTrigger>
-      <CollapsibleContent className=' py-1 grid grid-cols-4 w-full gap-5 overflow-y-auto max-h-[220px]'>
-        {activities
-          .sort((a, b) => {
-            if (a.classification === 'VAA' && b.classification !== 'VAA')
-              return -1;
-            if (a.classification !== 'VAA' && b.classification === 'VAA')
-              return 1;
-            return a.id - b.id;
-          })
-          .map((item, index) => (
-            <div
-              className=' relative border rounded-md w-full text-center border-border p-2'
-              key={`${item.id}-${index}`}
-            >
-              {item.name.length >= 30
-                ? `${item.name.slice(0, 30)}...`
-                : item.name}
-            </div>
-          ))}
+      <CollapsibleContent className='grid w-full grid-cols-4 gap-5 overflow-y-auto py-1 max-h-[220px]'>
+        {sortedActivities.map((item, index) => (
+          <div
+            className='relative w-full rounded-md border border-border p-2 text-center'
+            key={`${item.id}-${index}`}
+          >
+            {item.name.length >= 30
+              ? `${item.name.slice(0, 30)}...`
+              : item.name}
+          </div>
+        ))}
       </CollapsibleContent>
     </Collapsible>
   );

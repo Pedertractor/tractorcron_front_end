@@ -73,6 +73,7 @@ const ModalEditChronoanalysis = ({
     watch,
     setValue,
     reset,
+    control,
     formState: { errors, isValid },
   } = useForm<TypeEditInformations>({
     resolver: zodResolver(editInformationsSchema),
@@ -294,13 +295,14 @@ const ModalEditChronoanalysis = ({
                     data={sectorData}
                     status={isStatusSector}
                     loading={isLoadingSector}
-                  />
-                  <Input
-                    {...register('sectorCostCenter')}
-                    maxLength={4}
-                    inputMode='numeric'
-                    placeholder='ex: 7051'
-                  />
+                  >
+                    <Input
+                      {...register('sectorCostCenter')}
+                      maxLength={4}
+                      inputMode='numeric'
+                      placeholder='ex: 7051'
+                    />
+                  </CheckRequestStatus>
                   {errors.sectorCostCenter && (
                     <span className='text-red-500 text-sm absolute left-0 bottom-0 '>
                       {errors.sectorCostCenter.message}
@@ -326,12 +328,13 @@ const ModalEditChronoanalysis = ({
                       data={partData}
                       status={isStatusPart}
                       loading={isLoadingPart}
-                    />
-                    <Input
-                      {...register('internalCode')}
-                      maxLength={10}
-                      inputMode='numeric'
-                    />
+                    >
+                      <Input
+                        {...register('internalCode')}
+                        maxLength={10}
+                        inputMode='numeric'
+                      />
+                    </CheckRequestStatus>
                     {errors.internalCode && (
                       <span className='text-red-500 text-sm'>
                         {errors.internalCode.message}
@@ -366,8 +369,9 @@ const ModalEditChronoanalysis = ({
                       data={ofData}
                       status={isStatusOf}
                       loading={isLoadingOf}
-                    />
-                    <Input {...register('of')} />
+                    >
+                      <Input {...register('of')} />
+                    </CheckRequestStatus>
                     {errors.of && (
                       <span className='text-red-500 text-sm'>
                         {errors.of.message}
@@ -414,9 +418,9 @@ const ModalEditChronoanalysis = ({
                   </Label>
                   <Label title='Cliente'>
                     <Select
+                      name='clientId'
+                      control={control}
                       listOptions={clients}
-                      disabled={false}
-                      {...register('clientId')}
                     />
                     {errors.clientId && (
                       <span className='text-red-500 text-sm'>
@@ -564,15 +568,14 @@ const ModalEditChronoanalysis = ({
                 finalizar
               </Button>
             </div>
-            {openModal && (
-              <Modal
-                title='Enviar informações'
-                description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
-                setOpenModal={setOpenModal}
-                isLoading={isLoading}
-                setConfirmModal={() => {}}
-              />
-            )}
+            <Modal
+              open={openModal}
+              title='Enviar informações'
+              description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
+              setOpenModal={setOpenModal}
+              isLoading={isLoading}
+              setConfirmModal={() => handleSubmit(handleSubmitInformations)()}
+            />
           </form>
         </DialogContent>
       </Dialog>

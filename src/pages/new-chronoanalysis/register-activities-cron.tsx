@@ -8,6 +8,7 @@ import {
 } from '../../db/db-functions';
 import type { RegisterActivities, RegisterPresetActivities } from '../../db/db';
 import TableActivities from '../../components/table-activities';
+import TableActivitiesMobile from '../../components/table-activities-mobile';
 import ListActivities from '../../components/list-activities';
 import { listPresetActivities } from '../../db/db-functions-preset-activities';
 
@@ -59,12 +60,14 @@ const RegisterActivitiesCronPage = () => {
     getLocalActivities();
   }, [attTable]);
 
-  return (
-    <section className=''>
-      <nav className=' flex items-center justify-between'>
-        <Text variant={'title'}>Cronoanálise</Text>
+  const hasActivities = allActivities.length > 0;
 
-        <div className=' flex items-center gap-5'>
+  return (
+    <section className='flex min-h-[calc(100dvh-4.5rem)] flex-col gap-4 md:min-h-0 md:block md:gap-0'>
+      {/* Desktop header */}
+      <nav className='hidden items-center justify-between md:flex'>
+        <Text variant={'title'}>Cronoanálise</Text>
+        <div className='flex items-center gap-5'>
           <LabelActivitieInfo text='Identificação' textInfo={idRegister} />
           <LabelActivitieInfo
             svg={PlayIconComponent}
@@ -76,12 +79,40 @@ const RegisterActivitiesCronPage = () => {
         </div>
       </nav>
 
-      <div className=' my-5'>
-        <TableActivities
-          allActivities={allActivities}
-          setAttTable={setAttTable}
-          authFunc={true}
-        />
+      {/* Mobile header */}
+      <div className='grid grid-cols-2 gap-2 md:hidden'>
+        <div className='flex flex-col gap-1'>
+          <Text variant='text-label'>Identificação</Text>
+          <span className='truncate rounded-lg border border-border px-2 py-1.5'>
+            <Text variant='little-text'>{idRegister}</Text>
+          </span>
+        </div>
+        <div className='flex flex-col gap-1'>
+          <Text variant='text-label'>Horário</Text>
+          <span className='truncate rounded-lg border border-border px-2 py-1.5'>
+            <Text variant='little-text'>
+              {startTime
+                ? `${new Date(startTime).toLocaleDateString()} - ${new Date(startTime).toLocaleTimeString()}`
+                : '-'}
+            </Text>
+          </span>
+        </div>
+      </div>
+
+      <div className='md:my-5'>
+        <div className='hidden md:block'>
+          <TableActivities
+            allActivities={allActivities}
+            setAttTable={setAttTable}
+            authFunc={true}
+          />
+        </div>
+        <div className='md:hidden'>
+          <TableActivitiesMobile
+            allActivities={allActivities}
+            setAttTable={setAttTable}
+          />
+        </div>
       </div>
 
       <ListActivities
@@ -89,12 +120,14 @@ const RegisterActivitiesCronPage = () => {
         activities={pinedActivities}
         handleAddActivitie={handleAddActivitie}
       />
-      <div className=' w-full flex items-center justify-end mt-5 gap-5'>
+
+      {/* Desktop actions */}
+      <div className='mt-5 hidden items-center justify-end gap-5 md:flex'>
         <Button
           size={'md'}
           svg={IconPauseComponent}
-          disabled={allActivities.length <= 0 ? true : false}
-          variant={allActivities.length <= 0 ? 'default' : 'orange'}
+          disabled={!hasActivities}
+          variant={!hasActivities ? 'default' : 'orange'}
           onClick={() => handleStopActivitie(setAttTable)}
         >
           pausar
@@ -102,8 +135,8 @@ const RegisterActivitiesCronPage = () => {
         <Button
           size={'md'}
           svg={IconCheckComponent}
-          disabled={allActivities.length <= 0 ? true : false}
-          variant={allActivities.length <= 0 ? 'default' : 'green'}
+          disabled={!hasActivities}
+          variant={!hasActivities ? 'default' : 'green'}
           onClick={() => {
             handleStopActivitie();
             navigate('/cronoanalise/revisao');
@@ -111,6 +144,29 @@ const RegisterActivitiesCronPage = () => {
         >
           finalizar
         </Button>
+      </div>
+
+      {/* Mobile actions */}
+      <div className='mt-auto flex items-center justify-end gap-3 pb-3 pt-5 md:hidden'>
+        <Button
+          size={'mobile'}
+          svg={IconPauseComponent}
+          disabled={!hasActivities}
+          variant={!hasActivities ? 'default' : 'orange'}
+          onClick={() => handleStopActivitie(setAttTable)}
+          aria-label='Pausar cronoanálise'
+        />
+        <Button
+          size={'mobile'}
+          svg={IconCheckComponent}
+          disabled={!hasActivities}
+          variant={!hasActivities ? 'default' : 'green'}
+          onClick={() => {
+            handleStopActivitie();
+            navigate('/cronoanalise/revisao');
+          }}
+          aria-label='Finalizar cronoanálise'
+        />
       </div>
     </section>
   );

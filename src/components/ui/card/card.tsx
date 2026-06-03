@@ -12,12 +12,12 @@ const Card = ({ text, children, className }: PropsCard) => {
   return (
     <section
       className={cn(
-        'flex w-full flex-col gap-3 rounded-lg border border-border p-3',
+        'flex w-full flex-col gap-2 rounded-lg border border-border p-2.5 sm:gap-3 sm:p-3',
         className,
       )}
     >
       {text && (
-        <Text variant={'sub-title'} as={'h2'} className=' '>
+        <Text variant={'sub-title'} as={'h2'} className='leading-snug'>
           {text}
         </Text>
       )}

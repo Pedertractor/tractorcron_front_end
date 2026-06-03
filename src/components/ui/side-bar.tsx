@@ -15,7 +15,20 @@ import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
+
+function SidebarNavigationCloser() {
+  const { pathname } = useLocation();
+  const { setOpen, setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    setOpenMobile(false);
+    setOpen(false);
+  }, [pathname, setOpen, setOpenMobile]);
+
+  return null;
+}
 
 const SideBar = () => {
   const path = useLocation();
@@ -30,7 +43,8 @@ const SideBar = () => {
   }, [path.pathname]);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
+      <SidebarNavigationCloser />
       <AppSidebar />
       <SidebarInset>
         <header className='flex h-16 shrink-0 items-center gap-2 border-b border-border bg-white px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
@@ -66,7 +80,7 @@ const SideBar = () => {
             </Breadcrumb>
           </div>
         </header>
-        <div className='flex flex-1 flex-col px-4 py-4'>
+        <div className='flex flex-1 flex-col px-2 py-3 sm:px-4 sm:py-4'>
           <Outlet />
         </div>
       </SidebarInset>

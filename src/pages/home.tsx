@@ -26,6 +26,8 @@ import {
 import Text from '@/components/ui/text';
 import type { listChronoanalistProps } from '@/types/user-types';
 import { ReportProps } from '@/types/report-types';
+import { CHRONOANALYSIS_TYPE_OPTIONS } from '@/constants/chronoanalysis-types';
+import type { ChronoanalysisTypeValue } from '@/constants/chronoanalysis-types';
 import { Cog, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
@@ -41,6 +43,8 @@ const HomePage = () => {
     listChronoanalistProps[]
   >([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedChronoanalysisType, setSelectedChronoanalysisType] =
+    useState<ChronoanalysisTypeValue | null>(null);
 
   const [dashBoardData, setDashBoardData] = useState<null | ReportProps>(null);
   const [movementChartsData, setMovementChartsData] =
@@ -72,11 +76,13 @@ const HomePage = () => {
             dateRange.from!,
             dateRange.to!,
             selectedUserId,
+            selectedChronoanalysisType,
           ),
           getActivitiesChartsForDashboard(
             dateRange.from!,
             dateRange.to!,
             selectedUserId,
+            selectedChronoanalysisType,
           ),
         ]);
 
@@ -104,7 +110,7 @@ const HomePage = () => {
     return () => {
       cancelled = true;
     };
-  }, [dateRange, dateRange?.from, dateRange?.to, selectedUserId]);
+  }, [dateRange, dateRange?.from, dateRange?.to, selectedUserId, selectedChronoanalysisType]);
 
   return (
     <section className='w-full'>
@@ -115,12 +121,36 @@ const HomePage = () => {
         <div className='flex flex-col gap-2 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-end sm:gap-2'>
           <DatePicker value={dateRange} onChange={setDateRange} homePage />
           <Select
+            value={
+              selectedChronoanalysisType === null
+                ? 'all'
+                : selectedChronoanalysisType
+            }
+            onValueChange={(v) =>
+              setSelectedChronoanalysisType(
+                v === 'all' ? null : (v as ChronoanalysisTypeValue),
+              )
+            }
+          >
+            <SelectTrigger className='h-9 w-fit min-w-[220px] max-w-[min(100vw-2rem,320px)] shrink-0 self-center sm:min-w-[240px]'>
+              <SelectValue placeholder='Tipo de cronoanálise' />
+            </SelectTrigger>
+            <SelectContent align='end' sideOffset={4}>
+              <SelectItem value='all'>Tipos de cronoanálise</SelectItem>
+              {CHRONOANALYSIS_TYPE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
             value={selectedUserId === null ? 'all' : String(selectedUserId)}
             onValueChange={(v) =>
               setSelectedUserId(v === 'all' ? null : Number(v))
             }
           >
-            <SelectTrigger className='min-w-[220px] max-w-[min(100vw-2rem,320px)] shrink-0 self-center border-border sm:min-w-[240px]'>
+            <SelectTrigger className='h-9 w-fit min-w-[220px] max-w-[min(100vw-2rem,320px)] shrink-0 self-center sm:min-w-[240px]'>
               <SelectValue placeholder='Cronoanalistas' />
             </SelectTrigger>
             <SelectContent align='end' sideOffset={4}>
