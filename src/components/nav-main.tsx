@@ -1,4 +1,4 @@
-import { BarChart3, Clock, type LucideIcon } from 'lucide-react';
+import { BarChart3, Clock, Users, type LucideIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 
 import {
@@ -22,13 +22,26 @@ export const navItems = [
     icon: BarChart3,
     rolePermition: ['ADMIN', 'CHRONOANALIST'],
   },
-] as const;
+  {
+    title: 'Usuários',
+    url: '/admin/usuarios',
+    icon: Users,
+    rolePermition: ['ADMIN'],
+  },
+] as const satisfies ReadonlyArray<{
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  rolePermition: readonly ('ADMIN' | 'CHRONOANALIST' | 'USER')[];
+}>;
 
 export function NavMain({ role }: { role: string | null }) {
   const { pathname } = useLocation();
 
   const visibleItems = navItems.filter(
-    (item) => role && item.rolePermition.includes(role as 'ADMIN' | 'CHRONOANALIST')
+    (item) =>
+      role &&
+      (item.rolePermition as readonly string[]).includes(role),
   );
 
   if (visibleItems.length === 0) {

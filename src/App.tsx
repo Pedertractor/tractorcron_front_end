@@ -7,6 +7,7 @@ import ProtectRoute from './routers/protect-route';
 import SideBar from './components/ui/side-bar';
 import Analysis from './pages/analysis';
 import MagickLinkPage from './pages/magic-link';
+import UsersAdminPage from './pages/users-admin';
 
 const App = () => {
   return (
@@ -35,6 +36,11 @@ const App = () => {
       >
         <Route element={<SideBar />}>
           <Route path='/relatorio' element={<Analysis />} />
+        </Route>
+      </Route>
+      <Route element={<ProtectRoute allowedRoles={['ADMIN']} />}>
+        <Route element={<SideBar />}>
+          <Route path='/admin/usuarios' element={<UsersAdminPage />} />
         </Route>
       </Route>
     </Routes>
