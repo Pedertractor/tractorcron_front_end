@@ -79,15 +79,13 @@ const ListActivities = ({
         Atividades
         {open ? <ChevronUpIcon size={20} /> : <ChevronDownIcon size={20} />}
       </CollapsibleTrigger>
-      <CollapsibleContent className='grid w-full grid-cols-4 gap-5 overflow-y-auto py-1 max-h-[220px]'>
+      <CollapsibleContent className='grid w-full grid-cols-2 gap-2 overflow-y-auto py-1 max-h-[16rem] md:grid-cols-4 md:gap-5 md:max-h-[220px]'>
         {sortedActivities.map((item, index) => (
           <div
-            className='relative w-full rounded-md border border-border p-2 text-center'
+            className='relative flex min-h-[2.75rem] w-full items-center justify-center rounded-md border border-border p-2 text-center text-xs leading-snug break-words md:min-h-0 md:text-sm'
             key={`${item.id}-${index}`}
           >
-            {item.name.length >= 30
-              ? `${item.name.slice(0, 30)}...`
-              : item.name}
+            <span className='line-clamp-2'>{item.name}</span>
           </div>
         ))}
       </CollapsibleContent>
