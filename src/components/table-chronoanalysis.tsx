@@ -17,6 +17,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination';
+import { getPaginationRange } from '@/lib/pagination';
 import {
   changeSendStatus,
   type ChronoanalysisListItem,
@@ -232,7 +233,7 @@ const TableChronoanalysis = ({
           </Table>
           {currentPage && handlePageChange && totalPages ? (
             <div
-              className={`mt-3 px-2 flex items-center justify-center ${
+              className={`mt-3 px-2 flex flex-wrap items-center justify-center gap-2 max-w-full ${
                 loading ? 'pointer-events-none opacity-50' : ''
               }`}
             >
@@ -256,27 +257,25 @@ const TableChronoanalysis = ({
                     />
                   </PaginationItem>
 
-                  {Array.from(
-                    { length: totalPages > 10 ? totalPages / 2 : totalPages },
-                    (_, i) => i + 1,
-                  ).map((page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        href='#'
-                        isActive={page === currentPage}
-                        onClick={() => {
-                          handlePageChange(page);
-                        }}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-
-                  {totalPages > 10 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
+                  {getPaginationRange(currentPage, totalPages).map(
+                    (item, index) =>
+                      item === 'ellipsis' ? (
+                        <PaginationItem key={`ellipsis-${index}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      ) : (
+                        <PaginationItem key={item}>
+                          <PaginationLink
+                            href='#'
+                            isActive={item === currentPage}
+                            onClick={() => {
+                              handlePageChange(item);
+                            }}
+                          >
+                            {item}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ),
                   )}
 
                   <PaginationItem>
