@@ -10,7 +10,6 @@ import {
 } from '../../zod/schema-chronoanalysis';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  dbRegisterChronoanalysis,
   type RegisterPresetActivities,
 } from '../../db/db';
 import Select from '../../components/ui/select-native';
@@ -20,6 +19,11 @@ import ListActivities from '../../components/list-activities';
 import { changePresetActivities } from '../../db/db-functions-preset-activities';
 import { seedActivities } from '../../seed/seed-activities';
 import { verifyUuidRegister } from '@/api/chronoanalysis-api';
+import {
+  clearLocalChronoanalysisDb,
+  initChronoanalysisSession,
+} from '../../db/db-functions';
+import { toast } from 'sonner';
 import Button from '@/components/ui/button/button';
 import Label from '@/components/ui/label/label';
 import { useParts } from '@/hooks/use-parts';
@@ -172,17 +176,19 @@ const RegisterInitialInformationsPage = () => {
     data: TypeInitialInformationsData,
   ) => {
     let uuIdRegisterChronoanalysis = uuidv4();
+    let verifyResult = await verifyUuidRegister(uuIdRegisterChronoanalysis);
 
-    let isUuidValid = await verifyUuidRegister(uuIdRegisterChronoanalysis);
-
-    while (!isUuidValid) {
+    while (verifyResult.result === 'taken') {
       uuIdRegisterChronoanalysis = uuidv4();
-      isUuidValid = await verifyUuidRegister(uuIdRegisterChronoanalysis);
+      verifyResult = await verifyUuidRegister(uuIdRegisterChronoanalysis);
     }
 
-    localStorage.setItem('idRegister', uuIdRegisterChronoanalysis);
+    if (verifyResult.result === 'error') {
+      toast.error(verifyResult.message);
+      return;
+    }
 
-    const testInitialInformations = {
+    const registerData = {
       id: uuIdRegisterChronoanalysis,
       employees: employeeList,
       howManyParts: numberOfParts,
@@ -203,12 +209,26 @@ const RegisterInitialInformationsPage = () => {
       numberKaizen: data.numberKaizen,
     };
 
-    await dbRegisterChronoanalysis.register.add(testInitialInformations);
-
-    navigate('/cronoanalise/atividades', {
-      replace: true,
-    });
+    try {
+      await initChronoanalysisSession(registerData);
+      navigate('/cronoanalise/atividades', {
+        replace: true,
+      });
+    } catch {
+      toast.error('Erro ao salvar rascunho localmente.');
+    }
   };
+
+  async function handleCancel() {
+    if (
+      !window.confirm('Deseja cancelar? O rascunho será descartado.')
+    ) {
+      return;
+    }
+
+    await clearLocalChronoanalysisDb();
+    navigate('/');
+  }
 
   return (
     <section className=''>
@@ -560,7 +580,7 @@ const RegisterInitialInformationsPage = () => {
               <ListActivities activities={pinedActivities} />
             </Card>
             <div className='flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 w-full sm:justify-end items-stretch sm:items-center mt-5'>
-              <Button variant={'red'} size={'md'} type='button' className='w-full sm:w-[140px]'>
+              <Button variant={'red'} size={'md'} type='button' className='w-full sm:w-[140px]' onClick={handleCancel}>
                 cancelar
               </Button>
               <Button

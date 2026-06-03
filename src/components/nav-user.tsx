@@ -17,6 +17,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { clearLocalChronoanalysisDb } from '@/db/db-functions';
 
 const avatarBgClasses = [
   'bg-background-default-active text-initial',
@@ -31,13 +32,12 @@ function getAvatarClass(name: string) {
   return avatarBgClasses[index];
 }
 
-function logout(navigate: ReturnType<typeof useNavigate>) {
+async function logout(navigate: ReturnType<typeof useNavigate>) {
+  await clearLocalChronoanalysisDb();
   localStorage.removeItem('email');
   localStorage.removeItem('name');
   localStorage.removeItem('role');
   localStorage.removeItem('token');
-  localStorage.removeItem('startTime');
-  localStorage.removeItem('endTime');
   navigate('/login');
 }
 
@@ -109,7 +109,7 @@ export function NavUser({
             </DropdownMenuItem>
             <DropdownMenuItem
               className='gap-2'
-              onClick={() => logout(navigate)}
+              onClick={() => void logout(navigate)}
             >
               <LogOut className='size-4' />
               sair

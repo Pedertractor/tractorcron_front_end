@@ -11,6 +11,7 @@ import TableActivities from '../../components/table-activities';
 import TableActivitiesMobile from '../../components/table-activities-mobile';
 import ListActivities from '../../components/list-activities';
 import { listPresetActivities } from '../../db/db-functions-preset-activities';
+import { useChronoanalysisSessionGuard } from '@/hooks/use-chronoanalysis-session-guard';
 
 import IconCheckComponent from '../../assets/icons/check-icon.svg?react';
 import IconPauseComponent from '../../assets/icons/stoped-icon.svg?react';
@@ -19,6 +20,8 @@ import LabelActivitieInfo from '../../components/label-activities-info';
 import Button from '@/components/ui/button/button';
 
 const RegisterActivitiesCronPage = () => {
+  const { isValidating, isValid: isSessionValid } =
+    useChronoanalysisSessionGuard();
   const [idRegister] = useState<string | null>(() =>
     localStorage.getItem('idRegister'),
   );
@@ -60,7 +63,16 @@ const RegisterActivitiesCronPage = () => {
     getLocalActivities();
   }, [attTable]);
 
+  const handleFinish = async () => {
+    await handleStopActivitie();
+    navigate('/cronoanalise/revisao');
+  };
+
   const hasActivities = allActivities.length > 0;
+
+  if (isValidating || !isSessionValid) {
+    return null;
+  }
 
   return (
     <section className='flex min-h-[calc(100dvh-4.5rem)] flex-col gap-4 md:min-h-0 md:block md:gap-0'>
@@ -137,10 +149,7 @@ const RegisterActivitiesCronPage = () => {
           svg={IconCheckComponent}
           disabled={!hasActivities}
           variant={!hasActivities ? 'default' : 'green'}
-          onClick={() => {
-            handleStopActivitie();
-            navigate('/cronoanalise/revisao');
-          }}
+          onClick={() => handleFinish()}
         >
           finalizar
         </Button>
@@ -161,10 +170,7 @@ const RegisterActivitiesCronPage = () => {
           svg={IconCheckComponent}
           disabled={!hasActivities}
           variant={!hasActivities ? 'default' : 'green'}
-          onClick={() => {
-            handleStopActivitie();
-            navigate('/cronoanalise/revisao');
-          }}
+          onClick={() => handleFinish()}
           aria-label='Finalizar cronoanálise'
         />
       </div>

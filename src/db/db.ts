@@ -52,3 +52,9 @@ dbRegisterChronoanalysis.version(1).stores({
   activities: '++id, registerId, activitiesId',
   presetActivities: '++id',
 });
+
+dbRegisterChronoanalysis.version(2).stores({
+  register: 'id',
+  activities: '++id, registerId, activitieId',
+  presetActivities: '++id',
+});

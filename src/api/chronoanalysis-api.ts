@@ -314,47 +314,75 @@ export async function listChronoanalysis(
   }
 }
 
+export type VerifyUuidResult =
+  | { result: 'available' }
+  | { result: 'taken' }
+  | { result: 'error'; message: string };
+
 export async function registerNewChronoanalysis(finalData: PropsFinalData) {
   const token = localStorage.getItem('token');
 
-  const response = await fetch(`${url}/chronoanalysis/create`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(finalData),
-  });
-  const data = await response.json();
+  try {
+    const response = await fetch(`${url}/chronoanalysis/create`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(finalData),
+    });
+    const data = await response.json();
 
-  if (response.status !== 201) {
+    if (response.status !== 201) {
+      return {
+        status: false as const,
+        error: data.message ?? 'Erro ao criar cronoanálise',
+        message: null,
+      };
+    }
+
     return {
-      staus: false,
-      error: data.message,
+      status: true as const,
+      error: null,
+      message: data.message,
+    };
+  } catch {
+    return {
+      status: false as const,
+      error: 'Erro de conexão ao enviar cronoanálise',
       message: null,
     };
   }
-
-  return {
-    status: true,
-    error: null,
-    message: data.message,
-  };
 }
 
-export async function verifyUuidRegister(uuid: string) {
+export async function verifyUuidRegister(
+  uuid: string
+): Promise<VerifyUuidResult> {
   const token = localStorage.getItem('token');
 
-  const response = await fetch(`${url}/chronoanalysis/verifyuuid/${uuid}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const response = await fetch(`${url}/chronoanalysis/verifyuuid/${uuid}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  if (response.status === 200) return true;
+    if (response.status === 200) return { result: 'available' };
+    if (response.status === 400) return { result: 'taken' };
 
-  return false;
+    const data = await response.json().catch(() => ({}));
+    return {
+      result: 'error',
+      message:
+        data.error ?? data.message ?? 'Erro ao verificar identificação',
+    };
+  } catch {
+    return {
+      result: 'error',
+      message: 'Erro de conexão ao verificar identificação',
+    };
+  }
 }
 
 export async function changeSendStatus(idChronoanalysis: string) {

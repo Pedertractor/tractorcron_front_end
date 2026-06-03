@@ -1,4 +1,60 @@
-import { dbRegisterChronoanalysis } from './db';
+import {
+  dbRegisterChronoanalysis,
+  type RegisterChronoanalysis,
+} from './db';
+
+export function clearChronoanalysisSessionStorage() {
+  localStorage.removeItem('idRegister');
+  localStorage.removeItem('startTime');
+  localStorage.removeItem('endTime');
+}
+
+export async function validateChronoanalysisSession(): Promise<boolean> {
+  const registerId = localStorage.getItem('idRegister');
+  if (!registerId) return false;
+
+  const register = await dbRegisterChronoanalysis.register.get(registerId);
+  return !!register;
+}
+
+export async function initChronoanalysisSession(
+  registerData: RegisterChronoanalysis
+) {
+  await dbRegisterChronoanalysis.transaction(
+    'rw',
+    dbRegisterChronoanalysis.register,
+    dbRegisterChronoanalysis.activities,
+    async () => {
+      await dbRegisterChronoanalysis.register.clear();
+      await dbRegisterChronoanalysis.activities.clear();
+    }
+  );
+
+  clearChronoanalysisSessionStorage();
+  localStorage.setItem('idRegister', registerData.id);
+  localStorage.setItem('startTime', '0');
+
+  await dbRegisterChronoanalysis.register.add(registerData);
+}
+
+async function syncStartTimeFromActivities(registerId: string) {
+  const activities = await dbRegisterChronoanalysis.activities
+    .where('registerId')
+    .equals(registerId)
+    .toArray();
+
+  if (activities.length < 1) {
+    localStorage.setItem('startTime', '0');
+    return;
+  }
+
+  if (activities.length === 1) {
+    localStorage.setItem(
+      'startTime',
+      new Date(activities[0].startTime).toISOString()
+    );
+  }
+}
 
 export async function listActivities() {
   const registerId = localStorage.getItem('idRegister');
@@ -8,25 +64,12 @@ export async function listActivities() {
     return;
   }
 
-  if (registerId) {
-    const activities = await dbRegisterChronoanalysis.activities
-      .where('registerId')
-      .equals(registerId)
-      .toArray();
+  const activities = await dbRegisterChronoanalysis.activities
+    .where('registerId')
+    .equals(registerId)
+    .toArray();
 
-    if (activities.length < 1) {
-      localStorage.setItem('startTime', '0');
-    }
-
-    if (activities.length === 1) {
-      localStorage.setItem(
-        'startTime',
-        new Date(activities[0].startTime).toISOString()
-      );
-    }
-
-    return activities.reverse();
-  }
+  return activities.reverse();
 }
 
 export async function localizeLastActivities() {
@@ -40,7 +83,7 @@ export async function localizeLastActivities() {
   const lastActivity = await dbRegisterChronoanalysis.activities
     .where('registerId')
     .equals(registerId)
-    .last(); // pega o último item com base na ordem de inserção (se id for autoincremental)
+    .last();
 
   if (lastActivity && !lastActivity.endTime) {
     return {
@@ -57,7 +100,6 @@ export async function localizeLastActivities() {
   };
 }
 
-//this function working add activies and reset view table activities
 export async function handleAddActivitie(
   name: string,
   activitieId: number,
@@ -83,11 +125,11 @@ export async function handleAddActivitie(
     startTime: localize.now,
   });
 
-  //this state controll re-render table of activities
+  await syncStartTimeFromActivities(localize.registerId);
+
   if (statusAddNewActivitie) attTable(true);
 }
 
-//this function stop study time and timer for activities
 export async function handleStopActivitie(attTable?: (props: boolean) => void) {
   const localize = await localizeLastActivities();
 
@@ -101,12 +143,10 @@ export async function handleStopActivitie(attTable?: (props: boolean) => void) {
       }
     );
 
-    //this state controll re-render table of activities
     if (attTable) attTable(true);
   }
 }
 
-//this function i can use for send all informations chronoanalysis
 export async function handleGetRegister() {
   const registerId = localStorage.getItem('idRegister');
   if (!registerId) return;
@@ -130,7 +170,6 @@ export async function editIdChronoanalysis(oldId: string, newId: string) {
   return false;
 }
 
-//this function change the goldenzone
 export async function editGoldenZone(
   id: number,
   idGoldenZone: number,
@@ -140,11 +179,9 @@ export async function editGoldenZone(
     goldenZoneId: idGoldenZone,
   });
 
-  //this state controll re-render table of activities
   if (updated && attTable) attTable(true);
 }
 
-//this function edit the strikezone
 export async function editStrikeZone(
   id: number,
   idStrikeZone: number,
@@ -156,12 +193,17 @@ export async function editStrikeZone(
   if (updated && attTable) attTable(true);
 }
 
-//this function delete activitie
 export async function deleteActivitie(
   id: number,
   attTable?: (props: boolean) => void
 ) {
+  const registerId = localStorage.getItem('idRegister');
   await dbRegisterChronoanalysis.activities.delete(id);
+
+  if (registerId) {
+    await syncStartTimeFromActivities(registerId);
+  }
+
   if (attTable) attTable(true);
 }
 
@@ -170,11 +212,12 @@ export async function clearLocalChronoanalysisDb() {
     'rw',
     dbRegisterChronoanalysis.register,
     dbRegisterChronoanalysis.activities,
-    // dbRegisterChronoanalysis.presetActivities,
+    dbRegisterChronoanalysis.presetActivities,
     async () => {
       await dbRegisterChronoanalysis.register.clear();
       await dbRegisterChronoanalysis.activities.clear();
-      // await dbRegisterChronoanalysis.presetActivities.clear();
+      await dbRegisterChronoanalysis.presetActivities.clear();
     }
   );
+  clearChronoanalysisSessionStorage();
 }

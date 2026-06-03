@@ -32,6 +32,7 @@ import type { PropsActivities } from '../../types/activities-types';
 import { registerNewChronoanalysis } from '../../api/chronoanalysis-api';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router';
+import { useChronoanalysisSessionGuard } from '@/hooks/use-chronoanalysis-session-guard';
 import Label from '@/components/ui/label/label';
 import Button from '@/components/ui/button/button';
 import { useParts } from '@/hooks/use-parts';
@@ -44,6 +45,8 @@ import AddChronoanalysisEmployee, {
 import CounterParts from '@/components/counter-parts';
 
 const RegisterFinishInformationsPage = () => {
+  const { isValidating, isValid: isSessionValid } =
+    useChronoanalysisSessionGuard();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [attTable, setAttTable] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -175,77 +178,104 @@ const RegisterFinishInformationsPage = () => {
 
   async function handleSubmitInformations(data: TypeInitialInformationsData) {
     setIsLoading(true);
-    if (startTime && endTime && workPaceAssessment) {
-      const { typeOfChronoanalysis, ...rest } = data;
-      const chronoanalysis: PropsChronoanalysis = {
-        ...rest,
-        chronoanalysisType: mapTypeOfChronoanalysisToDb(typeOfChronoanalysis),
-        clientId: +data.clientId,
-        employees: employeeList,
-        howManyParts: numberOfParts,
-        enhancement: data.enhancement,
-        sectorId: data.sectorId ? +data.sectorId : undefined,
-        sop: data.sop ? true : false,
-        startTime,
-        endTime,
-      };
 
-      const activities: PropsActivities[] = finalRegisterActivities
-        .map((activitie) => {
-          if (activitie.goldenZoneId && activitie.strikeZoneId)
-            return {
-              registerId: activitie.registerId,
-              activitieId: activitie.activitieId,
-              goldenZoneId: activitie.goldenZoneId,
-              strikeZoneId: activitie.strikeZoneId,
-              startTime: activitie.startTime,
-              endTime: activitie.endTime,
-            };
-          return undefined;
-        })
-        .filter((a): a is PropsActivities => a !== undefined);
-
-      const finalData = {
-        chronoanalysis,
-        activities,
-        workPaceAssessment,
-      };
-
-      const isOnline = navigator.onLine;
-
-      if (!isOnline) {
-        setIsLoading(false);
-        return toast.warning(
-          'Sem conexão com a internet, porfavor verifique antes de enviar.'
-        );
-      }
-
-      const { status, error, message } = await registerNewChronoanalysis(
-        finalData
+    if (!startTime || !endTime || !workPaceAssessment) {
+      setIsLoading(false);
+      toast.error(
+        'Dados incompletos. Verifique horários de início/fim e avaliação de ritmo.'
       );
-
-      if (!status) {
-        setIsLoading(false);
-        toast.error(error);
-      }
-
-      if (status) {
-        try {
-          await clearLocalChronoanalysisDb();
-          localStorage.removeItem('idRegister');
-          localStorage.removeItem('endTime');
-          localStorage.removeItem('startTime');
-
-          setIsLoading(false);
-          setOpenModal(false);
-          toast.success(message);
-          navigate('/');
-        } catch (error) {
-          setIsLoading(false);
-          toast.error(`Erro ao limpar banco local! ${error}`);
-        }
-      }
+      return;
     }
+
+    const incompleteActivities = finalRegisterActivities.filter(
+      (activitie) =>
+        !activitie.goldenZoneId ||
+        !activitie.strikeZoneId ||
+        !activitie.endTime
+    );
+
+    if (incompleteActivities.length > 0) {
+      setIsLoading(false);
+      toast.error(
+        `${incompleteActivities.length} atividade(s) incompleta(s). Preencha zonas dourada e de golpe e finalize todas antes de enviar.`
+      );
+      return;
+    }
+
+    const { typeOfChronoanalysis, ...rest } = data;
+    const chronoanalysis: PropsChronoanalysis = {
+      ...rest,
+      chronoanalysisType: mapTypeOfChronoanalysisToDb(typeOfChronoanalysis),
+      clientId: +data.clientId,
+      employees: employeeList,
+      howManyParts: numberOfParts,
+      enhancement: data.enhancement,
+      sectorId: data.sectorId ? +data.sectorId : undefined,
+      sop: data.sop ? true : false,
+      startTime,
+      endTime,
+    };
+
+    const activities: PropsActivities[] = finalRegisterActivities.map(
+      (activitie) => ({
+        registerId: activitie.registerId,
+        activitieId: activitie.activitieId,
+        goldenZoneId: activitie.goldenZoneId!,
+        strikeZoneId: activitie.strikeZoneId!,
+        startTime: activitie.startTime,
+        endTime: activitie.endTime!,
+      })
+    );
+
+    const finalData = {
+      chronoanalysis,
+      activities,
+      workPaceAssessment,
+    };
+
+    if (!navigator.onLine) {
+      setIsLoading(false);
+      toast.warning(
+        'Sem conexão com a internet, porfavor verifique antes de enviar.'
+      );
+      return;
+    }
+
+    const { status, error, message } = await registerNewChronoanalysis(
+      finalData
+    );
+
+    if (!status) {
+      setIsLoading(false);
+      toast.error(error);
+      return;
+    }
+
+    try {
+      await clearLocalChronoanalysisDb();
+      setIsLoading(false);
+      setOpenModal(false);
+      toast.success(message);
+      navigate('/');
+    } catch (error) {
+      setIsLoading(false);
+      toast.error(`Erro ao limpar banco local! ${error}`);
+    }
+  }
+
+  async function handleCancel() {
+    if (
+      !window.confirm('Deseja cancelar? O rascunho será descartado.')
+    ) {
+      return;
+    }
+
+    await clearLocalChronoanalysisDb();
+    navigate('/');
+  }
+
+  if (isValidating || !isSessionValid) {
+    return null;
   }
 
   return (
@@ -576,6 +606,7 @@ const RegisterFinishInformationsPage = () => {
             size={'md'}
             type='button'
             className='w-full text-sm sm:w-[140px] sm:text-base'
+            onClick={handleCancel}
           >
             cancelar
           </Button>
