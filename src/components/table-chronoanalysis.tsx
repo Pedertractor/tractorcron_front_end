@@ -22,13 +22,26 @@ import {
   changeSendStatus,
   type ChronoanalysisListItem,
 } from '@/api/chronoanalysis-api';
+import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import {
+  getChronoanalysisTypeLabel,
+  type ChronoanalysisTypeValue,
+} from '@/constants/chronoanalysis-types';
 import {
   Copy,
   CopyCheck,
   Edit,
   EyeIcon,
   LoaderCircle,
+  MoreVertical,
   Trash2,
   Users,
 } from 'lucide-react';
@@ -36,6 +49,80 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 
 const url = import.meta.env.VITE_URL_FRONT_END_URL;
+
+interface ChronoanalysisRowActionsProps {
+  itemId: string;
+  role: string | null;
+  copied: string;
+  onOpenDetail: (id: string) => void;
+  onOpenEdit: (id: string) => void;
+  onOpenDelete: (id: string) => void;
+  onCopy: (id: string) => void;
+}
+
+function ChronoanalysisRowActions({
+  itemId,
+  role,
+  copied,
+  onOpenDetail,
+  onOpenEdit,
+  onOpenDelete,
+  onCopy,
+}: ChronoanalysisRowActionsProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  function runAfterMenuClose(action: () => void) {
+    setMenuOpen(false);
+    window.setTimeout(action, 0);
+  }
+
+  return (
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant='ghost' size='icon-sm'>
+          <span className='sr-only'>Abrir menu de ações</span>
+          <MoreVertical />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align='end'
+        className='min-w-40 rounded-lg border border-border bg-white shadow-md'
+      >
+        <DropdownMenuItem
+          onSelect={() => runAfterMenuClose(() => onOpenDetail(itemId))}
+        >
+          <EyeIcon />
+          Visualizar
+        </DropdownMenuItem>
+        {role && role === 'ADMIN' && (
+          <>
+            <DropdownMenuItem
+              onSelect={() => runAfterMenuClose(() => onOpenEdit(itemId))}
+            >
+              <Edit />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant='destructive'
+              onSelect={() => runAfterMenuClose(() => onOpenDelete(itemId))}
+            >
+              <Trash2 />
+              Deletar
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        <DropdownMenuItem
+          onSelect={() => runAfterMenuClose(() => onCopy(itemId))}
+        >
+          {copied === itemId ? <CopyCheck /> : <Copy />}
+          Copiar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export interface TableChronoanalysisProps {
   data: ChronoanalysisListItem[];
@@ -47,9 +134,8 @@ export interface TableChronoanalysisProps {
   totalPages?: number;
   onOpenDetail?: (id: string) => void;
   onSendStatusChange?: () => void;
-  setIsOpenModalEdit?: (props: boolean) => void;
-  setIsIdChrono?: (props: string | null) => void;
-  setIsOpenModalDelete?: (props: boolean) => void;
+  onOpenEdit?: (id: string) => void;
+  onOpenDelete?: (id: string) => void;
 }
 
 const TableChronoanalysis = ({
@@ -62,9 +148,8 @@ const TableChronoanalysis = ({
   totalPages,
   onOpenDetail,
   onSendStatusChange,
-  setIsOpenModalEdit,
-  setIsIdChrono,
-  setIsOpenModalDelete,
+  onOpenEdit,
+  onOpenDelete,
 }: TableChronoanalysisProps) => {
   const [copied, setCopied] = useState('');
 
@@ -93,7 +178,7 @@ const TableChronoanalysis = ({
     document.body.removeChild(textarea);
   }
 
-  if (onOpenDetail && setIsIdChrono && setIsOpenModalEdit && setIsOpenModalDelete)
+  if (onOpenDetail && onOpenEdit && onOpenDelete)
     return (
       <Card className='gap-2'>
         <div
@@ -133,17 +218,9 @@ const TableChronoanalysis = ({
                 <TableHead>Cliente</TableHead>
                 <TableHead>Tempo Decimal</TableHead>
                 <TableHead>Tempo D./Nº Peças</TableHead>
-
+                <TableHead>Tipo de cronoanálise</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead></TableHead>
-                <TableHead></TableHead>
-                {role && role === 'ADMIN' && (
-                  <>
-                    <TableHead></TableHead>
-                    <TableHead></TableHead>
-                  </>
-                )}
-
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -173,6 +250,13 @@ const TableChronoanalysis = ({
                       ?.standardTimeDecimalByNumberOfParts ?? '-'}
                   </TableCell>
                   <TableCell>
+                    {item.chronoanalysisType
+                      ? getChronoanalysisTypeLabel(
+                          item.chronoanalysisType as ChronoanalysisTypeValue,
+                        )
+                      : '-'}
+                  </TableCell>
+                  <TableCell>
                     {new Date(item.startDate).toLocaleDateString()}
                   </TableCell>
                   <TableCell className=' z-10'>
@@ -182,50 +266,19 @@ const TableChronoanalysis = ({
                       onCheckedChange={() => onChangeChangeSendStatus(item.id)}
                     />
                   </TableCell>
-                  <TableCell
-                    className=' cursor-pointer '
-                    onClick={() => onOpenDetail(item.id)}
-                  >
-                    <EyeIcon size={18} className=' text-zinc-800' />
-                  </TableCell>
-                  {role && role === 'ADMIN' && (
-                    <>
-                      <TableCell
-                        className=' cursor-pointer '
-                        onClick={() => {
-                          setIsIdChrono(item.id);
-                          setIsOpenModalEdit(true);
-                        }}
-                      >
-                        <Edit size={18} className=' text-zinc-800' />
-                      </TableCell>
-                      <TableCell
-                        className=' cursor-pointer '
-                        onClick={() => {
-                          setIsIdChrono(item.id);
-                          setIsOpenModalDelete(true);
-                        }}
-                      >
-                        <Trash2
-                          size={18}
-                          className=' text-red-800  rounded-sm'
-                        />
-                      </TableCell>
-                    </>
-                  )}
-
-                  <TableCell
-                    className=' cursor-pointer '
-                    onClick={() => {
-                      handleCopy(item.id);
-                      setCopied(item.id);
-                    }}
-                  >
-                    {copied === item.id ? (
-                      <CopyCheck size={18} className=' text-zinc-800' />
-                    ) : (
-                      <Copy size={18} className=' text-zinc-800' />
-                    )}
+                  <TableCell>
+                    <ChronoanalysisRowActions
+                      itemId={item.id}
+                      role={role}
+                      copied={copied}
+                      onOpenDetail={onOpenDetail}
+                      onOpenEdit={onOpenEdit}
+                      onOpenDelete={onOpenDelete}
+                      onCopy={(id) => {
+                        void handleCopy(id);
+                        setCopied(id);
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -233,69 +286,80 @@ const TableChronoanalysis = ({
           </Table>
           {currentPage && handlePageChange && totalPages ? (
             <div
-              className={`mt-3 px-2 flex flex-wrap items-center justify-center gap-2 max-w-full ${
+              className={`mt-3 flex items-center px-2 ${
                 loading ? 'pointer-events-none opacity-50' : ''
               }`}
             >
-              <span className=' p-1.5 px-3 flex items-center text-xs justify-center w-15 border border-border rounded-lg text-secondary font-medium'>
-                {PagesLength}
-              </span>
-              <Pagination className=''>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href='#'
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentPage > 1) handlePageChange(currentPage - 1);
-                      }}
-                      className={
-                        currentPage === 1
-                          ? 'opacity-50 pointer-events-none'
-                          : ''
-                      }
-                    />
-                  </PaginationItem>
+              <div className='flex flex-1 items-center justify-start'>
+                <span className='flex items-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-secondary'>
+                  {PagesLength ?? 0}{' '}
+                  {(PagesLength ?? 0) === 1 ? 'item' : 'itens'}
+                </span>
+              </div>
 
-                  {getPaginationRange(currentPage, totalPages).map(
-                    (item, index) =>
-                      item === 'ellipsis' ? (
-                        <PaginationItem key={`ellipsis-${index}`}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      ) : (
-                        <PaginationItem key={item}>
-                          <PaginationLink
-                            href='#'
-                            isActive={item === currentPage}
-                            onClick={() => {
-                              handlePageChange(item);
-                            }}
-                          >
-                            {item}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ),
-                  )}
+              <div className='flex items-center justify-center'>
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href='#'
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1)
+                            handlePageChange(currentPage - 1);
+                        }}
+                        className={
+                          currentPage === 1
+                            ? 'pointer-events-none opacity-50'
+                            : ''
+                        }
+                      />
+                    </PaginationItem>
 
-                  <PaginationItem>
-                    <PaginationNext
-                      href='#'
-                      onClick={() => {
-                        if (currentPage < totalPages)
-                          handlePageChange(currentPage + 1);
-                      }}
-                      className={
-                        currentPage === totalPages
-                          ? 'opacity-50 pointer-events-none'
-                          : ''
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+                    {getPaginationRange(currentPage, totalPages).map(
+                      (item, index) =>
+                        item === 'ellipsis' ? (
+                          <PaginationItem key={`ellipsis-${index}`}>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        ) : (
+                          <PaginationItem key={item}>
+                            <PaginationLink
+                              href='#'
+                              isActive={item === currentPage}
+                              onClick={() => {
+                                handlePageChange(item);
+                              }}
+                            >
+                              {item}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ),
+                    )}
 
-              <p className=' p-1.5 px-3 flex items-center justify-center w-25 border border-border rounded-lg text-secondary text-xs font-medium'>{`${currentPage}${' '}/${' '}${totalPages}`}</p>
+                    <PaginationItem>
+                      <PaginationNext
+                        href='#'
+                        onClick={() => {
+                          if (currentPage < totalPages)
+                            handlePageChange(currentPage + 1);
+                        }}
+                        className={
+                          currentPage === totalPages
+                            ? 'pointer-events-none opacity-50'
+                            : ''
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+
+              <div className='flex flex-1 items-center justify-end'>
+                <p className='flex items-center justify-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-secondary'>
+                  {currentPage} / {totalPages}
+                </p>
+              </div>
             </div>
           ) : null}
         </div>

@@ -52,7 +52,12 @@ import {
 
 } from '@/api/chronoanalysis-api';
 
-import { BrushCleaning } from 'lucide-react';
+import { BrushCleaning, ChevronDown, ChevronUp, ListFilter } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 
 
@@ -78,6 +83,8 @@ const Analysis = () => {
   const [isOpenModalEdit, setIsOpenModalEdit] = useState(false);
 
   const [isOpenModalDelete, setIsOpenModalDelete] = useState(false);
+
+  const [deleteChronoId, setDeleteChronoId] = useState<string | null>(null);
 
   const [role] = useState(window.localStorage.getItem('role'));
 
@@ -112,6 +119,8 @@ const Analysis = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [loading, setLoading] = useState(true);
+
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
 
 
@@ -579,9 +588,87 @@ const Analysis = () => {
 
       <div className=' flex flex-col gap-2 mt-2'>
 
-        <Card className=' relative'>
+        <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
 
-          <form className='flex flex-col gap-2 '>
+          <div className='flex items-center justify-between gap-2'>
+
+            <CollapsibleTrigger asChild>
+
+              <ShadButton
+
+                type='button'
+
+                variant='outline'
+
+                size='sm'
+
+                className='cursor-pointer gap-2 border-border/25 shadow-none hover:border-border/40'
+
+              >
+
+                <ListFilter size={16} />
+
+                Filtros
+
+                {hasActiveFilters && (
+
+                  <span className='rounded-full bg-background-base-blue px-1.5 py-0.5 text-[10px] font-semibold text-white'>
+
+                    ativos
+
+                  </span>
+
+                )}
+
+                {filtersOpen ? (
+
+                  <ChevronUp size={16} />
+
+                ) : (
+
+                  <ChevronDown size={16} />
+
+                )}
+
+              </ShadButton>
+
+            </CollapsibleTrigger>
+
+            <ShadButton
+
+              onClick={handleCleanForm}
+
+              type='button'
+
+              variant={'secondary'}
+
+              size={'sm'}
+
+              disabled={!hasActiveFilters}
+
+              className={`cursor-pointer transition ${
+
+                hasActiveFilters
+
+                  ? 'bg-background-base-blue text-background-base-blue-select hover:bg-background-base-blue-active'
+
+                  : 'bg-zinc-50 text-zinc-900'
+
+              }`}
+
+            >
+
+              <BrushCleaning />
+
+            </ShadButton>
+
+          </div>
+
+          <CollapsibleContent className='pt-2'>
+
+            <Card>
+
+              <form className='flex flex-col gap-2'>
 
             <div className=' flex gap-4 w-full'>
 
@@ -849,37 +936,13 @@ const Analysis = () => {
 
             </div>
 
-          </form>
+              </form>
 
-          <ShadButton
+            </Card>
 
-            onClick={handleCleanForm}
+          </CollapsibleContent>
 
-            type='button'
-
-            variant={'secondary'}
-
-            size={'sm'}
-
-            disabled={!hasActiveFilters}
-
-            className={`cursor-pointer transition absolute top-1 right-4.5 z-50 ${
-
-              hasActiveFilters
-
-                ? 'bg-background-base-blue text-background-base-blue-select hover:bg-background-base-blue-active'
-
-                : 'bg-zinc-50 text-zinc-900'
-
-            }`}
-
-          >
-
-            <BrushCleaning />
-
-          </ShadButton>
-
-        </Card>
+        </Collapsible>
 
         <TableChronoanalysis
 
@@ -901,27 +964,45 @@ const Analysis = () => {
 
           onSendStatusChange={handleRefetchList}
 
-          setIsIdChrono={setIsIdChrono}
+          onOpenEdit={(id) => {
 
-          setIsOpenModalEdit={setIsOpenModalEdit}
+            setIsIdChrono(id);
 
-          setIsOpenModalDelete={setIsOpenModalDelete}
+            setIsOpenModalEdit(true);
+
+          }}
+
+          onOpenDelete={(id) => {
+
+            setDeleteChronoId(id);
+
+            setIsOpenModalDelete(true);
+
+          }}
 
         />
 
       </div>
 
-      {isOpenModalDelete && isIdChrono && (
+      {deleteChronoId && (
 
         <ModalDelete
 
-          idChronoanalysis={isIdChrono}
-
-          setIdChrono={setIsIdChrono}
+          idChronoanalysis={deleteChronoId}
 
           open={isOpenModalDelete}
 
-          setOpen={setIsOpenModalDelete}
+          setOpen={(open) => {
+
+            setIsOpenModalDelete(open);
+
+            if (!open) {
+
+              window.setTimeout(() => setDeleteChronoId(null), 300);
+
+            }
+
+          }}
 
           setIsRefetch={setIsRefetch}
 
