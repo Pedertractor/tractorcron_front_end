@@ -202,7 +202,9 @@ const TableChronoanalysis = ({
               </div>
             </div>
           )}
-          <Table className={loading ? 'pointer-events-none opacity-50' : undefined}>
+          <Table
+            className={loading ? 'pointer-events-none opacity-50' : undefined}
+          >
             <TableCaption className='sr-only'>
               lista das cronoanálises
             </TableCaption>
@@ -218,7 +220,7 @@ const TableChronoanalysis = ({
                 <TableHead>Cliente</TableHead>
                 <TableHead>Tempo Decimal</TableHead>
                 <TableHead>Tempo D./Nº Peças</TableHead>
-                <TableHead>Tipo de cronoanálise</TableHead>
+                <TableHead>Tipo de crono.</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead></TableHead>
                 <TableHead></TableHead>
