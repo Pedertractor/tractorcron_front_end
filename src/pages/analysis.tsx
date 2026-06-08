@@ -582,11 +582,11 @@ const Analysis = () => {
 
   return (
 
-    <section className=''>
+    <section className='w-full min-w-0 max-w-full'>
 
       <Text variant={'title'}>Análise</Text>
 
-      <div className=' flex flex-col gap-2 mt-2'>
+      <div className='mt-2 flex min-w-0 flex-col gap-2'>
 
         <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
 
@@ -664,15 +664,15 @@ const Analysis = () => {
 
           </div>
 
-          <CollapsibleContent className='pt-2'>
+          <CollapsibleContent className='min-w-0 pt-2'>
 
-            <Card>
+            <Card className='min-w-0 overflow-hidden'>
 
-              <form className='flex flex-col gap-2'>
+              <form className='flex min-w-0 flex-col gap-2'>
 
-            <div className=' flex gap-4 w-full'>
+            <div className='flex w-full min-w-0 flex-wrap gap-4'>
 
-              <Label title='Part number'>
+              <Label title='Part number' className='min-w-0 flex-1 basis-40'>
 
                 <Input
 
@@ -684,7 +684,7 @@ const Analysis = () => {
 
               </Label>
 
-              <Label title='Código interno'>
+              <Label title='Código interno' className='min-w-0 flex-1 basis-40'>
 
                 <Input
 
@@ -696,7 +696,7 @@ const Analysis = () => {
 
               </Label>
 
-              <Label title='Cartão' className=''>
+              <Label title='Cartão' className='min-w-0 flex-1 basis-40'>
 
                 <div className=' flex items-center gap-0.5 w-full'>
 
@@ -764,7 +764,7 @@ const Analysis = () => {
 
               </Label>
 
-              <Label title='Centro de custo'>
+              <Label title='Centro de custo' className='min-w-0 flex-1 basis-40'>
 
                 <Input
 
@@ -784,7 +784,7 @@ const Analysis = () => {
 
             </div>
 
-            <div className='flex w-full flex-wrap gap-4 md:flex-nowrap'>
+            <div className='flex w-full min-w-0 flex-wrap items-end gap-4'>
 
               <Label title='Período' className='min-w-0 flex-1'>
 
@@ -902,7 +902,7 @@ const Analysis = () => {
 
               </Label>
 
-              <div className=' flex items-center justify-center gap-5'>
+              <div className='flex shrink-0 items-center justify-center gap-5'>
 
                 <Label title='Kaizen' className=' flex gap-3 w-fit'>
 
