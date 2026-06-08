@@ -180,9 +180,9 @@ const TableChronoanalysis = ({
 
   if (onOpenDetail && onOpenEdit && onOpenDelete)
     return (
-      <Card className='gap-2'>
+      <Card className='min-w-0 max-w-full gap-2 overflow-hidden'>
         <div
-          className={`relative overflow-x-auto rounded-md ${
+          className={`relative w-full min-w-0 max-w-full overflow-x-auto rounded-md ${
             loading ? 'min-h-[120px]' : ''
           }`}
         >

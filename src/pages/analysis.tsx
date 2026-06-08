@@ -65,8 +65,6 @@ import ModalDetail from '@/components/modal-detail';
 
 import TableChronoanalysis from '@/components/table-chronoanalysis';
 
-import { Switch } from '@/components/ui/switch';
-
 import ModalEditChronoanalysis from '@/components/modal-edit';
 
 import ModalDelete from '@/components/modal-delete';
@@ -582,7 +580,7 @@ const Analysis = () => {
 
   return (
 
-    <section className='w-full min-w-0 max-w-full'>
+    <section className='w-full min-w-0 max-w-full overflow-x-hidden'>
 
       <Text variant={'title'}>Análise</Text>
 
@@ -786,7 +784,7 @@ const Analysis = () => {
 
             <div className='flex w-full min-w-0 flex-wrap items-end gap-4'>
 
-              <Label title='Período' className='min-w-0 flex-1'>
+              <Label title='Período' className='min-w-0 flex-1 basis-48'>
 
                 <Controller
 
@@ -854,7 +852,7 @@ const Analysis = () => {
 
               </Label>
 
-              <Label title='Cronoanálista' className='min-w-0 flex-1'>
+              <Label title='Cronoanálista' className='min-w-0 flex-1 basis-48'>
 
                 <Select
 
@@ -870,7 +868,7 @@ const Analysis = () => {
 
               </Label>
 
-              <Label title='Cliente' className='min-w-0 flex-1'>
+              <Label title='Cliente' className='min-w-0 flex-1 basis-48'>
 
                 <Select
 
@@ -886,7 +884,7 @@ const Analysis = () => {
 
               </Label>
 
-              <Label title='Tipo de cronoanálise' className='min-w-0 flex-1'>
+              <Label title='Tipo de cronoanálise' className='min-w-0 flex-1 basis-48'>
 
                 <Select
 
@@ -902,35 +900,43 @@ const Analysis = () => {
 
               </Label>
 
-              <div className='flex shrink-0 items-center justify-center gap-5'>
+              <div className='flex shrink-0 items-end gap-0.5'>
 
-                <Label title='Kaizen' className=' flex gap-3 w-fit'>
+                <Button
 
-                  <Switch
+                  type='button'
 
-                    className='border-2'
+                  className='size-9 shrink-0 p-0'
 
-                    checked={formIsKaizen}
+                  size={' md-desk'}
 
-                    onCheckedChange={() => setValue('isKaizen', !formIsKaizen)}
+                  variant={formIsKaizen ? 'select-blue' : 'default'}
 
-                  />
+                  onClick={() => setValue('isKaizen', !formIsKaizen)}
 
-                </Label>
+                >
 
-                <Label title='Eeprom' className=' flex gap-3 w-fit'>
+                  K
 
-                  <Switch
+                </Button>
 
-                    className='border-2'
+                <Button
 
-                    checked={formIsSend}
+                  type='button'
 
-                    onCheckedChange={() => setValue('isSend', !formIsSend)}
+                  className='size-9 shrink-0 p-0'
 
-                  />
+                  size={' md-desk'}
 
-                </Label>
+                  variant={formIsSend ? 'select-blue' : 'default'}
+
+                  onClick={() => setValue('isSend', !formIsSend)}
+
+                >
+
+                  E
+
+                </Button>
 
               </div>
 
