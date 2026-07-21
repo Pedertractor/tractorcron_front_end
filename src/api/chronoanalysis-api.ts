@@ -2,8 +2,31 @@ import { EmployeeProps } from '@/components/add-chronoanalysis-employees';
 import type { PropsActivities } from '../types/activities-types';
 import type { PropsChronoanalysis } from '../types/chronoanalysis-types';
 import type { PropsWorkPaceAssessment } from '../types/work-pace-assessment-types';
+import type { RegisterActivities, RegisterChronoanalysis } from '@/db/db';
+import type { RegisterPresetActivities } from '@/db/db';
+import { authFetch } from './http';
 
 const url = import.meta.env.VITE_BASE_URL_API;
+
+export type DraftStage = 'TIMING' | 'REVIEW';
+
+export interface ChronoanalysisDraftPayload {
+  register: RegisterChronoanalysis;
+  activities: RegisterActivities[];
+  presetActivities?: RegisterPresetActivities[];
+  session: {
+    startTime: string | null;
+    endTime: string | null;
+  };
+  workPaceAssessment?: unknown | null;
+}
+
+export interface ChronoanalysisDraftResponse {
+  registerId: string;
+  stage: DraftStage;
+  payload: ChronoanalysisDraftPayload;
+  updatedAt: string;
+}
 
 export interface updatedChronoanalysisProps {
   id: string;
@@ -179,8 +202,6 @@ export async function listDatasInformationsForDashBoard(
   userId?: number | null,
   chronoanalysisType?: string | null,
 ) {
-  const token = localStorage.getItem('token');
-
   const searchParams = new URLSearchParams();
   if (userId != null && userId > 0) {
     searchParams.set('userId', String(userId));
@@ -191,14 +212,10 @@ export async function listDatasInformationsForDashBoard(
   const query = searchParams.toString();
   const suffix = query ? `?${query}` : '';
 
-  const response = await fetch(
+  const response = await authFetch(
     `${url}/chronoanalysis/dashboard/${firstDate.toISOString()}/${secondDate.toISOString()}${suffix}`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     },
   );
 
@@ -219,14 +236,8 @@ export async function listDatasInformationsForDashBoard(
 }
 
 export async function listChronoanalistsFromRecords() {
-  const token = localStorage.getItem('token');
-
-  const response = await fetch(`${url}/chronoanalysis/list/chronoanalists`, {
+  const response = await authFetch(`${url}/chronoanalysis/list/chronoanalists`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
   });
 
   const data = await response.json();
@@ -250,8 +261,6 @@ export async function listChronoanalysis(
   params: ListChronoanalysisParams = {},
   signal?: AbortSignal,
 ) {
-  const token = localStorage.getItem('token');
-
   const searchParams = new URLSearchParams();
   if (params.page != null) searchParams.set('page', String(params.page));
   if (params.pageSize != null)
@@ -276,12 +285,8 @@ export async function listChronoanalysis(
   const suffix = query ? `?${query}` : '';
 
   try {
-    const response = await fetch(`${url}/chronoanalysis/list${suffix}`, {
+    const response = await authFetch(`${url}/chronoanalysis/list${suffix}`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       signal,
     });
 
@@ -320,15 +325,9 @@ export type VerifyUuidResult =
   | { result: 'error'; message: string };
 
 export async function registerNewChronoanalysis(finalData: PropsFinalData) {
-  const token = localStorage.getItem('token');
-
   try {
-    const response = await fetch(`${url}/chronoanalysis/create`, {
+    const response = await authFetch(`${url}/chronoanalysis/create`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(finalData),
     });
     const data = await response.json();
@@ -358,15 +357,13 @@ export async function registerNewChronoanalysis(finalData: PropsFinalData) {
 export async function verifyUuidRegister(
   uuid: string
 ): Promise<VerifyUuidResult> {
-  const token = localStorage.getItem('token');
-
   try {
-    const response = await fetch(`${url}/chronoanalysis/verifyuuid/${uuid}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await authFetch(
+      `${url}/chronoanalysis/verifyuuid/${uuid}`,
+      {
+        method: 'GET',
       },
-    });
+    );
 
     if (response.status === 200) return { result: 'available' };
     if (response.status === 400) return { result: 'taken' };
@@ -386,14 +383,10 @@ export async function verifyUuidRegister(
 }
 
 export async function changeSendStatus(idChronoanalysis: string) {
-  const token = localStorage.getItem('token');
-  const response = await fetch(
+  const response = await authFetch(
     `${url}/chronoanalysis/send/${idChronoanalysis}`,
     {
       method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     },
   );
 
@@ -403,12 +396,8 @@ export async function changeSendStatus(idChronoanalysis: string) {
 }
 
 export async function deleteChrono(idChronoanalysis: string) {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${url}/chronoanalysis/${idChronoanalysis}`, {
+  const response = await authFetch(`${url}/chronoanalysis/${idChronoanalysis}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
   return { status: response.status };
@@ -418,13 +407,8 @@ export async function updateChrono(
   updateData: updatedChronoanalysisProps,
   idChrono: string,
 ) {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${url}/chronoanalysis/${idChrono}`, {
+  const response = await authFetch(`${url}/chronoanalysis/${idChrono}`, {
     method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ updateData }),
   });
 
@@ -445,14 +429,8 @@ export async function updateChrono(
 }
 
 export async function getUnique(idChrono: string) {
-  const token = localStorage.getItem('token');
-
-  const response = await fetch(`${url}/chronoanalysis/${idChrono}`, {
+  const response = await authFetch(`${url}/chronoanalysis/${idChrono}`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
   });
 
   const data = await response.json();
@@ -469,4 +447,57 @@ export async function getUnique(idChrono: string) {
     error: null,
     data: data.chronoanalysis,
   };
+}
+
+export async function saveChronoanalysisDraft(input: {
+  registerId: string;
+  stage: DraftStage;
+  payload: ChronoanalysisDraftPayload;
+}) {
+  const response = await authFetch(`${url}/chronoanalysis/draft`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    return {
+      status: false as const,
+      error: data.message ?? 'Erro ao salvar rascunho',
+      data: null,
+    };
+  }
+
+  const data = (await response.json()) as ChronoanalysisDraftResponse;
+  return { status: true as const, error: null, data };
+}
+
+export async function getChronoanalysisDraft() {
+  const response = await authFetch(`${url}/chronoanalysis/draft`, {
+    method: 'GET',
+  });
+
+  if (response.status === 404) {
+    return { status: false as const, error: null, data: null };
+  }
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    return {
+      status: false as const,
+      error: data.message ?? 'Erro ao buscar rascunho',
+      data: null,
+    };
+  }
+
+  const data = (await response.json()) as ChronoanalysisDraftResponse;
+  return { status: true as const, error: null, data };
+}
+
+export async function deleteChronoanalysisDraft() {
+  const response = await authFetch(`${url}/chronoanalysis/draft`, {
+    method: 'DELETE',
+  });
+
+  return { status: response.ok };
 }

@@ -1,15 +1,11 @@
+import { authFetch } from './http';
+
 const url = import.meta.env.VITE_BASE_URL_API;
 
 export async function listChronoanalist() {
-  const token = localStorage.getItem('token');
-
   try {
-    const response = await fetch(`${url}/users/chronoanalist`, {
+    const response = await authFetch(`${url}/users/chronoanalist`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     const data = await response.json();

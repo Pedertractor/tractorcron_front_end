@@ -1,4 +1,5 @@
 import type { TypeLogin } from '../zod/schema-login';
+import { setAuthTokens } from './http';
 
 const url = import.meta.env.VITE_BASE_URL_API;
 
@@ -14,12 +15,12 @@ export async function loginUser(pass: TypeLogin) {
   const data = await response.json();
 
   if (response.status === 200) {
-    localStorage.setItem('token', data.token);
+    setAuthTokens(data.token, data.refreshToken);
 
     return { login: true, message: null };
   }
 
   if (response.status !== 201 && response.status !== 200) {
-    return { login: false, message: data.error };
+    return { login: false, message: data.message || data.error };
   }
 }

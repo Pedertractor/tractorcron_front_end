@@ -27,6 +27,7 @@ type SelectFieldBaseProps = {
   disabled?: boolean;
   placeholder?: string;
   emptyOptionLabel?: string;
+  showEmptyOption?: boolean;
 };
 
 type SelectFieldControlledProps<T extends FieldValues> = SelectFieldBaseProps & {
@@ -59,14 +60,18 @@ function SelectFieldInner({
   disabled,
   placeholder = 'Todos',
   emptyOptionLabel = 'Todos',
+  showEmptyOption = true,
 }: SelectFieldBaseProps & {
   value?: string;
   onValueChange?: (value: string) => void;
 }) {
-  const normalizedValue =
-    value === '' || value === undefined || value === null
+  const isEmpty = value === '' || value === undefined || value === null;
+
+  const normalizedValue = isEmpty
+    ? showEmptyOption
       ? EMPTY_VALUE
-      : String(value);
+      : undefined
+    : String(value);
 
   const handleChange = (selected: string) => {
     onValueChange?.(selected === EMPTY_VALUE ? '' : selected);
@@ -88,7 +93,9 @@ function SelectFieldInner({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={EMPTY_VALUE}>{emptyOptionLabel}</SelectItem>
+        {showEmptyOption ? (
+          <SelectItem value={EMPTY_VALUE}>{emptyOptionLabel}</SelectItem>
+        ) : null}
         {listOptions?.map((option) => (
           <SelectItem key={option.id} value={String(option.id)}>
             {option.name}

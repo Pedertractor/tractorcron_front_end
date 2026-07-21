@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import Text from '../../components/ui/text';
 import PlayIconComponent from '../../assets/icons/play-icon.svg?react';
 import {
+  flushChronoanalysisDraft,
   handleAddActivitie,
   handleStopActivitie,
   listActivities,
+  setChronoanalysisStage,
 } from '../../db/db-functions';
 import type { RegisterActivities, RegisterPresetActivities } from '../../db/db';
 import TableActivities from '../../components/table-activities';
@@ -12,6 +14,7 @@ import TableActivitiesMobile from '../../components/table-activities-mobile';
 import ListActivities from '../../components/list-activities';
 import { listPresetActivities } from '../../db/db-functions-preset-activities';
 import { useChronoanalysisSessionGuard } from '@/hooks/use-chronoanalysis-session-guard';
+import { useChronoanalysisUnloadGuard } from '@/hooks/use-chronoanalysis-unload-guard';
 
 import IconCheckComponent from '../../assets/icons/check-icon.svg?react';
 import IconPauseComponent from '../../assets/icons/stoped-icon.svg?react';
@@ -22,6 +25,7 @@ import Button from '@/components/ui/button/button';
 const RegisterActivitiesCronPage = () => {
   const { isValidating, isValid: isSessionValid } =
     useChronoanalysisSessionGuard();
+  useChronoanalysisUnloadGuard(isSessionValid);
   const [idRegister] = useState<string | null>(() =>
     localStorage.getItem('idRegister'),
   );
@@ -36,6 +40,10 @@ const RegisterActivitiesCronPage = () => {
   >([]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setChronoanalysisStage('TIMING');
+  }, []);
 
   useEffect(() => {
     const getPinedActivities = async () => {
@@ -65,6 +73,7 @@ const RegisterActivitiesCronPage = () => {
 
   const handleFinish = async () => {
     await handleStopActivitie();
+    await flushChronoanalysisDraft('REVIEW');
     navigate('/cronoanalise/revisao');
   };
 

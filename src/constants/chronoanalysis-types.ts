@@ -57,3 +57,26 @@ export function getChronoanalysisTypeLabel(
       ?.label ?? value
   );
 }
+
+const FRONTEND_TYPE_LABELS: Record<TypeOfChronoanalysisFrontend, string> = {
+  welding: 'Soldagem',
+  montage: 'Montagem',
+  bend: 'Dobra',
+  machining: 'Usinagem',
+  prepPainting: 'Prep. pintura',
+  repasseRosca: 'Repasse de rosca',
+};
+
+export function getTypeOfChronoanalysisFrontendLabel(
+  typeOfChronoanalysis: string,
+): string {
+  if (typeOfChronoanalysis in FRONTEND_TYPE_LABELS) {
+    return FRONTEND_TYPE_LABELS[
+      typeOfChronoanalysis as TypeOfChronoanalysisFrontend
+    ];
+  }
+
+  return getChronoanalysisTypeLabel(
+    typeOfChronoanalysis as ChronoanalysisTypeValue,
+  );
+}

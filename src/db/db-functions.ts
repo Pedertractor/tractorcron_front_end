@@ -2,11 +2,34 @@ import {
   dbRegisterChronoanalysis,
   type RegisterChronoanalysis,
 } from './db';
+import {
+  deleteChronoanalysisDraft,
+  getChronoanalysisDraft,
+  saveChronoanalysisDraft,
+  type ChronoanalysisDraftPayload,
+  type DraftStage,
+} from '@/api/chronoanalysis-api';
+import { changePresetActivities } from './db-functions-preset-activities';
+import { syncPresetActivitiesFromType } from './sync-preset-activities';
+
+const DRAFT_DEBOUNCE_MS = 1500;
+let draftSaveTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingDraftStage: DraftStage | null = null;
 
 export function clearChronoanalysisSessionStorage() {
   localStorage.removeItem('idRegister');
   localStorage.removeItem('startTime');
   localStorage.removeItem('endTime');
+  localStorage.removeItem('chronoStage');
+}
+
+export function getChronoanalysisStage(): DraftStage {
+  const stage = localStorage.getItem('chronoStage');
+  return stage === 'REVIEW' ? 'REVIEW' : 'TIMING';
+}
+
+export function setChronoanalysisStage(stage: DraftStage) {
+  localStorage.setItem('chronoStage', stage);
 }
 
 export async function validateChronoanalysisSession(): Promise<boolean> {
@@ -15,6 +38,166 @@ export async function validateChronoanalysisSession(): Promise<boolean> {
 
   const register = await dbRegisterChronoanalysis.register.get(registerId);
   return !!register;
+}
+
+/** Fecha atividade em andamento (sem endTime) — estado pausado. */
+export async function pauseOpenChronoanalysisActivity(
+  at = new Date().toISOString()
+) {
+  const registerId = localStorage.getItem('idRegister');
+  if (!registerId) return false;
+
+  const lastActivity = await dbRegisterChronoanalysis.activities
+    .where('registerId')
+    .equals(registerId)
+    .last();
+
+  if (!lastActivity || lastActivity.endTime) return false;
+
+  await dbRegisterChronoanalysis.activities.update(lastActivity.id, {
+    endTime: at,
+  });
+  localStorage.setItem('endTime', at);
+  return true;
+}
+
+export async function buildChronoanalysisDraftPayload(): Promise<{
+  registerId: string;
+  stage: DraftStage;
+  payload: ChronoanalysisDraftPayload;
+} | null> {
+  const registerId = localStorage.getItem('idRegister');
+  if (!registerId) return null;
+
+  const register = await dbRegisterChronoanalysis.register.get(registerId);
+  if (!register) return null;
+
+  const activities = await dbRegisterChronoanalysis.activities
+    .where('registerId')
+    .equals(registerId)
+    .sortBy('id');
+
+  const presetActivities =
+    await dbRegisterChronoanalysis.presetActivities.toArray();
+
+  return {
+    registerId,
+    stage: getChronoanalysisStage(),
+    payload: {
+      register,
+      activities,
+      presetActivities,
+      session: {
+        startTime: localStorage.getItem('startTime'),
+        endTime: localStorage.getItem('endTime'),
+      },
+    },
+  };
+}
+
+export async function flushChronoanalysisDraft(
+  stage?: DraftStage,
+  options?: { pauseOpen?: boolean }
+) {
+  if (draftSaveTimer) {
+    clearTimeout(draftSaveTimer);
+    draftSaveTimer = null;
+  }
+
+  if (stage) {
+    setChronoanalysisStage(stage);
+  }
+
+  if (options?.pauseOpen) {
+    await pauseOpenChronoanalysisActivity();
+  }
+
+  const draft = await buildChronoanalysisDraftPayload();
+  if (!draft) return { status: false as const };
+
+  if (stage) {
+    draft.stage = stage;
+  }
+
+  return saveChronoanalysisDraft(draft);
+}
+
+export function scheduleChronoanalysisDraftSave(stage?: DraftStage) {
+  if (stage) {
+    setChronoanalysisStage(stage);
+    pendingDraftStage = stage;
+  }
+
+  if (draftSaveTimer) {
+    clearTimeout(draftSaveTimer);
+  }
+
+  draftSaveTimer = setTimeout(() => {
+    void flushChronoanalysisDraft(pendingDraftStage ?? undefined);
+    pendingDraftStage = null;
+    draftSaveTimer = null;
+  }, DRAFT_DEBOUNCE_MS);
+}
+
+export async function restoreChronoanalysisFromDraft(draft: {
+  registerId: string;
+  stage: DraftStage;
+  payload: ChronoanalysisDraftPayload;
+}) {
+  const { payload, stage, registerId } = draft;
+  const pausedAt = new Date().toISOString();
+
+  const activities = (payload.activities ?? []).map((activity) => {
+    if (activity.endTime) return activity;
+    return { ...activity, endTime: pausedAt };
+  });
+
+  await dbRegisterChronoanalysis.transaction(
+    'rw',
+    dbRegisterChronoanalysis.register,
+    dbRegisterChronoanalysis.activities,
+    dbRegisterChronoanalysis.presetActivities,
+    async () => {
+      await dbRegisterChronoanalysis.register.clear();
+      await dbRegisterChronoanalysis.activities.clear();
+      await dbRegisterChronoanalysis.presetActivities.clear();
+      await dbRegisterChronoanalysis.register.add(payload.register);
+
+      for (const activity of activities) {
+        const { id: _id, ...rest } = activity;
+        await dbRegisterChronoanalysis.activities.add(rest);
+      }
+    }
+  );
+
+  if (payload.presetActivities && payload.presetActivities.length > 0) {
+    await changePresetActivities(payload.presetActivities);
+  } else if (payload.register.typeOfChronoanalysis) {
+    await syncPresetActivitiesFromType(payload.register.typeOfChronoanalysis);
+  }
+
+  clearChronoanalysisSessionStorage();
+  localStorage.setItem('idRegister', registerId);
+  localStorage.setItem('startTime', payload.session?.startTime ?? '0');
+  localStorage.setItem(
+    'endTime',
+    payload.session?.endTime && payload.session.endTime !== '0'
+      ? payload.session.endTime
+      : pausedAt
+  );
+  setChronoanalysisStage(stage);
+
+  // Garante rascunho remoto já pausado para próximos logins
+  await flushChronoanalysisDraft(stage);
+}
+
+export async function discardChronoanalysisDraft() {
+  if (draftSaveTimer) {
+    clearTimeout(draftSaveTimer);
+    draftSaveTimer = null;
+  }
+  await clearLocalChronoanalysisDb();
+  await deleteChronoanalysisDraft();
 }
 
 export async function initChronoanalysisSession(
@@ -33,8 +216,10 @@ export async function initChronoanalysisSession(
   clearChronoanalysisSessionStorage();
   localStorage.setItem('idRegister', registerData.id);
   localStorage.setItem('startTime', '0');
+  setChronoanalysisStage('TIMING');
 
   await dbRegisterChronoanalysis.register.add(registerData);
+  await flushChronoanalysisDraft('TIMING');
 }
 
 async function syncStartTimeFromActivities(registerId: string) {
@@ -67,7 +252,7 @@ export async function listActivities() {
   const activities = await dbRegisterChronoanalysis.activities
     .where('registerId')
     .equals(registerId)
-    .toArray();
+    .sortBy('id');
 
   return activities.reverse();
 }
@@ -126,6 +311,7 @@ export async function handleAddActivitie(
   });
 
   await syncStartTimeFromActivities(localize.registerId);
+  scheduleChronoanalysisDraftSave('TIMING');
 
   if (statusAddNewActivitie) attTable(true);
 }
@@ -142,6 +328,8 @@ export async function handleStopActivitie(attTable?: (props: boolean) => void) {
         endTime: localize.now,
       }
     );
+
+    scheduleChronoanalysisDraftSave(getChronoanalysisStage());
 
     if (attTable) attTable(true);
   }
@@ -164,6 +352,7 @@ export async function editIdChronoanalysis(oldId: string, newId: string) {
 
   if (updatedNewId) {
     localStorage.setItem('idRegister', newId);
+    scheduleChronoanalysisDraftSave(getChronoanalysisStage());
     return true;
   }
 
@@ -179,7 +368,10 @@ export async function editGoldenZone(
     goldenZoneId: idGoldenZone,
   });
 
-  if (updated && attTable) attTable(true);
+  if (updated) {
+    scheduleChronoanalysisDraftSave(getChronoanalysisStage());
+    if (attTable) attTable(true);
+  }
 }
 
 export async function editStrikeZone(
@@ -190,7 +382,10 @@ export async function editStrikeZone(
   const updated = await dbRegisterChronoanalysis.activities.update(id, {
     strikeZoneId: idStrikeZone,
   });
-  if (updated && attTable) attTable(true);
+  if (updated) {
+    scheduleChronoanalysisDraftSave(getChronoanalysisStage());
+    if (attTable) attTable(true);
+  }
 }
 
 export async function deleteActivitie(
@@ -203,6 +398,8 @@ export async function deleteActivitie(
   if (registerId) {
     await syncStartTimeFromActivities(registerId);
   }
+
+  scheduleChronoanalysisDraftSave(getChronoanalysisStage());
 
   if (attTable) attTable(true);
 }
@@ -220,4 +417,9 @@ export async function clearLocalChronoanalysisDb() {
     }
   );
   clearChronoanalysisSessionStorage();
+}
+
+export async function hasRemoteChronoanalysisDraft() {
+  const result = await getChronoanalysisDraft();
+  return result.status && result.data ? result.data : null;
 }

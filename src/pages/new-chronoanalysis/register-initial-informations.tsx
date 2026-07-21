@@ -20,7 +20,8 @@ import { changePresetActivities } from '../../db/db-functions-preset-activities'
 import { seedActivities } from '../../seed/seed-activities';
 import { verifyUuidRegister } from '@/api/chronoanalysis-api';
 import {
-  clearLocalChronoanalysisDb,
+  discardChronoanalysisDraft,
+  hasRemoteChronoanalysisDraft,
   initChronoanalysisSession,
 } from '../../db/db-functions';
 import { toast } from 'sonner';
@@ -30,6 +31,7 @@ import { useParts } from '@/hooks/use-parts';
 import CheckRequestStatus from '@/components/check-request-status';
 import { useSector } from '@/hooks/use-sectors';
 import ModalImage from '@/components/modal-image';
+import ModalCancelChronoanalysis from '@/components/modal-cancel-chronoanalysis';
 import { Images } from 'lucide-react';
 import { useOf } from '@/hooks/use-of';
 import AddChronoanalysisEmployee, {
@@ -42,6 +44,8 @@ const RegisterInitialInformationsPage = () => {
     RegisterPresetActivities[]
   >([]);
   const [isOpenImage, setIsOpenImage] = useState(false);
+  const [openCancelModal, setOpenCancelModal] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
   const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
   const [numberOfParts, setNumberOfParts] = useState<number>(1);
 
@@ -175,6 +179,14 @@ const RegisterInitialInformationsPage = () => {
   const handleAddInitialInformations = async (
     data: TypeInitialInformationsData,
   ) => {
+    const remoteDraft = await hasRemoteChronoanalysisDraft();
+    if (remoteDraft) {
+      const replace = window.confirm(
+        'Já existe uma cronoanálise em andamento. Deseja substituir pelo novo registro?',
+      );
+      if (!replace) return;
+    }
+
     let uuIdRegisterChronoanalysis = uuidv4();
     let verifyResult = await verifyUuidRegister(uuIdRegisterChronoanalysis);
 
@@ -219,15 +231,15 @@ const RegisterInitialInformationsPage = () => {
     }
   };
 
-  async function handleCancel() {
-    if (
-      !window.confirm('Deseja cancelar? O rascunho será descartado.')
-    ) {
-      return;
+  async function handleConfirmCancel() {
+    setIsCanceling(true);
+    try {
+      await discardChronoanalysisDraft();
+      setOpenCancelModal(false);
+      navigate('/');
+    } finally {
+      setIsCanceling(false);
     }
-
-    await clearLocalChronoanalysisDb();
-    navigate('/');
   }
 
   return (
@@ -391,6 +403,8 @@ const RegisterInitialInformationsPage = () => {
                       name='clientId'
                       control={control}
                       listOptions={clients}
+                      placeholder='escolha um cliente'
+                      showEmptyOption={false}
                     />
                     {errors.clientId && (
                       <span className='text-red-500 text-xs sm:text-sm'>
@@ -580,7 +594,13 @@ const RegisterInitialInformationsPage = () => {
               <ListActivities activities={pinedActivities} />
             </Card>
             <div className='flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 w-full sm:justify-end items-stretch sm:items-center mt-5'>
-              <Button variant={'red'} size={'md'} type='button' className='w-full sm:w-[140px]' onClick={handleCancel}>
+              <Button
+                variant={'red'}
+                size={'md'}
+                type='button'
+                className='w-full sm:w-[140px]'
+                onClick={() => setOpenCancelModal(true)}
+              >
                 cancelar
               </Button>
               <Button
@@ -596,6 +616,12 @@ const RegisterInitialInformationsPage = () => {
               </Button>
             </div>
           </form>
+          <ModalCancelChronoanalysis
+            open={openCancelModal}
+            setOpen={setOpenCancelModal}
+            isLoading={isCanceling}
+            onConfirm={handleConfirmCancel}
+          />
         </>
       )}
     </section>

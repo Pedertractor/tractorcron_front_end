@@ -880,6 +880,10 @@ const Analysis = () => {
 
                   listOptions={clients}
 
+                  placeholder='escolha um cliente'
+
+                  showEmptyOption={false}
+
                 />
 
               </Label>

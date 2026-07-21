@@ -421,6 +421,8 @@ const ModalEditChronoanalysis = ({
                       name='clientId'
                       control={control}
                       listOptions={clients}
+                      placeholder='escolha um cliente'
+                      showEmptyOption={false}
                     />
                     {errors.clientId && (
                       <span className='text-red-500 text-sm'>

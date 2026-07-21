@@ -1,3 +1,5 @@
+import { authFetch } from './http';
+
 const url = import.meta.env.VITE_BASE_URL_API;
 
 export interface activitiesDataChartsProps {
@@ -39,16 +41,11 @@ export async function getActivitiesDataCharts(
   setIsloading: (loading: boolean) => void
 ) {
   setIsloading(true);
-  const token = localStorage.getItem('token');
 
-  const response = await fetch(
+  const response = await authFetch(
     `${url}/activities/graph/${registerChronoanalysisId}`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     }
   );
 
@@ -75,8 +72,6 @@ export async function getActivitiesChartsForDashboard(
   userId?: number | null,
   chronoanalysisType?: string | null,
 ) {
-  const token = localStorage.getItem('token');
-
   const searchParams = new URLSearchParams();
   if (userId != null && userId > 0) {
     searchParams.set('userId', String(userId));
@@ -87,14 +82,10 @@ export async function getActivitiesChartsForDashboard(
   const query = searchParams.toString();
   const suffix = query ? `?${query}` : '';
 
-  const response = await fetch(
+  const response = await authFetch(
     `${url}/activities/graph/dashboard/${firstDate.toISOString()}/${secondDate.toISOString()}${suffix}`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     },
   );
 

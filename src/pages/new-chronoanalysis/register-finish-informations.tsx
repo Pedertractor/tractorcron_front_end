@@ -12,8 +12,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {
   clearLocalChronoanalysisDb,
+  discardChronoanalysisDraft,
+  flushChronoanalysisDraft,
   handleGetRegister,
   listActivities,
+  setChronoanalysisStage,
 } from '../../db/db-functions';
 import type { RegisterActivities } from '../../db/db';
 import Select from '../../components/ui/select-native';
@@ -23,16 +26,21 @@ import TableActivities from '../../components/table-activities';
 import TableActivitiesMobile from '../../components/table-activities-mobile';
 import LabelActivitieInfo from '../../components/label-activities-info';
 import Modal from '../../components/ui/modal';
+import ModalCancelChronoanalysis from '@/components/modal-cancel-chronoanalysis';
 import WorkPaceAssessment, {
   type DataWorkPaceProps,
 } from '../../components/work-pace-assessment';
 import type { PropsChronoanalysis } from '../../types/chronoanalysis-types';
 import { mapTypeOfChronoanalysisToDb } from '@/constants/chronoanalysis-types';
 import type { PropsActivities } from '../../types/activities-types';
-import { registerNewChronoanalysis } from '../../api/chronoanalysis-api';
+import {
+  deleteChronoanalysisDraft,
+  registerNewChronoanalysis,
+} from '../../api/chronoanalysis-api';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router';
 import { useChronoanalysisSessionGuard } from '@/hooks/use-chronoanalysis-session-guard';
+import { useChronoanalysisUnloadGuard } from '@/hooks/use-chronoanalysis-unload-guard';
 import Label from '@/components/ui/label/label';
 import Button from '@/components/ui/button/button';
 import { useParts } from '@/hooks/use-parts';
@@ -47,9 +55,12 @@ import CounterParts from '@/components/counter-parts';
 const RegisterFinishInformationsPage = () => {
   const { isValidating, isValid: isSessionValid } =
     useChronoanalysisSessionGuard();
+  useChronoanalysisUnloadGuard(isSessionValid);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [attTable, setAttTable] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [openCancelModal, setOpenCancelModal] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
   const [workPaceAssessment, setWorkPaceAssessment] =
     useState<DataWorkPaceProps | null>(null);
   const [finalRegisterActivities, setFinalRegisterActivities] = useState<
@@ -69,6 +80,11 @@ const RegisterFinishInformationsPage = () => {
   );
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setChronoanalysisStage('REVIEW');
+    void flushChronoanalysisDraft('REVIEW');
+  }, []);
 
   const {
     register,
@@ -252,6 +268,7 @@ const RegisterFinishInformationsPage = () => {
     }
 
     try {
+      await deleteChronoanalysisDraft();
       await clearLocalChronoanalysisDb();
       setIsLoading(false);
       setOpenModal(false);
@@ -263,15 +280,15 @@ const RegisterFinishInformationsPage = () => {
     }
   }
 
-  async function handleCancel() {
-    if (
-      !window.confirm('Deseja cancelar? O rascunho será descartado.')
-    ) {
-      return;
+  async function handleConfirmCancel() {
+    setIsCanceling(true);
+    try {
+      await discardChronoanalysisDraft();
+      setOpenCancelModal(false);
+      navigate('/');
+    } finally {
+      setIsCanceling(false);
     }
-
-    await clearLocalChronoanalysisDb();
-    navigate('/');
   }
 
   if (isValidating || !isSessionValid) {
@@ -460,6 +477,8 @@ const RegisterFinishInformationsPage = () => {
                   name='clientId'
                   control={control}
                   listOptions={clients}
+                  placeholder='escolha um cliente'
+                  showEmptyOption={false}
                 />
                 {errors.clientId && (
                   <span className='text-red-500 text-xs sm:text-sm'>
@@ -606,7 +625,7 @@ const RegisterFinishInformationsPage = () => {
             size={'md'}
             type='button'
             className='w-full text-sm sm:w-[140px] sm:text-base'
-            onClick={handleCancel}
+            onClick={() => setOpenCancelModal(true)}
           >
             cancelar
           </Button>
@@ -628,6 +647,12 @@ const RegisterFinishInformationsPage = () => {
           setOpenModal={setOpenModal}
           isLoading={isLoading}
           setConfirmModal={() => handleSubmit(handleSubmitInformations)()}
+        />
+        <ModalCancelChronoanalysis
+          open={openCancelModal}
+          setOpen={setOpenCancelModal}
+          isLoading={isCanceling}
+          onConfirm={handleConfirmCancel}
         />
       </form>
     </section>

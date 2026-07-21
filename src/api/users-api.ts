@@ -1,21 +1,12 @@
 import type { CreateUserPayload, UserListItem } from '@/types/user-types';
+import { authFetch } from './http';
 
 const url = import.meta.env.VITE_BASE_URL_API;
 
-function authHeaders() {
-  const token = localStorage.getItem('token');
-
-  return {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-}
-
 export async function listUsers() {
   try {
-    const response = await fetch(`${url}/users/list`, {
+    const response = await authFetch(`${url}/users/list`, {
       method: 'GET',
-      headers: authHeaders(),
     });
 
     const data = await response.json();
@@ -44,9 +35,8 @@ export async function listUsers() {
 
 export async function createUser(payload: CreateUserPayload) {
   try {
-    const response = await fetch(`${url}/users/create`, {
+    const response = await authFetch(`${url}/users/create`, {
       method: 'POST',
-      headers: authHeaders(),
       body: JSON.stringify(payload),
     });
 

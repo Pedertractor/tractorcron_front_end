@@ -17,7 +17,12 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { clearLocalChronoanalysisDb } from '@/db/db-functions';
+import {
+  clearLocalChronoanalysisDb,
+  flushChronoanalysisDraft,
+  validateChronoanalysisSession,
+} from '@/db/db-functions';
+import { clearAuthSession, logoutRemote } from '@/api/http';
 
 const avatarBgClasses = [
   'bg-background-default-active text-initial',
@@ -33,11 +38,15 @@ function getAvatarClass(name: string) {
 }
 
 async function logout(navigate: ReturnType<typeof useNavigate>) {
+  const hasSession = await validateChronoanalysisSession();
+  if (hasSession) {
+    await flushChronoanalysisDraft(undefined, { pauseOpen: true });
+  }
+
+  await logoutRemote();
   await clearLocalChronoanalysisDb();
-  localStorage.removeItem('email');
-  localStorage.removeItem('name');
-  localStorage.removeItem('role');
-  localStorage.removeItem('token');
+  clearAuthSession();
+  sessionStorage.removeItem('chronoDraftPromptHandled');
   navigate('/login');
 }
 

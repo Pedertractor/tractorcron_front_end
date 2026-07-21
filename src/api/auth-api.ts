@@ -1,4 +1,4 @@
-const url = import.meta.env.VITE_BASE_URL_API;
+import { authFetch, tryRefreshSession } from './http';
 
 interface RecoveryUserResponse {
   role: string | null;
@@ -11,13 +11,23 @@ export async function recoveryUser(
   token: string
 ): Promise<RecoveryUserResponse> {
   try {
-    const response = await fetch(`${url}/users/recovery`, {
+    let response = await authFetch('/users/recovery', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
       },
     });
+
+    if (!response.ok) {
+      const refreshed = await tryRefreshSession();
+      if (refreshed) {
+        response = await authFetch(
+          '/users/recovery',
+          { method: 'GET' },
+          { retry: false }
+        );
+      }
+    }
 
     if (!response.ok) {
       return { role: null, name: null, email: null, login: false };
