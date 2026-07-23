@@ -1,10 +1,11 @@
-import { BarChart3, Clock, Users, type LucideIcon } from 'lucide-react';
+import { BarChart3, Clock, ClipboardList, Users, type LucideIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
@@ -15,6 +16,13 @@ export const navItems = [
     url: '/cronoanalise',
     icon: Clock,
     rolePermition: ['ADMIN', 'CHRONOANALIST'],
+  },
+  {
+    title: 'Solicitações',
+    url: '/solicitacoes',
+    icon: ClipboardList,
+    rolePermition: ['ADMIN', 'CHRONOANALIST'],
+    isNew: true,
   },
   {
     title: 'Analisar Cronoanálise',
@@ -33,6 +41,7 @@ export const navItems = [
   url: string;
   icon: LucideIcon;
   rolePermition: readonly ('ADMIN' | 'CHRONOANALIST' | 'USER')[];
+  isNew?: boolean;
 }>;
 
 export function NavMain({ role }: { role: string | null }) {
@@ -70,15 +79,25 @@ function NavMainItem({
   const Icon = item.icon as LucideIcon;
   const isActive =
     pathname === item.url || pathname.startsWith(`${item.url}/`);
+  const isNew = 'isNew' in item && item.isNew;
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+      <SidebarMenuButton
+        asChild
+        tooltip={isNew ? `${item.title} - novo!` : item.title}
+        isActive={isActive}
+      >
         <Link to={item.url}>
           <Icon />
           <span>{item.title}</span>
         </Link>
       </SidebarMenuButton>
+      {isNew ? (
+        <SidebarMenuBadge className='h-4 min-w-0 rounded-full bg-background-orange px-1.5 text-[10px] font-semibold text-white group-data-[collapsible=icon]:top-1 group-data-[collapsible=icon]:right-1 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-1.5 group-data-[collapsible=icon]:min-w-1.5 group-data-[collapsible=icon]:p-0'>
+          <span className='group-data-[collapsible=icon]:sr-only'>Novo</span>
+        </SidebarMenuBadge>
+      ) : null}
     </SidebarMenuItem>
   );
 }

@@ -68,6 +68,7 @@ const RegisterFinishInformationsPage = () => {
   >([]);
   const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
   const [numberOfParts, setNumberOfParts] = useState<number>(1);
+  const [linkedRequestId, setLinkedRequestId] = useState<string | undefined>();
 
   const [idRegister] = useState<string | null>(() =>
     localStorage.getItem('idRegister')
@@ -108,6 +109,7 @@ const RegisterFinishInformationsPage = () => {
         if (info.register) {
           setEmployeeList(info.register.employees);
           setNumberOfParts(info.register.howManyParts);
+          setLinkedRequestId(info.register.requestId);
           reset({
             id: info.register.id,
             clientId: String(info.register.clientId),
@@ -230,6 +232,7 @@ const RegisterFinishInformationsPage = () => {
       sop: data.sop ? true : false,
       startTime,
       endTime,
+      requestId: linkedRequestId,
     };
 
     const activities: PropsActivities[] = finalRegisterActivities.map(

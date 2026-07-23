@@ -1,18 +1,27 @@
 import Label from './ui/label/label';
 import { Minus, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface CounterPartsProps {
   numberOfParts: number;
   setNumberOfParts: React.Dispatch<React.SetStateAction<number>>;
+  highlightPending?: boolean;
 }
 
 const CounterParts = ({
   numberOfParts,
   setNumberOfParts,
+  highlightPending = false,
 }: CounterPartsProps) => {
   return (
     <Label title='Nº de peças' className='w-full'>
-      <div className='flex h-9 w-full items-stretch overflow-hidden rounded-xl'>
+      <div
+        className={cn(
+          'flex h-9 w-full items-stretch overflow-hidden rounded-xl',
+          highlightPending &&
+            'ring-2 ring-background-orange/50 ring-offset-1',
+        )}
+      >
         <button
           onClick={() =>
             setNumberOfParts((prev) => {
@@ -26,7 +35,12 @@ const CounterParts = ({
         >
           <Minus className='size-4 sm:size-5' strokeWidth={2.5} />
         </button>
-        <div className='flex h-full min-w-[2.5rem] flex-1 items-center justify-center border-y border-border bg-white text-sm font-bold text-zinc-800 sm:text-base'>
+        <div
+          className={cn(
+            'flex h-full min-w-[2.5rem] flex-1 items-center justify-center border-y border-border bg-white text-sm font-bold text-zinc-800 sm:text-base',
+            highlightPending && 'border-background-orange bg-background-orange/5',
+          )}
+        >
           {numberOfParts}
         </div>
         <button

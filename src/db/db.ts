@@ -20,6 +20,9 @@ export interface RegisterChronoanalysis {
   isKaizen: boolean;
   numberKaizen?: string;
   howManyParts: number;
+  requestId?: string;
+  manufacturingStartDate?: string;
+  productionTime?: string;
 }
 
 export interface RegisterActivities {

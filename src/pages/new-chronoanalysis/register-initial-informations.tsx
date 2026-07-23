@@ -14,7 +14,7 @@ import {
 } from '../../db/db';
 import Select from '../../components/ui/select-native';
 import { clients } from '../../seed/seed-client';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import ListActivities from '../../components/list-activities';
 import { changePresetActivities } from '../../db/db-functions-preset-activities';
 import { seedActivities } from '../../seed/seed-activities';
@@ -38,6 +38,18 @@ import AddChronoanalysisEmployee, {
   EmployeeProps,
 } from '@/components/add-chronoanalysis-employees';
 import CounterParts from '@/components/counter-parts';
+import { getChronoanalysisRequest } from '@/api/chronoanalysis-request-api';
+import { mapTypeOfChronoanalysisFromDb } from '@/constants/chronoanalysis-types';
+import {
+  PRODUCTION_TIME_LABELS,
+  type ChronoanalysisRequestItem,
+  type ProductionTime,
+} from '@/types/chronoanalysis-request-types';
+import { format, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
+
+const PENDING_FIELD_CLASS =
+  'border-background-orange ring-2 ring-background-orange/35 bg-background-orange/5';
 
 const RegisterInitialInformationsPage = () => {
   const [pinedActivities, setPinedActivities] = useState<
@@ -48,8 +60,15 @@ const RegisterInitialInformationsPage = () => {
   const [isCanceling, setIsCanceling] = useState(false);
   const [employeeList, setEmployeeList] = useState<EmployeeProps[]>([]);
   const [numberOfParts, setNumberOfParts] = useState<number>(1);
+  const [linkedRequest, setLinkedRequest] =
+    useState<ChronoanalysisRequestItem | null>(null);
+  const [loadingRequest, setLoadingRequest] = useState(false);
+  const [sopConfirmed, setSopConfirmed] = useState(false);
+  const [partsConfirmed, setPartsConfirmed] = useState(false);
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestIdFromQuery = searchParams.get('requestId');
 
   const {
     register,
@@ -75,12 +94,24 @@ const RegisterInitialInformationsPage = () => {
   const costCenter = watch('sectorCostCenter');
   const partCode = watch('internalCode');
   const manufacturingOrder = watch('of');
+  const revision = watch('revision');
+  const clientId = watch('clientId');
   const sop = watch('sop');
   const typeOfChron = watch('typeOfChronoanalysis');
   const isKaizen = watch('isKaizen');
   const numberKaizen = watch('numberKaizen');
   const isRequest = watch('isRequest');
   const firstCron = watch('firstCron');
+
+  const fromRequest = !!linkedRequest;
+  const highlightEmployees = fromRequest && employeeList.length === 0;
+  const highlightRevision = fromRequest && !revision?.trim();
+  const highlightOf = fromRequest && !manufacturingOrder?.trim();
+  const highlightClient = fromRequest && !clientId?.trim();
+  const highlightNumberKaizen =
+    fromRequest && isKaizen && !numberKaizen?.toString().trim();
+  const highlightSop = fromRequest && !sopConfirmed;
+  const highlightParts = fromRequest && !partsConfirmed;
 
   const { partData, isLoading, isStatus } = useParts(partCode);
 
@@ -95,6 +126,54 @@ const RegisterInitialInformationsPage = () => {
     isStatus: isStatusOf,
     ofData,
   } = useOf(manufacturingOrder);
+
+  useEffect(() => {
+    if (!requestIdFromQuery) return;
+
+    let cancelled = false;
+    setLoadingRequest(true);
+
+    (async () => {
+      const result = await getChronoanalysisRequest(requestIdFromQuery);
+      if (cancelled) return;
+      setLoadingRequest(false);
+
+      if (!result.status || !result.data) {
+        toast.error(result.message ?? 'Não foi possível carregar a solicitação.');
+        return;
+      }
+
+      const req = result.data;
+      setLinkedRequest(req);
+      setSopConfirmed(false);
+      setPartsConfirmed(false);
+
+      setValue('sectorCostCenter', req.sectorCostCenter, {
+        shouldValidate: true,
+      });
+      setValue('sectorName', req.sectorName, { shouldValidate: true });
+      setValue('sectorId', req.sectorId, { shouldValidate: true });
+      setValue('internalCode', req.internalCode, { shouldValidate: true });
+      setValue('partNumber', req.partNumber, { shouldValidate: true });
+      setValue('op', req.operation, { shouldValidate: true });
+      setValue(
+        'typeOfChronoanalysis',
+        mapTypeOfChronoanalysisFromDb(req.chronoanalysisType),
+        { shouldValidate: true },
+      );
+      setValue('isRequest', true, { shouldValidate: true });
+      setValue('isKaizen', req.timingType === 'KAIZEN', {
+        shouldValidate: true,
+      });
+      setValue('firstCron', req.timingType === 'FIRST_CRON', {
+        shouldValidate: true,
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [requestIdFromQuery, setValue]);
 
   useEffect(() => {
     if (isStatus && partData && !isLoading)
@@ -219,6 +298,9 @@ const RegisterInitialInformationsPage = () => {
       firstCron: data.firstCron,
       isKaizen: data.isKaizen,
       numberKaizen: data.numberKaizen,
+      requestId: linkedRequest?.id,
+      manufacturingStartDate: linkedRequest?.manufacturingStartDate,
+      productionTime: linkedRequest?.productionTime,
     };
 
     try {
@@ -255,10 +337,45 @@ const RegisterInitialInformationsPage = () => {
           <Text variant={'title'} className='mb-3 sm:mb-4'>
             Nova cronoanálise
           </Text>
+          {loadingRequest && (
+            <p className='mb-3 text-sm text-secondary'>
+              Carregando dados da solicitação...
+            </p>
+          )}
+          {linkedRequest && (
+            <div className='mb-3 rounded-lg border border-background-base-blue bg-background-base-blue/40 px-3 py-2 text-sm sm:mb-4'>
+              <p className='font-semibold text-initial'>
+                Origem: solicitação{' '}
+                <span className='font-mono text-xs'>
+                  {linkedRequest.id.slice(0, 8)}
+                </span>
+              </p>
+              <p className='mt-1 text-secondary'>
+                Solicitante: {linkedRequest.employeeName}
+                {linkedRequest.employeeCardNumber
+                  ? ` · Cartão ${linkedRequest.employeeCardNumber}`
+                  : ''}
+              </p>
+              <p className='mt-1 text-secondary'>
+                Fabricação:{' '}
+                {format(
+                  parseISO(linkedRequest.manufacturingStartDate),
+                  'dd/MM/yyyy',
+                )}{' '}
+                · Tempo:{' '}
+                {
+                  PRODUCTION_TIME_LABELS[
+                    linkedRequest.productionTime as ProductionTime
+                  ]
+                }
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit(handleAddInitialInformations)}>
             <AddChronoanalysisEmployee
               employeeList={employeeList}
               setEmployeeList={setEmployeeList}
+              highlightPending={highlightEmployees}
             />
             <Card text='Informações do setor' className='mt-3 flex sm:mt-5'>
               <div className='flex w-full flex-col items-stretch justify-center gap-2 sm:flex-row sm:items-center sm:gap-4'>
@@ -329,7 +446,10 @@ const RegisterInitialInformationsPage = () => {
                 </div>
                 <div className='flex w-full flex-col gap-2 sm:flex-row sm:gap-4 sm:[&>label]:w-1/2'>
                   <Label title='Revisão'>
-                    <Input {...register('revision')} />
+                    <Input
+                      {...register('revision')}
+                      className={cn(highlightRevision && PENDING_FIELD_CLASS)}
+                    />
                     {errors.revision && (
                       <span className='text-red-500 text-xs sm:text-sm'>
                         {errors.revision.message}
@@ -338,7 +458,11 @@ const RegisterInitialInformationsPage = () => {
                   </Label>
                   <CounterParts
                     numberOfParts={numberOfParts}
-                    setNumberOfParts={setNumberOfParts}
+                    setNumberOfParts={(value) => {
+                      setPartsConfirmed(true);
+                      setNumberOfParts(value);
+                    }}
+                    highlightPending={highlightParts}
                   />
                 </div>
               </div>
@@ -352,7 +476,10 @@ const RegisterInitialInformationsPage = () => {
                       status={isStatusOf}
                       loading={isLoadingOf}
                     >
-                      <Input {...register('of')} />
+                      <Input
+                        {...register('of')}
+                        className={cn(highlightOf && PENDING_FIELD_CLASS)}
+                      />
                     </CheckRequestStatus>
                     {errors.of && (
                       <span className='text-red-500 text-xs sm:text-sm'>
@@ -372,13 +499,22 @@ const RegisterInitialInformationsPage = () => {
 
                 <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                   <Label title='Existe procedimento operacional padrão (SOP)?'>
-                    <div className=' flex items-center gap-1 w-full'>
+                    <div
+                      className={cn(
+                        'flex w-full items-center gap-1 rounded-md',
+                        highlightSop && PENDING_FIELD_CLASS,
+                        highlightSop && 'p-1',
+                      )}
+                    >
                       <Button
                         size={' md-desk'}
                         className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${sop ? 'select-blue' : 'default'}`}
-                        onClick={() => setValue('sop', true)}
+                        onClick={() => {
+                          setValue('sop', true);
+                          setSopConfirmed(true);
+                        }}
                       >
                         sim
                       </Button>
@@ -387,7 +523,10 @@ const RegisterInitialInformationsPage = () => {
                         className='w-full py-2 text-xs sm:py-2.5 sm:text-sm'
                         type='button'
                         variant={`${!sop ? 'select-blue' : 'default'}`}
-                        onClick={() => setValue('sop', false)}
+                        onClick={() => {
+                          setValue('sop', false);
+                          setSopConfirmed(true);
+                        }}
                       >
                         não
                       </Button>
@@ -405,6 +544,7 @@ const RegisterInitialInformationsPage = () => {
                       listOptions={clients}
                       placeholder='escolha um cliente'
                       showEmptyOption={false}
+                      className={cn(highlightClient && PENDING_FIELD_CLASS)}
                     />
                     {errors.clientId && (
                       <span className='text-red-500 text-xs sm:text-sm'>
@@ -443,7 +583,12 @@ const RegisterInitialInformationsPage = () => {
                   </Label>
                   {isKaizen && (
                     <Label title='Número do Kaizen'>
-                      <Input {...register('numberKaizen')} />
+                      <Input
+                        {...register('numberKaizen')}
+                        className={cn(
+                          highlightNumberKaizen && PENDING_FIELD_CLASS,
+                        )}
+                      />
                       {errors.op && (
                         <span className='text-red-500 text-xs sm:text-sm'>
                           {errors.op.message}

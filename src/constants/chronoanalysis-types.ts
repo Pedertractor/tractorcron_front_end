@@ -40,12 +40,33 @@ const FRONTEND_TO_DB: Record<
   repasseRosca: 'REPASSE_DE_ROSCA',
 };
 
+const DB_TO_FRONTEND: Record<
+  ChronoanalysisTypeValue,
+  TypeOfChronoanalysisFrontend | null
+> = {
+  SOLDAGEM: 'welding',
+  MONTAGEM: 'montage',
+  DOBRA: 'bend',
+  USINAGEM: 'machining',
+  PREP_PINTURA: 'prepPainting',
+  REPASSE_DE_ROSCA: 'repasseRosca',
+  OUTROS: null,
+};
+
 export function mapTypeOfChronoanalysisToDb(
   typeOfChronoanalysis: string,
 ): ChronoanalysisTypeValue {
   return (
     FRONTEND_TO_DB[typeOfChronoanalysis as TypeOfChronoanalysisFrontend] ??
     'OUTROS'
+  );
+}
+
+export function mapTypeOfChronoanalysisFromDb(
+  value: string,
+): TypeOfChronoanalysisFrontend {
+  return (
+    DB_TO_FRONTEND[value as ChronoanalysisTypeValue] ?? 'welding'
   );
 }
 

@@ -8,12 +8,20 @@ import SideBar from './components/ui/side-bar';
 import Analysis from './pages/analysis';
 import MagickLinkPage from './pages/magic-link';
 import UsersAdminPage from './pages/users-admin';
+import RequestChronoanalysisPage from './pages/request-chronoanalysis';
+import ChronoanalysisRequestsPage from './pages/chronoanalysis-requests';
+import TicketTrackingPage from './pages/ticket-tracking';
 
 const App = () => {
   return (
     <Routes>
       <Route path='/login' element={<LoginPage />} />
       <Route path='/info/:uuid' element={<MagickLinkPage />} />
+      <Route path='/ticket/:id' element={<TicketTrackingPage />} />
+      <Route
+        path='/solicitar-cronoanalise'
+        element={<RequestChronoanalysisPage />}
+      />
       <Route
         element={
           <ProtectRoute allowedRoles={['ADMIN', 'USER', 'CHRONOANALIST']} />
@@ -29,6 +37,7 @@ const App = () => {
       >
         <Route element={<SideBar />}>
           <Route path='/cronoanalise/*' element={<RouterChronoanalysis />} />
+          <Route path='/solicitacoes' element={<ChronoanalysisRequestsPage />} />
         </Route>
       </Route>
       <Route

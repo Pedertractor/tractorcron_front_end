@@ -29,7 +29,7 @@ export const buttonVariants = cva(
         ' md-desk': '',
       },
       disabled: {
-        true: ' border border-border text-secondary stroke-disabled bg-white border-dashed pointer-events-none',
+        true: ' border border-border text-secondary! stroke-disabled bg-background-default border-dashed pointer-events-none',
       },
     },
     defaultVariants: {

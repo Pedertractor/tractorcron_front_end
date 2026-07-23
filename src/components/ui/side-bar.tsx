@@ -80,7 +80,7 @@ const SideBar = () => {
             </Breadcrumb>
           </div>
         </header>
-        <div className='flex w-full min-w-0 max-w-full flex-1 flex-col overflow-x-hidden px-2 py-3 sm:px-4 sm:py-4'>
+        <div className='flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-x-hidden overflow-y-auto px-2 py-3 sm:px-4 sm:py-4'>
           <Outlet />
         </div>
       </SidebarInset>

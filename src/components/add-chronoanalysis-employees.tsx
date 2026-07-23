@@ -7,6 +7,7 @@ import { useEmployee } from '@/hooks/use-employees';
 import CheckRequestStatus from './check-request-status';
 import { CircleXIcon, IdCardLanyard, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export interface EmployeeProps {
   employeeId: number | undefined;
@@ -18,9 +19,11 @@ export interface EmployeeProps {
 const AddChronoanalysisEmployee = ({
   employeeList,
   setEmployeeList,
+  highlightPending = false,
 }: {
   employeeList: EmployeeProps[];
   setEmployeeList: React.Dispatch<React.SetStateAction<EmployeeProps[]>>;
+  highlightPending?: boolean;
 }) => {
   const [employee, setEmployee] = useState<EmployeeProps>({
     employeeId: undefined,
@@ -85,7 +88,11 @@ const AddChronoanalysisEmployee = ({
   return (
     <Card
       text='Informe o(s) colaborador(es)'
-      className='relative mt-3 flex sm:mt-5 [&>h2]:pr-14 sm:[&>h2]:pr-0'
+      className={cn(
+        'relative mt-3 flex sm:mt-5 [&>h2]:pr-14 sm:[&>h2]:pr-0',
+        highlightPending &&
+          'border-background-orange ring-2 ring-background-orange/35 bg-background-orange/5',
+      )}
     >
       <div className='absolute top-2 right-2 flex items-center justify-center gap-1.5 rounded-lg border border-border p-1 px-1.5 sm:top-2 sm:right-3 sm:gap-3 sm:px-2'>
         <Users
@@ -94,6 +101,11 @@ const AddChronoanalysisEmployee = ({
         />
         <span className='text-xs font-medium sm:text-sm'>{employeeList.length}</span>
       </div>
+      {highlightPending && (
+        <p className='text-xs font-medium text-background-orange sm:text-sm'>
+          Pendente: informe o(s) colaborador(es) cronometrado(s)
+        </p>
+      )}
       <div className=' flex gap-4 w-full items-center justify-center'>
         <Label title='Cartão' className='relative sm:h-25'>
           <CheckRequestStatus
@@ -139,7 +151,11 @@ const AddChronoanalysisEmployee = ({
               </Button>
               <Input
                 disabled={!employee.employeeUnit ? true : false}
-                className='w-full'
+                className={cn(
+                  'w-full',
+                  highlightPending &&
+                    'border-background-orange ring-2 ring-background-orange/35',
+                )}
                 maxLength={4}
                 inputMode='numeric'
                 placeholder='ex: 0072 | ex: 5532'

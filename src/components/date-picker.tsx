@@ -6,20 +6,50 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { CalendarRange } from './calendar/calendar';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { endOfYear, startOfYear } from 'date-fns';
 
 type Props = {
   value?: DateRange;
   onChange: (value: DateRange | undefined) => void;
   homePage?: boolean;
 };
+
+function isFullYearRange(range: DateRange | undefined, year: number) {
+  if (!range?.from || !range?.to) return false;
+  const from = startOfYear(new Date(year, 0, 1));
+  const to = endOfYear(new Date(year, 0, 1));
+  return (
+    range.from.getFullYear() === year &&
+    range.to.getFullYear() === year &&
+    range.from.getMonth() === from.getMonth() &&
+    range.from.getDate() === from.getDate() &&
+    range.to.getMonth() === to.getMonth() &&
+    range.to.getDate() === to.getDate()
+  );
+}
+
 export function DatePicker({ value, onChange, homePage }: Props) {
   const [open, setOpen] = useState(false);
-  const [isYear, setIsYear] = useState<string | null>(null);
+  const currentYear = new Date().getFullYear();
+  const [isYear, setIsYear] = useState<string | null>(
+    homePage ? String(currentYear) : null,
+  );
 
-  const years = ['2025', '2026'];
+  const years = useMemo(
+    () => [String(currentYear - 1), String(currentYear)],
+    [currentYear],
+  );
+
+  useEffect(() => {
+    if (!homePage) return;
+    const matchedYear = years.find((year) =>
+      isFullYearRange(value, Number(year)),
+    );
+    setIsYear(matchedYear ?? null);
+  }, [homePage, value, years]);
 
   function handleClickYear(year: string) {
     if (year === isYear) {
@@ -30,10 +60,11 @@ export function DatePicker({ value, onChange, homePage }: Props) {
       return setIsYear(null);
     }
 
+    const yearNumber = Number(year);
     setIsYear(year);
     onChange({
-      from: new Date(`01-01-${year}`),
-      to: new Date(`12-31-${year}`),
+      from: startOfYear(new Date(yearNumber, 0, 1)),
+      to: endOfYear(new Date(yearNumber, 0, 1)),
     });
   }
 
@@ -62,7 +93,6 @@ export function DatePicker({ value, onChange, homePage }: Props) {
             <button
               type='button'
               className={cn(
-                // Mesmas dimensões dos <Select> do filtro (h-fit py-2), sem forçar h-[48px]
                 'border-border text-secondary bg-background flex h-fit w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm font-normal outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
               )}
             >
@@ -77,7 +107,7 @@ export function DatePicker({ value, onChange, homePage }: Props) {
           )}
         </PopoverTrigger>
         <PopoverContent
-          className='w-auto overflow-hidden p-0 bg-white border-none shadow-lg'
+          className='w-auto overflow-hidden border-none bg-white p-0 shadow-lg'
           align='start'
         >
           <CalendarRange dateRange={value} setDateRange={onChange} />
@@ -89,9 +119,9 @@ export function DatePicker({ value, onChange, homePage }: Props) {
             variant={'outline'}
             size={'sm'}
             key={`${index}-${year}`}
-            className={`cursor-pointer text-secondary border-border ${
+            className={`cursor-pointer border-border text-secondary ${
               isYear === year
-                ? 'bg-background-blue-active border-background-base-blue-active'
+                ? 'border-background-base-blue-active bg-background-blue-active'
                 : ''
             }  `}
             onClick={() => handleClickYear(year)}

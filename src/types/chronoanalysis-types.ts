@@ -24,4 +24,5 @@ export interface PropsChronoanalysis {
   firstCron?: boolean;
   isKaizen?: boolean;
   numberKaizen?: string;
+  requestId?: string;
 }
