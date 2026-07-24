@@ -8,6 +8,7 @@ import SideBar from './components/ui/side-bar';
 import Analysis from './pages/analysis';
 import MagickLinkPage from './pages/magic-link';
 import UsersAdminPage from './pages/users-admin';
+import ActivitiesAdminPage from './pages/activities-admin';
 import RequestChronoanalysisPage from './pages/request-chronoanalysis';
 import ChronoanalysisRequestsPage from './pages/chronoanalysis-requests';
 import TicketTrackingPage from './pages/ticket-tracking';
@@ -50,6 +51,7 @@ const App = () => {
       <Route element={<ProtectRoute allowedRoles={['ADMIN']} />}>
         <Route element={<SideBar />}>
           <Route path='/admin/usuarios' element={<UsersAdminPage />} />
+          <Route path='/admin/atividades' element={<ActivitiesAdminPage />} />
         </Route>
       </Route>
     </Routes>

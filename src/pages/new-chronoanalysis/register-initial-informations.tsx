@@ -16,8 +16,7 @@ import Select from '../../components/ui/select-native';
 import { clients } from '../../seed/seed-client';
 import { useNavigate, useSearchParams } from 'react-router';
 import ListActivities from '../../components/list-activities';
-import { changePresetActivities } from '../../db/db-functions-preset-activities';
-import { seedActivities } from '../../seed/seed-activities';
+import { syncPresetActivitiesFromType } from '../../db/sync-preset-activities';
 import { verifyUuidRegister } from '@/api/chronoanalysis-api';
 import {
   discardChronoanalysisDraft,
@@ -197,62 +196,25 @@ const RegisterInitialInformationsPage = () => {
 
   useEffect(() => {
     const syncAndListActivities = async () => {
-      setPinedActivities([]);
-      if (typeOfChron === 'welding') {
-        const filterWelding = seedActivities.filter(
-          (activity) =>
-            activity.activityType === 'SOLDAGEM' ||
-            activity.activityType === 'GERAL',
-        );
-        setPinedActivities(filterWelding);
-        await changePresetActivities(filterWelding);
+      if (!typeOfChron) {
+        setPinedActivities([]);
+        return;
       }
 
-      if (typeOfChron === 'montage') {
-        const filterMontage = seedActivities.filter(
-          (activity) =>
-            activity.activityType === 'MONTAGEM' ||
-            activity.activityType === 'GERAL',
+      try {
+        const presets = await syncPresetActivitiesFromType(typeOfChron);
+        setPinedActivities(presets);
+      } catch (error) {
+        setPinedActivities([]);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível carregar as atividades. Verifique a conexão.',
         );
-        setPinedActivities(filterMontage);
-        await changePresetActivities(filterMontage);
-      }
-      if (typeOfChron === 'bend') {
-        const filterBeld = seedActivities.filter(
-          (act) => act.activityType === 'DOBRA' || act.activityType === 'GERAL',
-        );
-        setPinedActivities(filterBeld);
-        await changePresetActivities(filterBeld);
-      }
-      if (typeOfChron === 'machining') {
-        const filterMachining = seedActivities.filter(
-          (act) =>
-            act.activityType === 'USINAGEM' || act.activityType === 'GERAL',
-        );
-        setPinedActivities(filterMachining);
-        await changePresetActivities(filterMachining);
-      }
-      if (typeOfChron === 'prepPainting') {
-        const filterPrepPainting = seedActivities.filter(
-          (act) =>
-            act.activityType === 'PREP_PINTURA' ||
-            act.activityType === 'GERAL',
-        );
-        setPinedActivities(filterPrepPainting);
-        await changePresetActivities(filterPrepPainting);
-      }
-      if (typeOfChron === 'repasseRosca') {
-        const filterRepasseRosca = seedActivities.filter(
-          (act) =>
-            act.activityType === 'REPASSE_DE_ROSCA' ||
-            act.activityType === 'GERAL',
-        );
-        setPinedActivities(filterRepasseRosca);
-        await changePresetActivities(filterRepasseRosca);
       }
     };
 
-    syncAndListActivities();
+    void syncAndListActivities();
   }, [typeOfChron]);
 
   const handleAddInitialInformations = async (

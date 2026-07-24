@@ -42,6 +42,7 @@ export interface RegisterPresetActivities {
   classification: string;
   name: string;
   typeMovimation: string;
+  sortOrder?: number;
 }
 
 export const dbRegisterChronoanalysis = new Dexie('Chronoanalysis') as Dexie & {

@@ -19,26 +19,18 @@ export interface PropsListActivities {
   ) => void;
 }
 
-const sortActivities = (activities: RegisterPresetActivities[]) =>
-  [...activities].sort((a, b) => {
-    if (a.classification === 'VAA' && b.classification !== 'VAA') return -1;
-    if (a.classification !== 'VAA' && b.classification === 'VAA') return 1;
-    return a.id - b.id;
-  });
-
 const ListActivities = ({
   setAttTable,
   activities,
   handleAddActivitie,
 }: PropsListActivities) => {
   const [open, setOpen] = useState(false);
-  const sortedActivities = sortActivities(activities);
 
   if (handleAddActivitie && setAttTable)
     return (
       <>
         <Card className='hidden w-full grid-cols-4 gap-5 overflow-y-auto max-h-[280px] min-h-[280px] md:grid'>
-          {sortedActivities.map((item, index) => (
+          {activities.map((item, index) => (
             <Button
               size={'full'}
               className='relative'
@@ -55,7 +47,7 @@ const ListActivities = ({
         </Card>
 
         <Card className='grid w-full grid-cols-2 gap-3 overflow-y-auto max-h-[10.5rem] min-h-[10.5rem] md:hidden'>
-          {sortedActivities.map((item, index) => (
+          {activities.map((item, index) => (
             <Button
               size={'full'}
               className='relative text-xs'
@@ -80,7 +72,7 @@ const ListActivities = ({
         {open ? <ChevronUpIcon size={20} /> : <ChevronDownIcon size={20} />}
       </CollapsibleTrigger>
       <CollapsibleContent className='grid w-full grid-cols-2 gap-2 overflow-y-auto py-1 max-h-[16rem] md:grid-cols-4 md:gap-5 md:max-h-[220px]'>
-        {sortedActivities.map((item, index) => (
+        {activities.map((item, index) => (
           <div
             className='relative flex min-h-[2.75rem] w-full items-center justify-center rounded-md border border-border p-2 text-center text-xs leading-snug break-words md:min-h-0 md:text-sm'
             key={`${item.id}-${index}`}

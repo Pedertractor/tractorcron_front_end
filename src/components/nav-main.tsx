@@ -1,4 +1,4 @@
-import { BarChart3, Clock, ClipboardList, Users, type LucideIcon } from 'lucide-react';
+import { BarChart3, Clock, ClipboardList, ListChecks, Users, type LucideIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 
 import {
@@ -29,6 +29,12 @@ export const navItems = [
     url: '/relatorio',
     icon: BarChart3,
     rolePermition: ['ADMIN', 'CHRONOANALIST'],
+  },
+  {
+    title: 'Atividades',
+    url: '/admin/atividades',
+    icon: ListChecks,
+    rolePermition: ['ADMIN'],
   },
   {
     title: 'Usuários',
