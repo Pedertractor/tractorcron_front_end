@@ -12,6 +12,7 @@ import Label from '@/components/ui/label/label';
 import CheckRequestStatus from '@/components/check-request-status';
 import Icon from '@/components/ui/icon';
 import TimingTypeSelector from '@/components/timing-type-selector';
+import { DatePickerSingle } from '@/components/date-picker-single';
 import logoComplete from '@/assets/logo/complete-logo.svg?react';
 
 import { useEmployee } from '@/hooks/use-employees';
@@ -411,7 +412,16 @@ const RequestChronoanalysisPage = () => {
                 )}
               </Label>
               <Label title='Data início de fabricação' className='w-full'>
-                <Input type='date' {...register('manufacturingStartDate')} />
+                <DatePickerSingle
+                  value={watch('manufacturingStartDate')}
+                  onChange={(date) =>
+                    setValue('manufacturingStartDate', date, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  aria-invalid={!!errors.manufacturingStartDate}
+                />
                 {errors.manufacturingStartDate && (
                   <span className='text-xs text-red-500'>
                     {errors.manufacturingStartDate.message}

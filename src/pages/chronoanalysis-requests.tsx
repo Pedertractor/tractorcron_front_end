@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import ModalDetail from '@/components/modal-detail';
+import { DatePickerSingle } from '@/components/date-picker-single';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -464,18 +465,10 @@ const ChronoanalysisRequestsPage = () => {
             />
           </Label>
           <Label title='De' className='min-w-0 sm:flex-1 sm:basis-36'>
-            <Input
-              type='date'
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-            />
+            <DatePickerSingle value={dateFrom} onChange={setDateFrom} />
           </Label>
           <Label title='Até' className='min-w-0 sm:flex-1 sm:basis-36'>
-            <Input
-              type='date'
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-            />
+            <DatePickerSingle value={dateTo} onChange={setDateTo} />
           </Label>
           <ShadButton
             type='button'

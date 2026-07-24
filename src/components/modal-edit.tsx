@@ -31,7 +31,7 @@ import LabelActivitieInfo from './label-activities-info';
 import Input from './ui/input';
 import Select from './ui/select-native';
 import { clients } from '@/seed/seed-client';
-import Modal from './ui/modal';
+import Modal, { waitConfirmLoadingSequence } from './ui/modal';
 import {
   Dialog,
   DialogContent,
@@ -56,6 +56,7 @@ const ModalEditChronoanalysis = ({
   setIdChrono,
 }: ModalEditProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isConfirmSuccess, setIsConfirmSuccess] = useState(false);
   const [chronoanalysis, setChronoanalysis] =
     useState<null | listChronoanalysisProps>(null);
   const [openModal, setOpenModal] = useState(false);
@@ -177,6 +178,7 @@ const ModalEditChronoanalysis = ({
   }, [isLoadingSector, isStatusSector, sectorData, setValue]);
 
   async function handleSubmitInformations(data: TypeEditInformations) {
+    const loadingStartedAt = Date.now();
     setIsLoading(true);
 
     if (workPaceAssessment) {
@@ -235,7 +237,11 @@ const ModalEditChronoanalysis = ({
       }
 
       if (status) {
+        await waitConfirmLoadingSequence(loadingStartedAt, () => {
+          setIsConfirmSuccess(true);
+        });
         setIsLoading(false);
+        setIsConfirmSuccess(false);
         setOpenModal(false);
         setChronoanalysis(null);
         setWorkPaceAssessment(null);
@@ -559,9 +565,13 @@ const ModalEditChronoanalysis = ({
                 cancelar
               </Button>
               <Button
-                disabled={!isValid || employeeList.length < 1}
+                disabled={
+                  !isValid || employeeList.length < 1 || !workPaceAssessment
+                }
                 variant={`${
-                  !isValid || employeeList.length < 1 ? 'default' : 'green'
+                  !isValid || employeeList.length < 1 || !workPaceAssessment
+                    ? 'default'
+                    : 'green'
                 }`}
                 size={'md'}
                 type='button'
@@ -576,6 +586,7 @@ const ModalEditChronoanalysis = ({
               description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
               setOpenModal={setOpenModal}
               isLoading={isLoading}
+              isSuccess={isConfirmSuccess}
               setConfirmModal={() => handleSubmit(handleSubmitInformations)()}
             />
           </form>

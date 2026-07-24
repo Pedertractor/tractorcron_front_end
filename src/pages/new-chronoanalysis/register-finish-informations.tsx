@@ -25,7 +25,9 @@ import { clients } from '../../seed/seed-client';
 import TableActivities from '../../components/table-activities';
 import TableActivitiesMobile from '../../components/table-activities-mobile';
 import LabelActivitieInfo from '../../components/label-activities-info';
-import Modal from '../../components/ui/modal';
+import Modal, {
+  waitConfirmLoadingSequence,
+} from '../../components/ui/modal';
 import ModalCancelChronoanalysis from '@/components/modal-cancel-chronoanalysis';
 import WorkPaceAssessment, {
   type DataWorkPaceProps,
@@ -57,6 +59,7 @@ const RegisterFinishInformationsPage = () => {
     useChronoanalysisSessionGuard();
   useChronoanalysisUnloadGuard(isSessionValid);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isConfirmSuccess, setIsConfirmSuccess] = useState(false);
   const [attTable, setAttTable] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openCancelModal, setOpenCancelModal] = useState(false);
@@ -195,6 +198,7 @@ const RegisterFinishInformationsPage = () => {
   }, [isLoadingSector, isStatusSector, sectorData, setValue]);
 
   async function handleSubmitInformations(data: TypeInitialInformationsData) {
+    const loadingStartedAt = Date.now();
     setIsLoading(true);
 
     if (!startTime || !endTime || !workPaceAssessment) {
@@ -273,12 +277,17 @@ const RegisterFinishInformationsPage = () => {
     try {
       await deleteChronoanalysisDraft();
       await clearLocalChronoanalysisDb();
+      await waitConfirmLoadingSequence(loadingStartedAt, () => {
+        setIsConfirmSuccess(true);
+      });
       setIsLoading(false);
+      setIsConfirmSuccess(false);
       setOpenModal(false);
       toast.success(message);
       navigate('/');
     } catch (error) {
       setIsLoading(false);
+      setIsConfirmSuccess(false);
       toast.error(`Erro ao limpar banco local! ${error}`);
     }
   }
@@ -633,8 +642,8 @@ const RegisterFinishInformationsPage = () => {
             cancelar
           </Button>
           <Button
-            disabled={!isValid}
-            variant={`${!isValid ? 'default' : 'green'}`}
+            disabled={!isValid || !workPaceAssessment}
+            variant={`${!isValid || !workPaceAssessment ? 'default' : 'green'}`}
             size={'md'}
             type='button'
             onClick={() => setOpenModal(true)}
@@ -649,6 +658,7 @@ const RegisterFinishInformationsPage = () => {
           description='Ao clicar em confirmar você estará registrando todas as informações da cronoanálise'
           setOpenModal={setOpenModal}
           isLoading={isLoading}
+          isSuccess={isConfirmSuccess}
           setConfirmModal={() => handleSubmit(handleSubmitInformations)()}
         />
         <ModalCancelChronoanalysis

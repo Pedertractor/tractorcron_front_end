@@ -42,22 +42,22 @@ function getActiveStepIndex(status: RequestStatus) {
 function TicketProgress({ status }: { status: RequestStatus }) {
   const isCancelled = status === 'CANCELLED';
   const activeIndex = getActiveStepIndex(status);
-  const reachedIndex = isCancelled
-    ? 0
-    : Math.max(activeIndex, 0);
+  const reachedIndex = isCancelled ? 0 : Math.max(activeIndex, 0);
 
   return (
-    <div className='mt-2 w-full'>
+    <div className='my-8 w-full'>
       <div className='flex items-center justify-between gap-1'>
         {PROGRESS_STEPS.map((step, index) => {
           const isDone =
-            !isCancelled &&
-            (status === 'COMPLETED' || index < activeIndex);
+            !isCancelled && (status === 'COMPLETED' || index < activeIndex);
           const isCurrent = !isCancelled && index === activeIndex;
           const showCancelledOnFirst = isCancelled && index === 0;
 
           return (
-            <div key={step.key} className='flex min-w-0 flex-1 flex-col items-center gap-1.5'>
+            <div
+              key={step.key}
+              className='flex min-w-0 flex-1 flex-col items-center gap-1.5'
+            >
               <div className='flex w-full items-center'>
                 {index > 0 ? (
                   <div
@@ -92,7 +92,9 @@ function TicketProgress({ status }: { status: RequestStatus }) {
                     className={`h-0.5 flex-1 ${
                       !isCancelled && index < reachedIndex
                         ? 'bg-emerald-500'
-                        : !isCancelled && index === reachedIndex && status === 'COMPLETED'
+                        : !isCancelled &&
+                            index === reachedIndex &&
+                            status === 'COMPLETED'
                           ? 'bg-emerald-500'
                           : 'bg-border'
                     }`}
@@ -151,10 +153,7 @@ const SuccessTicketCard = forwardRef<HTMLElement, SuccessTicketCardProps>(
       >
         <div className='flex flex-col items-center gap-1.5 px-4 py-2.5 sm:gap-2 sm:px-5 sm:py-3'>
           <div className='flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 sm:size-10'>
-            <Clock
-              className='size-4 text-white sm:size-5'
-              strokeWidth={2}
-            />
+            <Clock className='size-4 text-white sm:size-5' strokeWidth={2} />
           </div>
 
           <div className='min-w-0 w-full'>
@@ -167,7 +166,11 @@ const SuccessTicketCard = forwardRef<HTMLElement, SuccessTicketCardProps>(
             </Text>
 
             <div className='mt-2 space-y-1 text-left'>
-              <Text as='p' variant='little-text' className='block text-secondary'>
+              <Text
+                as='p'
+                variant='little-text'
+                className='block text-center text-secondary'
+              >
                 {request.employeeCardNumber} · {request.employeeName}
               </Text>
 
@@ -218,10 +221,17 @@ const SuccessTicketCard = forwardRef<HTMLElement, SuccessTicketCardProps>(
             aria-hidden
             className='pointer-events-none absolute top-1/2 -right-3 z-10 size-6 -translate-y-1/2 rounded-full bg-muted'
           />
-          <div className='mx-5 border-t border-dashed border-border sm:mx-6' />
+          <div
+            aria-hidden
+            className='mx-5 h-[2px] sm:mx-6'
+            style={{
+              backgroundImage:
+                'repeating-linear-gradient(to right, var(--border) 0 8px, transparent 8px 14px)',
+            }}
+          />
         </div>
 
-        <div className='flex flex-col items-center bg-zinc-50 px-4 py-2.5 sm:px-5 sm:py-3'>
+        <div className='flex flex-col items-center bg-zinc-50 px-4 py-5 sm:px-5 sm:py-6'>
           <QRCodeSVG
             value={ticketUrl}
             size={96}
